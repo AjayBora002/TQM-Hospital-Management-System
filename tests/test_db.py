@@ -131,5 +131,11 @@ class TestHMSModels(unittest.TestCase):
         self.assertIn("Data Entry", counts)
 
 
+    def test_10_financial_zero_boundary(self):
+        """Verify billing calculation handles zero values correctly."""
+        pid = patient.get_id_by_name("Anita Devi")
+        b_id, total = bill.add(pid, 0.0, 300.0, 0.0, "UPI", "Paid")
+        self.assertEqual(total, 300.0)
+
 if __name__ == "__main__":
     unittest.main()
