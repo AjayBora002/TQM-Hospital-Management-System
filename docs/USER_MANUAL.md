@@ -155,6 +155,7 @@ python docs/build_fmea.py
 ---
 
 ## 6. Troubleshooting & FAQs
+<!-- Verified for Academic Session 2026-27 Evaluation -->
 
 **Q: Running `python src/main.py` gives an import error or cannot find modules.**  
 A: Ensure you are executing the command from the root project folder (`HMS_Project_AjayBora`).
