@@ -37,7 +37,7 @@ def update(room_id, room_number, room_type, status, rate_per_day):
     conn = get_connection()
     conn.execute("UPDATE rooms SET room_number=?, room_type=?, status=?, rate_per_day=? WHERE room_id=?",
                  (room_number, room_type, status, rate_per_day, room_id))
-    log_audit(conn, "rooms", room_id, "UPDATE", "Room record updated")
+    log_audit(conn, "rooms", room_id, "UPDATE", f"Room {room_number} status updated to {status}")
     conn.commit()
     conn.close()
 
