@@ -22,7 +22,7 @@ def list_all():
 
 def add(patient_id, room_charges, consultation_charges, medicine_charges,
         payment_method, payment_status):
-    total = round(room_charges + consultation_charges + medicine_charges, 2)
+    total = round(float(room_charges) + float(consultation_charges) + float(medicine_charges), 2)
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
