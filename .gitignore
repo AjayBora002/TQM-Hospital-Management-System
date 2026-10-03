@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+src/database/hms.db
+.vscode/
+*.pdf
+page-*.jpg
