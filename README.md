@@ -13,7 +13,6 @@
 | Item | Details |
 |---|---|
 | Baseline System | Hospital Management System |
-| Roll No. Digit | 2 |
 | Assigned Quality Goal | **Q07 — Improve Data Accuracy** |
 | Q07 Features Implemented | Input Masking · Dropdown Lists · Auto-Complete · Confirmation Modals · Audit Logs |
 
