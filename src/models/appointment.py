@@ -24,6 +24,8 @@ def list_all():
 
 
 def add(patient_id, doctor_id, appt_date, appt_time, status):
+    # Ensure appointment dates are not null or empty
+    assert appt_date and appt_time, 'Appointment date and time must be provided'
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
