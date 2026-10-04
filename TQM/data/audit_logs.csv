@@ -1,0 +1,50 @@
+timestamp,user_id,role,module,action,record_id,result,description
+2026-10-04T10:53:43,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-04T10:53:43,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-04T10:53:43,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-04T10:53:43,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-04T10:53:43,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-04T10:53:43,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-04T10:53:43,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-04T10:53:43,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-04T10:53:43,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-04T10:53:43,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-04T10:53:43,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-04T10:53:43,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-04T10:53:43,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-04T10:53:43,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-04T10:53:43,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-04T10:53:43,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
+2026-10-04T10:53:56,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-04T10:53:56,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-04T10:53:56,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-04T10:53:56,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-04T10:53:56,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-04T10:53:56,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-04T10:53:56,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-04T10:53:56,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-04T10:53:56,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-04T10:53:56,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-04T10:53:56,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-04T10:53:56,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-04T10:53:56,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-04T10:53:56,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-04T10:53:56,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-04T10:53:56,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
+2026-10-04T10:54:44,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-04T10:54:44,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-04T10:54:44,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-04T10:54:44,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-04T10:54:44,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-04T10:54:44,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-04T10:54:44,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-04T10:54:44,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-04T10:54:44,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-04T10:54:44,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-04T10:54:44,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-04T10:54:44,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-04T10:54:44,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-04T10:54:44,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-04T10:54:44,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-04T10:54:44,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
+2026-10-04T10:55:17,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'ajay'

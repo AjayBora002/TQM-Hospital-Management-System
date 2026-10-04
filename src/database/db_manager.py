@@ -133,6 +133,21 @@ def log_audit(conn, table_name, record_id, action, details, user="front_desk_use
         "VALUES (?,?,?,?,?,?)",
         (table_name, record_id, action, details, user, datetime.now().isoformat(timespec="seconds")),
     )
+    # Dual-persistence to TQM audit evidence CSV
+    try:
+        from src.utils.logging_service import log_audit_event
+        log_audit_event(
+            module=table_name,
+            action=action,
+            record_id=record_id or "",
+            result="SUCCESS",
+            description=details,
+            user_id=user,
+            role="Staff"
+        )
+    except Exception as e:
+        print(f"[AuditSync] CSV write notice: {e}")
+
 
 
 if __name__ == "__main__":

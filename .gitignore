@@ -1,8 +1,9 @@
 __pycache__/
 *.pyc
 src/database/hms.db
+tests/*.db
 .vscode/
 *.pdf
 page-*.jpg
 
-Hostel_Management_System_TQM-main/
+

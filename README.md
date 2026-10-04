@@ -29,20 +29,24 @@ Quality is built into every data entry point using **Poka-Yoke (mistake-proofing
 ## How to Run
 
 ```bash
-# 1. Install SQC and Excel dependencies
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Launch the application (database auto-created on first run)
+# 2. Launch the System (Web Portal - Recommended)
+python run.py
+# Open http://127.0.0.1:5001 in your browser
+
+# 3. Launch Desktop GUI (Tkinter)
 python src/main.py
 
-# 3. Run unit tests (uses a throwaway database, never touches hms.db)
-python tests/test_db.py
+# 4. Run automated test suite (20 tests covering CRUD, Validators & TQM logging)
+python -m unittest discover tests
 
-# 4. Regenerate SQC charts from defect data
+# 5. Regenerate SQC Pareto & Fishbone charts
 python sqc/pareto_chart.py
 python sqc/fishbone_diagram.py
 
-# 5. Regenerate FMEA Excel workbook
+# 6. Regenerate FMEA Excel workbook
 python docs/build_fmea.py
 ```
 
@@ -147,11 +151,20 @@ HMS_Project/
 │   ├── Pareto.md
 │   ├── Fishbone.md
 │   ├── PDCA.md
+│   ├── customer_requirements.md
 │   ├── error_prevention.md
 │   ├── process_control.md
 │   ├── process_map.md
+│   ├── quality_features.md
 │   ├── quality_monitoring.md
-│   └── requirements_traceability.md
+│   ├── requirements_traceability.md
+│   ├── software_features_tqm_mapping.md
+│   └── data/                      # TQM SQC CSV Datasets & Audits
+│       ├── audit_logs.csv
+│       ├── checksheet.csv
+│       ├── error_logs.csv
+│       ├── process_metrics.csv
+│       └── quality_metrics.csv
 │
 ├── sqc/
 │   ├── pareto_chart.py            # 80/20 defect frequency analysis
@@ -159,8 +172,10 @@ HMS_Project/
 │   ├── fishbone_diagram.py        # Ishikawa root-cause diagram generator
 │   └── fishbone_diagram.png       # Generated Fishbone diagram
 │
-└── tests/
-    └── test_db.py                 # 10 unit tests across all models (no GUI required)
+└── tests/                         # 20 automated unit tests
+    ├── test_db.py                 # Data access layer & CRUD tests
+    ├── test_validators.py         # Input validation & boundary condition tests
+    └── test_tqm_services.py       # Dual-tier logging and exception handling tests
 ```
 
 ---
