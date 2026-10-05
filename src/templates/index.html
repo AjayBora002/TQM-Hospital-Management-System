@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <div class="brand-icon">+</div>
+            <div class="brand-text">
+                <h1>Hospital Management System</h1>
+                <p>Quality Goal: Q07 - Improve Data Accuracy | Student: Ajay Bora (Roll No. 2410302008)</p>
+            </div>
+        </div>
+        <div class="header-badges">
+            <span class="badge-tqm">BBAT104 TQM</span>
+            <span class="badge-live"><span class="live-dot"></span> System Live</span>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav id="navBar">
+        <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-tab" onclick="switchTab('patients')">👤 Patients</button>
+        <button class="nav-tab" onclick="switchTab('doctors')">👨‍⚕️ Doctors</button>
+        <button class="nav-tab" onclick="switchTab('appointments')">📅 Appointments</button>
+        <button class="nav-tab" onclick="switchTab('rooms')">🏥 Rooms / Wards</button>
+        <button class="nav-tab" onclick="switchTab('staff')">👥 Staff</button>
+        <button class="nav-tab" onclick="switchTab('pharmacy')">💊 Pharmacy</button>
+        <button class="nav-tab" onclick="switchTab('billing')">💳 Billing</button>
+        <button class="nav-tab" onclick="switchTab('audit')">🛡️ Audit Log</button>
+        <button class="nav-tab" onclick="switchTab('defects')">📋 Defect Checksheet</button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main>
+
+        <!-- ================= DASHBOARD TAB ================= -->
+        <section id="tab-dashboard" class="tab-panel active">
+            <div class="grid-dashboard">
+                <div class="stat-card">
+                    <span class="stat-label">Total Patients</span>
+                    <span class="stat-value" id="stat-patients">0</span>
+                </div>
+                <div class="stat-card teal">
+                    <span class="stat-label">Active Doctors</span>
+                    <span class="stat-value" id="stat-doctors">0</span>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-label">Scheduled Appts</span>
+                    <span class="stat-value" id="stat-appointments">0</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Available Rooms</span>
+                    <span class="stat-value" id="stat-rooms">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Low Stock Meds</span>
+                    <span class="stat-value" id="stat-low-stock" style="color: var(--danger);">0</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Revenue Collected</span>
+                    <span class="stat-value" id="stat-revenue">₹0</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Recent Audit Log (Q07 Data Accuracy Verification)</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Refresh Trail</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Table</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-audit-body">
+                                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading audit trail...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3>Q07 Quality Features Active</h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>1. Input Masking</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Phone numbers strictly formatted as +91-XXXXX-XXXXX.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>2. Dropdown Lists</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Enforced sets for Blood Groups, Shifts, Departments.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>3. Auto-Complete</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Real-time search suggestions in appointment bookings.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>4. Confirmation Modals</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Prevents accidental deletes and unauthorized updates.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>5. Immutable Audit Trail</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Every single INSERT, UPDATE, DELETE logged with timestamps.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PATIENTS TAB ================= -->
+        <section id="tab-patients" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="patient-form-title">Register Patient</h3>
+                    <form id="patient-form" onsubmit="savePatient(event)">
+                        <input type="hidden" id="patient-id">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="patient-name" class="form-control" required placeholder="e.g. Ramesh Kumar">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender (Q07 Dropdown) *</label>
+                            <select id="patient-gender" class="form-control" required>
+                                {% for g in genders %}<option value="{{ g }}">{{ g }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date of Birth *</label>
+                            <input type="date" id="patient-dob" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Blood Group (Q07 Dropdown) *</label>
+                            <select id="patient-blood" class="form-control" required>
+                                {% for b in blood_groups %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number (Q07 Masking) *</label>
+                            <input type="text" id="patient-phone" class="form-control phone-mask" required placeholder="+91-XXXXX-XXXXX">
+                            <div class="form-hint">Auto-formats to +91-XXXXX-XXXXX</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="patient-address" class="form-control" placeholder="City, Street">
+                        </div>
+                        <div class="form-group">
+                            <label>Assign Ward / Room</label>
+                            <select id="patient-room" class="form-control">
+                                <option value="">-- None / Outpatient --</option>
+                            </select>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Patient</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetPatientForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Registered Patients</h3>
+                        <input type="text" class="search-input" id="search-patients" placeholder="Search by name..." oninput="loadPatients(this.value)">
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Gender</th>
+                                    <th>DOB</th>
+                                    <th>Blood</th>
+                                    <th>Phone</th>
+                                    <th>Room</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body">
+                                <tr><td colspan="8" style="text-align: center;">Loading patients...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DOCTORS TAB ================= -->
+        <section id="tab-doctors" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="doctor-form-title">Add Doctor</h3>
+                    <form id="doctor-form" onsubmit="saveDoctor(event)">
+                        <input type="hidden" id="doctor-id">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="doctor-name" class="form-control" required placeholder="e.g. Dr. Rajesh Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label>Department (Q07 Dropdown) *</label>
+                            <select id="doctor-department" class="form-control" required>
+                                {% for d in departments %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number (Q07 Masking) *</label>
+                            <input type="text" id="doctor-phone" class="form-control phone-mask" required placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Doctor</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetDoctorForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Medical Staff & Doctors</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Doctor Name</th>
+                                    <th>Department</th>
+                                    <th>Phone</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doctors-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading doctors...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= APPOINTMENTS TAB ================= -->
+        <section id="tab-appointments" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="appt-form-title">Schedule Appointment</h3>
+                    <form id="appt-form" onsubmit="saveAppointment(event)">
+                        <input type="hidden" id="appt-id">
+                        <input type="hidden" id="appt-patient-id">
+                        <div class="form-group">
+                            <label>Patient Name (Q07 Auto-Complete) *</label>
+                            <input type="text" id="appt-patient-name" class="form-control" required placeholder="Type to search patient..." autocomplete="off">
+                            <div id="patient-autocomplete-box" class="autocomplete-items" style="display:none;"></div>
+                            <div class="form-hint">Type 1+ letters to see suggestions</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Doctor (Q07 Dropdown) *</label>
+                            <select id="appt-doctor-id" class="form-control" required>
+                                <option value="">-- Select Doctor --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="appt-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time (HH:MM) *</label>
+                            <input type="time" id="appt-time" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Status (Q07 Dropdown) *</label>
+                            <select id="appt-status" class="form-control" required>
+                                {% for s in appt_statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Book Appointment</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetApptForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Appointments Schedule</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appts-table-body">
+                                <tr><td colspan="7" style="text-align: center;">Loading appointments...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROOMS / WARDS TAB ================= -->
+        <section id="tab-rooms" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="room-form-title">Add Room / Ward</h3>
+                    <form id="room-form" onsubmit="saveRoom(event)">
+                        <input type="hidden" id="room-id">
+                        <div class="form-group">
+                            <label>Room Number *</label>
+                            <input type="text" id="room-number" class="form-control" required placeholder="e.g. 101, ICU-1">
+                        </div>
+                        <div class="form-group">
+                            <label>Room Type (Q07 Dropdown) *</label>
+                            <select id="room-type" class="form-control" required>
+                                {% for t in room_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status (Q07 Dropdown) *</label>
+                            <select id="room-status" class="form-control" required>
+                                {% for s in room_statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rate Per Day (₹) *</label>
+                            <input type="number" step="0.01" id="room-rate" class="form-control" required placeholder="1500.00">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Room</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetRoomForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Rooms & Wards Availability</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Room No.</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Rate / Day</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rooms-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading rooms...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STAFF TAB ================= -->
+        <section id="tab-staff" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="staff-form-title">Add Staff Member</h3>
+                    <form id="staff-form" onsubmit="saveStaff(event)">
+                        <input type="hidden" id="staff-id">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="staff-name" class="form-control" required placeholder="e.g. Sunita Devi">
+                        </div>
+                        <div class="form-group">
+                            <label>Role (Q07 Dropdown) *</label>
+                            <select id="staff-role" class="form-control" required>
+                                {% for r in staff_roles %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Shift (Q07 Dropdown) *</label>
+                            <select id="staff-shift" class="form-control" required>
+                                {% for s in shifts %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number (Q07 Masking) *</label>
+                            <input type="text" id="staff-phone" class="form-control phone-mask" required placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Staff</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetStaffForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Hospital Staff Directory</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Role</th>
+                                    <th>Shift</th>
+                                    <th>Phone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading staff...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PHARMACY TAB ================= -->
+        <section id="tab-pharmacy" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="med-form-title">Add Medicine</h3>
+                    <form id="med-form" onsubmit="saveMedicine(event)">
+                        <input type="hidden" id="med-id">
+                        <div class="form-group">
+                            <label>Medicine Name *</label>
+                            <input type="text" id="med-name" class="form-control" required placeholder="e.g. Paracetamol 500mg">
+                        </div>
+                        <div class="form-group">
+                            <label>Category (Q07 Dropdown) *</label>
+                            <select id="med-category" class="form-control" required>
+                                {% for c in medicine_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Stock Quantity *</label>
+                            <input type="number" id="med-stock" class="form-control" required placeholder="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Unit Price (₹) *</label>
+                            <input type="number" step="0.01" id="med-price" class="form-control" required placeholder="15.50">
+                        </div>
+                        <div class="form-group">
+                            <label>Reorder Level *</label>
+                            <input type="number" id="med-reorder" class="form-control" required value="10">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Medicine</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetMedForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Pharmacy Inventory</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="filterLowStock()">Toggle Low Stock Warning</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Stock</th>
+                                    <th>Unit Price</th>
+                                    <th>Reorder Lvl</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="meds-table-body">
+                                <tr><td colspan="8" style="text-align: center;">Loading medicines...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BILLING TAB ================= -->
+        <section id="tab-billing" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="bill-form-title">Generate Patient Invoice</h3>
+                    <form id="bill-form" onsubmit="saveBill(event)">
+                        <input type="hidden" id="bill-id">
+                        <input type="hidden" id="bill-patient-id">
+                        <div class="form-group">
+                            <label>Patient (Q07 Auto-Complete) *</label>
+                            <input type="text" id="bill-patient-name" class="form-control" required placeholder="Search patient..." autocomplete="off">
+                            <div id="bill-patient-autocomplete" class="autocomplete-items" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Room Charges (₹) *</label>
+                            <input type="number" step="0.01" id="bill-room" class="form-control calc-total" required value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Consultation Fee (₹) *</label>
+                            <input type="number" step="0.01" id="bill-consult" class="form-control calc-total" required value="500">
+                        </div>
+                        <div class="form-group">
+                            <label>Medicine Charges (₹) *</label>
+                            <input type="number" step="0.01" id="bill-med" class="form-control calc-total" required value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Method (Q07 Dropdown) *</label>
+                            <select id="bill-method" class="form-control" required>
+                                {% for m in payment_methods %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Status (Q07 Dropdown) *</label>
+                            <select id="bill-status" class="form-control" required>
+                                {% for s in payment_statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; margin-bottom: 1rem;">
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Calculated Grand Total:</span>
+                            <div id="bill-calculated-total" style="font-size: 1.4rem; font-weight: 700; color: var(--primary);">₹500.00</div>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Generate Bill</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetBillForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Patient Invoices</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bill ID</th>
+                                    <th>Patient</th>
+                                    <th>Room (₹)</th>
+                                    <th>Consult (₹)</th>
+                                    <th>Meds (₹)</th>
+                                    <th>Total (₹)</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bills-table-body">
+                                <tr><td colspan="9" style="text-align: center;">Loading bills...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AUDIT LOG TAB ================= -->
+        <section id="tab-audit" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3>Immutable Audit Trail (Q07 Core Quality Feature)</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Captures user, timestamp, table, record_id, and mutation action for complete regulatory accuracy.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Refresh Trail</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Log ID</th>
+                                <th>Timestamp</th>
+                                <th>Table</th>
+                                <th>Record ID</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                                <th>User</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <tr><td colspan="7" style="text-align: center;">Loading audit logs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DEFECT CHECKSHEET TAB ================= -->
+        <section id="tab-defects" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Log Defect / Data Error</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Feeds the SQC Pareto Analysis checksheet to monitor and minimize data accuracy errors.</p>
+                    <form id="defect-form" onsubmit="saveDefect(event)">
+                        <div class="form-group">
+                            <label>Category (Q07 Dropdown) *</label>
+                            <select id="defect-category" class="form-control" required>
+                                {% for c in defect_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Severity (Q07 Dropdown) *</label>
+                            <select id="defect-severity" class="form-control" required>
+                                {% for s in defect_severities %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Description of Incident *</label>
+                            <textarea id="defect-desc" class="form-control" rows="3" required placeholder="Details of the discrepancy or data validation catch..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Log Defect</button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>SQC Defect Checksheet</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Logged At</th>
+                                    <th>Category</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="defects-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading defects...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Confirmation Modal (Q07 Safeguard) -->
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-icon-danger">⚠️</div>
+                <div class="modal-title" id="modalTitle">Confirm Action</div>
+            </div>
+            <div class="modal-body" id="modalMessage">
+                Are you sure you want to proceed?
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="modalConfirmBtn">Yes, Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast">
+        <span id="toastIcon">✓</span>
+        <span id="toastMsg">Action completed successfully</span>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div>Hospital Management System | BBAT104 Course Project 2026-27 | Baseline: HMS | Quality Goal: Q07 Improve Data Accuracy</div>
+        <div>Ajay Bora (CSE-B) | Single Source of Truth: SQLite Database</div>
+    </footer>
+
+    <!-- ================= CLIENT JAVASCRIPT ================= -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
