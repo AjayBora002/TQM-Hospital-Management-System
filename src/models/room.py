@@ -48,3 +48,19 @@ def delete(room_id):
     log_audit(conn, "rooms", room_id, "DELETE", "Room record deleted")
     conn.commit()
     conn.close()
+
+
+def get_by_id(room_id):
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM rooms WHERE room_id=?", (room_id,)).fetchone()
+    conn.close()
+    return row
+
+
+def set_status(room_id, status):
+    conn = get_connection()
+    conn.execute("UPDATE rooms SET status=? WHERE room_id=?", (status, room_id))
+    log_audit(conn, "rooms", room_id, "UPDATE", f"Room status set to {status}")
+    conn.commit()
+    conn.close()
+

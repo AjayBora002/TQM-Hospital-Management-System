@@ -137,5 +137,75 @@ class TestHMSModels(unittest.TestCase):
         b_id, total = bill.add(pid, 0.0, 300.0, 0.0, "UPI", "Paid")
         self.assertEqual(total, 300.0)
 
+    def test_11_discharge_and_automated_bed_clearance(self):
+        """Test Discharge Summary & Automated Bed Clearance (TQM Q07 enhancement)."""
+        # 1. Create a room
+        r_id = room.add("301", "Private", "Available", 1500)
+        self.assertIsNotNone(r_id)
+
+        # 2. Admit patient into room 301
+        p_id = patient.add("Virendra Singh", "Male", "1980-05-12", "O+",
+                           "+91-98765-43219", "Nainital", r_id)
+        self.assertIsNotNone(p_id)
+
+        # Verify bed is marked Occupied
+        r_obj = room.get_by_id(r_id)
+        self.assertEqual(r_obj["status"], "Occupied")
+
+        # 3. Add bill
+        b_id, total = bill.add(p_id, 3000.0, 500.0, 450.0, "Insurance", "Paid")
+        self.assertEqual(total, 3950.0)
+
+        # 4. Verify discharge summary
+        summary = patient.get_discharge_summary(p_id)
+        self.assertIsNotNone(summary)
+        self.assertEqual(summary["patient_id"], p_id)
+        self.assertEqual(summary["room_number"], "301")
+        self.assertEqual(summary["total_billed"], 3950.0)
+        self.assertFalse(summary["has_unpaid_bills"])
+
+        # 5. Discharge patient and clear bed
+        res = patient.discharge(p_id, discharge_notes="Patient fit for discharge", room_status_after="Available")
+        self.assertIsNotNone(res)
+        self.assertEqual(res["freed_room_number"], "301")
+        self.assertEqual(res["room_status_after"], "Available")
+
+        # 6. Verify room is now Available and patient room_id is cleared
+        r_cleared = room.get_by_id(r_id)
+        self.assertEqual(r_cleared["status"], "Available")
+
+        p_cleared = [p for p in patient.list_all() if p["patient_id"] == p_id][0]
+        self.assertIsNone(p_cleared["room_id"])
+
+        # 7. Audit log verification for automated bed clearance
+        logs = audit.list_audit(20)
+        room_audits = [l for l in logs if l["table_name"] == "rooms" and "Automated bed clearance" in (l["details"] or "")]
+        self.assertGreater(len(room_audits), 0)
+
+    def test_12_room_transfer_and_delete_clearance(self):
+        """Test bed clearance when patient changes rooms or is deleted."""
+        r_a = room.add("302A", "General Ward", "Available", 400)
+        r_b = room.add("302B", "General Ward", "Available", 400)
+
+        p_id = patient.add("Sunil Pant", "Male", "1992-09-10", "A+",
+                           "+91-98711-22334", "Almora", r_a)
+
+        self.assertEqual(room.get_by_id(r_a)["status"], "Occupied")
+        self.assertEqual(room.get_by_id(r_b)["status"], "Available")
+
+        # Transfer patient from room A to room B
+        patient.update(p_id, "Sunil Pant", "Male", "1992-09-10", "A+",
+                       "+91-98711-22334", "Almora", r_b)
+
+        # Room A must be freed to Available, Room B must be Occupied
+        self.assertEqual(room.get_by_id(r_a)["status"], "Available")
+        self.assertEqual(room.get_by_id(r_b)["status"], "Occupied")
+
+        # Delete patient -> Room B must be automatically freed to Available
+        patient.delete(p_id)
+        self.assertEqual(room.get_by_id(r_b)["status"], "Available")
+
+
 if __name__ == "__main__":
     unittest.main()
+

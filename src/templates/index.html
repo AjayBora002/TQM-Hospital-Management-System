@@ -697,6 +697,71 @@
         </div>
     </div>
 
+    <!-- Discharge Summary & Bed Clearance Modal -->
+    <div id="dischargeModal" class="modal-overlay">
+        <div class="modal-card modal-card-lg">
+            <div class="modal-header">
+                <div class="modal-icon-success" style="background:#e0f2fe; color:var(--primary); font-size:1.3rem;">📋</div>
+                <div>
+                    <div class="modal-title">Patient Discharge & Bed Clearance</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Automated Bed Turnover & Clinical Summary</div>
+                </div>
+            </div>
+            <div class="modal-body" style="margin-bottom: 1rem;">
+                <input type="hidden" id="ds-patient-id">
+                
+                <!-- Patient & Bed Details Card -->
+                <div style="background:#f8fafc; border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong id="ds-patient-name" style="font-size:1.05rem; color:var(--text-dark);">Patient Name</strong>
+                        <span id="ds-patient-badge" class="badge badge-info">ID #--</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; font-size:0.84rem; color:var(--text-muted);">
+                        <div><strong>Phone:</strong> <span id="ds-patient-phone">--</span></div>
+                        <div><strong>Blood Group:</strong> <span id="ds-patient-blood">--</span></div>
+                        <div><strong>Admitted Since:</strong> <span id="ds-admit-date">--</span></div>
+                        <div><strong>Allocated Bed:</strong> <span id="ds-room-info" style="color:var(--primary); font-weight:600;">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Billing & Financial Clearance Status -->
+                <div style="background:#ffffff; border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.85rem; font-weight:600; color:var(--text-dark);">Financial Clearance Status</span>
+                        <span id="ds-billing-badge" class="badge">Checking...</span>
+                    </div>
+                    <div style="display:flex; gap:16px; font-size:0.82rem; color:var(--text-muted);">
+                        <div>Total Billed: <strong id="ds-total-billed" style="color:var(--text-dark);">₹0.00</strong></div>
+                        <div>Total Paid: <strong id="ds-total-paid" style="color:var(--success);">₹0.00</strong></div>
+                        <div>Outstanding: <strong id="ds-balance-due" style="color:var(--danger);">₹0.00</strong></div>
+                    </div>
+                </div>
+
+                <!-- Post-Discharge Bed Status Selection -->
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label style="font-size:0.85rem; font-weight:600; color:var(--text-dark);">Post-Discharge Bed Turnover Status *</label>
+                    <select id="ds-room-status" class="form-control" style="font-size:0.88rem;">
+                        <option value="Available">Available (Immediately ready for new patient admission)</option>
+                        <option value="Cleaning / Sanitizing">Cleaning / Sanitizing (Housekeeping inspection required)</option>
+                    </select>
+                    <div class="form-hint">Selected room will be automatically cleared and its inventory state updated.</div>
+                </div>
+
+                <!-- Doctor's Discharge Notes -->
+                <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.85rem; font-weight:600; color:var(--text-dark);">Discharge Advice / Clinical Instructions</label>
+                    <textarea id="ds-notes" class="form-control" rows="3" placeholder="e.g. Condition stabilized. Continue prescribed medications for 5 days. Follow-up consultation in 1 week."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeDischargeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="ds-confirm-btn" onclick="executeDischarge()" style="background-color:var(--primary);">
+                    ✓ Confirm Discharge & Release Bed
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification Toast -->
     <div id="toast">
         <span id="toastIcon">✓</span>

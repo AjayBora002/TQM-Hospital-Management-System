@@ -61,6 +61,7 @@ class PatientsTab(ttk.Frame):
         btns.grid(row=4, column=0, columnspan=4, pady=8)
         ttk.Button(btns, text="Add", command=self.add_patient).pack(side="left", padx=4)
         ttk.Button(btns, text="Update Selected", command=self.update_patient).pack(side="left", padx=4)
+        ttk.Button(btns, text="Discharge Patient", command=self.discharge_patient).pack(side="left", padx=4)
         ttk.Button(btns, text="Delete Selected", command=self.delete_patient).pack(side="left", padx=4)
         ttk.Button(btns, text="Clear Form", command=self.clear_form).pack(side="left", padx=4)
         ttk.Button(btns, text="Refresh Rooms", command=self._load_room_choices).pack(side="left", padx=4)
@@ -169,6 +170,39 @@ class PatientsTab(ttk.Frame):
         self.clear_form()
         self.refresh()
 
+    def discharge_patient(self):
+        if self.selected_id is None:
+            messagebox.showwarning("No Selection", "Select a patient row first.")
+            return
+        summary = patient_model.get_discharge_summary(self.selected_id)
+        if not summary:
+            messagebox.showerror("Error", "Patient record not found.")
+            return
+        if not summary["room_id"]:
+            messagebox.showinfo("Discharge Info", f"{summary['full_name']} is an outpatient and has no bed assigned.")
+            return
+
+        balance_msg = f"\nOutstanding Balance: Rs {summary['balance_due']}" if summary['has_unpaid_bills'] else "\nBilling Status: Cleared (Zero Balance)"
+        confirm_msg = (
+            f"Confirm discharge for {summary['full_name']} (ID #{self.selected_id})?\n\n"
+            f"Allocated Bed: Room {summary['room_number']} ({summary['room_type']})"
+            f"{balance_msg}\n\n"
+            "This will automatically free Room "
+            f"#{summary['room_number']} and set its status back to 'Available'."
+        )
+        if not messagebox.askyesno("Confirm Discharge & Bed Clearance", confirm_msg):
+            return
+
+        res = patient_model.discharge(self.selected_id)
+        messagebox.showinfo(
+            "Discharged",
+            f"Patient {res['full_name']} discharged successfully.\n"
+            f"Room #{res['freed_room_number']} is now Available."
+        )
+        self.clear_form()
+        self._load_room_choices()
+        self.refresh()
+
     def delete_patient(self):
         if self.selected_id is None:
             messagebox.showwarning("No Selection", "Select a patient row first.")
@@ -176,6 +210,8 @@ class PatientsTab(ttk.Frame):
         if not confirm_delete("patient", self.selected_id):
             return
         patient_model.delete(self.selected_id)
-        messagebox.showinfo("Deleted", "Patient record deleted.")
+        messagebox.showinfo("Deleted", "Patient record deleted and allocated bed cleared.")
         self.clear_form()
+        self._load_room_choices()
         self.refresh()
+

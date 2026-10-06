@@ -48,3 +48,102 @@ timestamp,user_id,role,module,action,record_id,result,description
 2026-10-04T10:54:44,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
 2026-10-04T10:54:44,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
 2026-10-04T10:55:17,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'ajay'
+2026-10-06T23:18:11,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-06T23:18:11,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-06T23:18:11,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-06T23:18:11,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-06T23:18:11,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-06T23:18:11,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-06T23:18:11,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-06T23:18:11,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-06T23:18:11,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-06T23:18:11,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-06T23:18:11,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-06T23:18:11,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-06T23:18:11,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-06T23:18:11,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-06T23:18:11,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-06T23:18:11,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
+2026-10-06T23:21:59,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-06T23:21:59,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-06T23:21:59,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-06T23:21:59,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-06T23:21:59,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-06T23:21:59,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-06T23:21:59,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-06T23:21:59,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-06T23:21:59,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-06T23:21:59,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-06T23:21:59,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-06T23:21:59,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-06T23:21:59,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-06T23:21:59,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-06T23:21:59,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-06T23:21:59,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-06T23:22:20,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-06T23:22:20,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-06T23:22:20,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-06T23:22:20,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-06T23:22:20,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-06T23:22:20,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-06T23:22:20,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-06T23:22:20,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-06T23:22:20,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-06T23:22:20,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-06T23:22:20,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-06T23:22:20,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,INSERT,3,SUCCESS,Added room '301'
+2026-10-06T23:22:20,front_desk_user,Staff,patients,INSERT,3,SUCCESS,Added patient 'Virendra Singh'
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,3,SUCCESS,Bed allocated (Occupied) for admitted patient 'Virendra Singh'
+2026-10-06T23:22:20,front_desk_user,Staff,bills,INSERT,3,SUCCESS,Generated bill (total 3950.0)
+2026-10-06T23:22:20,front_desk_user,Staff,patients,UPDATE,3,SUCCESS,Discharged patient 'Virendra Singh'. Released Room #301 (marked as Available). Advice: Patient fit for discharge
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,3,SUCCESS,Automated bed clearance: Room #301 set to 'Available' upon patient discharge
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,INSERT,4,SUCCESS,Added room '302A'
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,INSERT,5,SUCCESS,Added room '302B'
+2026-10-06T23:22:20,front_desk_user,Staff,patients,INSERT,4,SUCCESS,Added patient 'Sunil Pant'
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,4,SUCCESS,Bed allocated (Occupied) for admitted patient 'Sunil Pant'
+2026-10-06T23:22:20,front_desk_user,Staff,patients,UPDATE,4,SUCCESS,Patient record updated
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,4,SUCCESS,Automated bed clearance: Room freed (Available) on patient room transfer
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,5,SUCCESS,Bed allocated (Occupied) for admitted patient 'Sunil Pant'
+2026-10-06T23:22:20,front_desk_user,Staff,rooms,UPDATE,5,SUCCESS,Automated bed clearance: Room freed (Available) due to deletion of patient 'Sunil Pant'
+2026-10-06T23:22:20,front_desk_user,Staff,patients,DELETE,4,SUCCESS,Patient record deleted
+2026-10-06T23:22:20,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description
+2026-10-06T23:23:00,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-06T23:23:00,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Aarav Sharma'
+2026-10-06T23:23:00,front_desk_user,Staff,rooms,UPDATE,1,SUCCESS,Bed allocated (Occupied) for admitted patient 'Aarav Sharma'
+2026-10-06T23:23:00,front_desk_user,Staff,patients,UPDATE,2,SUCCESS,Discharged patient 'Aarav Sharma'. Released Room #101 (marked as Available). Advice: Full recovery
+2026-10-06T23:23:00,front_desk_user,Staff,rooms,UPDATE,1,SUCCESS,Automated bed clearance: Room #101 set to 'Available' upon patient discharge
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,INSERT,1,SUCCESS,Added room '101'
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,INSERT,2,SUCCESS,Added room '201'
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,UPDATE,2,SUCCESS,Room 201 status updated to Occupied
+2026-10-06T23:24:23,front_desk_user,Staff,doctors,INSERT,1,SUCCESS,Added doctor 'Dr. Neha Verma'
+2026-10-06T23:24:23,front_desk_user,Staff,patients,INSERT,1,SUCCESS,Added patient 'Anita Devi'
+2026-10-06T23:24:23,front_desk_user,Staff,patients,UPDATE,1,SUCCESS,Patient record updated
+2026-10-06T23:24:23,front_desk_user,Staff,patients,INSERT,2,SUCCESS,Added patient 'Ramesh Chandra'
+2026-10-06T23:24:23,front_desk_user,Staff,doctors,INSERT,2,SUCCESS,Added doctor 'Dr. S. K. Joshi'
+2026-10-06T23:24:23,front_desk_user,Staff,appointments,INSERT,1,SUCCESS,Appointment booked
+2026-10-06T23:24:23,front_desk_user,Staff,appointments,UPDATE,1,SUCCESS,Appointment updated
+2026-10-06T23:24:23,front_desk_user,Staff,staff,INSERT,1,SUCCESS,Added staff 'Pooja Sharma'
+2026-10-06T23:24:23,front_desk_user,Staff,medicines,INSERT,1,SUCCESS,Added medicine 'Paracetamol 650mg'
+2026-10-06T23:24:23,front_desk_user,Staff,bills,INSERT,1,SUCCESS,Generated bill (total 1750.0)
+2026-10-06T23:24:23,front_desk_user,Staff,bills,UPDATE,1,SUCCESS,Payment status set to Paid
+2026-10-06T23:24:23,front_desk_user,Staff,bills,INSERT,2,SUCCESS,Generated bill (total 300.0)
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,INSERT,3,SUCCESS,Added room '301'
+2026-10-06T23:24:23,front_desk_user,Staff,patients,INSERT,3,SUCCESS,Added patient 'Virendra Singh'
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,UPDATE,3,SUCCESS,Bed allocated (Occupied) for admitted patient 'Virendra Singh'
+2026-10-06T23:24:23,front_desk_user,Staff,bills,INSERT,3,SUCCESS,Generated bill (total 3950.0)
+2026-10-06T23:24:23,front_desk_user,Staff,patients,UPDATE,3,SUCCESS,Discharged patient 'Virendra Singh'. Released Room #301 (marked as Available). Advice: Patient fit for discharge
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,UPDATE,3,SUCCESS,Automated bed clearance: Room #301 set to 'Available' upon patient discharge
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,INSERT,4,SUCCESS,Added room '302A'
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,INSERT,5,SUCCESS,Added room '302B'
+2026-10-06T23:24:23,front_desk_user,Staff,patients,INSERT,4,SUCCESS,Added patient 'Sunil Pant'
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,UPDATE,4,SUCCESS,Bed allocated (Occupied) for admitted patient 'Sunil Pant'
+2026-10-06T23:24:23,front_desk_user,Staff,patients,UPDATE,4,SUCCESS,Patient record updated
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,UPDATE,4,SUCCESS,Automated bed clearance: Room freed (Available) on patient room transfer
+2026-10-06T23:24:23,front_desk_user,Staff,rooms,UPDATE,5,SUCCESS,Bed allocated (Occupied) for admitted patient 'Sunil Pant'
+2026-10-06T23:24:24,front_desk_user,Staff,rooms,UPDATE,5,SUCCESS,Automated bed clearance: Room freed (Available) due to deletion of patient 'Sunil Pant'
+2026-10-06T23:24:24,front_desk_user,Staff,patients,DELETE,4,SUCCESS,Patient record deleted
+2026-10-06T23:24:24,front_desk_user,Staff,TEST_MODULE,TEST_ACTION,999,SUCCESS,Unit test description

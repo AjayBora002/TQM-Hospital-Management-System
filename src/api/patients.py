@@ -31,11 +31,6 @@ def create_patient():
     room_id = data.get("room_id")
     if room_id:
         room_id = int(room_id)
-        # Update room status to Occupied
-        conn = get_connection()
-        conn.execute("UPDATE rooms SET status='Occupied' WHERE room_id=?", (room_id,))
-        conn.commit()
-        conn.close()
 
     new_id = patient_model.add(
         full_name=name,
@@ -70,3 +65,21 @@ def update_patient(patient_id):
 def delete_patient(patient_id):
     patient_model.delete(patient_id)
     return jsonify({"status": "deleted"})
+
+@patients_bp.route("/patients/<int:patient_id>/discharge-summary", methods=["GET"])
+def get_discharge_summary(patient_id):
+    summary = patient_model.get_discharge_summary(patient_id)
+    if not summary:
+        return jsonify({"error": "Patient not found"}), 404
+    return jsonify(summary)
+
+@patients_bp.route("/patients/<int:patient_id>/discharge", methods=["POST"])
+def discharge_patient(patient_id):
+    data = request.json or {}
+    notes = data.get("discharge_notes", "").strip()
+    room_status_after = data.get("room_status", "Available")
+    result = patient_model.discharge(patient_id, discharge_notes=notes, room_status_after=room_status_after)
+    if not result:
+        return jsonify({"error": "Patient not found"}), 404
+    return jsonify({"status": "discharged", "details": result})
+

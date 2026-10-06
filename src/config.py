@@ -18,7 +18,7 @@ DEPARTMENTS = ["Cardiology", "Orthopedics", "Pediatrics", "General Medicine",
                "Neurology", "ENT", "Dermatology", "Gynecology"]
 APPT_STATUS = ["Scheduled", "Completed", "Cancelled"]
 ROOM_TYPES = ["General Ward", "Semi-Private", "Private", "ICU", "Operation Theatre"]
-ROOM_STATUS = ["Available", "Occupied", "Under Maintenance"]
+ROOM_STATUS = ["Available", "Occupied", "Under Maintenance", "Cleaning / Sanitizing"]
 STAFF_ROLES = ["Nurse", "Receptionist", "Pharmacist", "Lab Technician",
                "Ward Boy", "Administrator"]
 SHIFTS = ["Morning", "Evening", "Night"]

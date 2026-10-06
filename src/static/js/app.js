@@ -176,10 +176,13 @@ async function loadPatients(query = '') {
                 <td>${p.dob}</td>
                 <td><span class="badge badge-info">${p.blood_group}</span></td>
                 <td>${p.phone}</td>
-                <td>${p.room_id ? 'Room #' + p.room_id : '<span style="color:var(--text-muted);">-</span>'}</td>
+                <td>${p.room_id ? `<span class="badge badge-purple">Room ${p.room_number || p.room_id} (${p.room_type || 'Ward'})</span>` : '<span style="color:var(--text-muted); font-size:0.8rem;">Outpatient</span>'}</td>
                 <td>
-                    <button class="btn btn-secondary btn-sm" onclick='editPatient(${JSON.stringify(p)})'>Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="confirmDeletePatient(${p.patient_id}, '${p.full_name}')">Del</button>
+                    <div style="display:inline-flex; gap:4px; align-items:center;">
+                        <button class="btn btn-secondary btn-sm" onclick='editPatient(${JSON.stringify(p)})'>Edit</button>
+                        ${p.room_id ? `<button class="btn btn-warning btn-sm" onclick="openDischargeModal(${p.patient_id})" title="Discharge patient and clear room">🛏️ Discharge</button>` : ''}
+                        <button class="btn btn-danger btn-sm" onclick="confirmDeletePatient(${p.patient_id}, '${p.full_name}')">Del</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
@@ -222,6 +225,8 @@ async function savePatient(e) {
         showToast(id ? 'Patient updated successfully' : 'Patient registered successfully');
         resetPatientForm();
         loadPatients();
+        loadRooms();
+        loadRoomChoices();
         loadDashboardData();
     } else {
         const err = await res.json();
@@ -248,11 +253,13 @@ function resetPatientForm() {
 }
 
 function confirmDeletePatient(id, name) {
-    openConfirmModal('Delete Patient Record', `Are you sure you want to permanently remove patient '${name}'? This action is audited.`, async () => {
+    openConfirmModal('Delete Patient Record', `Are you sure you want to permanently remove patient '${name}'? Any allocated bed will be automatically cleared. This action is audited.`, async () => {
         const res = await fetch(`/api/patients/${id}`, { method: 'DELETE' });
         if (res.ok) {
-            showToast('Patient deleted');
+            showToast('Patient deleted and allocated room cleared');
             loadPatients();
+            loadRooms();
+            loadRoomChoices();
             loadDashboardData();
         } else {
             showToast('Failed to delete patient', true);
@@ -646,8 +653,11 @@ async function loadBills() {
             <td><span class="badge badge-info">${b.payment_method}</span></td>
             <td><span class="badge ${b.payment_status === 'Paid' ? 'badge-success' : 'badge-warning'}">${b.payment_status}</span></td>
             <td>
-                <button class="btn btn-secondary btn-sm" onclick="togglePaymentStatus(${b.bill_id}, '${b.payment_status}')">${b.payment_status === 'Paid' ? 'Mark Pending' : 'Mark Paid'}</button>
-                <button class="btn btn-danger btn-sm" onclick="confirmDeleteBill(${b.bill_id})">Del</button>
+                <div style="display:inline-flex; gap:4px; align-items:center;">
+                    <button class="btn btn-secondary btn-sm" onclick="togglePaymentStatus(${b.bill_id}, '${b.payment_status}')">${b.payment_status === 'Paid' ? 'Mark Pending' : 'Mark Paid'}</button>
+                    <button class="btn btn-warning btn-sm" onclick="openDischargeModal(${b.patient_id})" title="Discharge patient and verify bed release">🛏️ Discharge</button>
+                    <button class="btn btn-danger btn-sm" onclick="confirmDeleteBill(${b.bill_id})">Del</button>
+                </div>
             </td>
         </tr>
     `).join('');
@@ -764,6 +774,91 @@ async function saveDefect(e) {
         loadDefects();
     } else {
         showToast('Failed to log defect', true);
+    }
+}
+
+// --- DISCHARGE & BED CLEARANCE MODAL LOGIC ---
+async function openDischargeModal(patientId) {
+    try {
+        const res = await fetch(`/api/patients/${patientId}/discharge-summary`);
+        if (!res.ok) {
+            showToast('Unable to fetch discharge summary', true);
+            return;
+        }
+        const data = await res.json();
+
+        document.getElementById('ds-patient-id').value = data.patient_id;
+        document.getElementById('ds-patient-name').innerText = data.full_name;
+        document.getElementById('ds-patient-badge').innerText = `ID #${data.patient_id}`;
+        document.getElementById('ds-patient-phone').innerText = data.phone || '-';
+        document.getElementById('ds-patient-blood').innerText = data.blood_group || '-';
+        document.getElementById('ds-admit-date').innerText = (data.admission_date || '').replace('T', ' ');
+
+        const roomLabel = data.room_number ? `Room ${data.room_number} (${data.room_type || 'Ward'})` : 'No Bed Currently Assigned';
+        document.getElementById('ds-room-info').innerText = roomLabel;
+
+        document.getElementById('ds-total-billed').innerText = `₹${data.total_billed.toFixed(2)}`;
+        document.getElementById('ds-total-paid').innerText = `₹${data.total_paid.toFixed(2)}`;
+        document.getElementById('ds-balance-due').innerText = `₹${data.balance_due.toFixed(2)}`;
+
+        const billingBadge = document.getElementById('ds-billing-badge');
+        if (data.has_unpaid_bills || data.balance_due > 0) {
+            billingBadge.className = 'badge badge-warning';
+            billingBadge.innerText = `⚠️ Outstanding Balance: ₹${data.balance_due.toFixed(2)}`;
+        } else {
+            billingBadge.className = 'badge badge-success';
+            billingBadge.innerText = '✓ Billing Cleared (Zero Balance)';
+        }
+
+        document.getElementById('ds-room-status').value = 'Available';
+        document.getElementById('ds-notes').value = '';
+        document.getElementById('dischargeModal').classList.add('show');
+    } catch (err) {
+        console.error(err);
+        showToast('Error opening discharge summary', true);
+    }
+}
+
+function closeDischargeModal() {
+    document.getElementById('dischargeModal').classList.remove('show');
+}
+
+async function executeDischarge() {
+    const patientId = document.getElementById('ds-patient-id').value;
+    if (!patientId) return;
+
+    const notes = document.getElementById('ds-notes').value.trim();
+    const roomStatus = document.getElementById('ds-room-status').value;
+
+    try {
+        const res = await fetch(`/api/patients/${patientId}/discharge`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                discharge_notes: notes,
+                room_status: roomStatus
+            })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            const roomMsg = data.details.freed_room_number
+                ? ` Room #${data.details.freed_room_number} cleared and set to ${roomStatus}.`
+                : '';
+            showToast(`Patient discharged successfully!${roomMsg}`);
+            closeDischargeModal();
+            loadPatients();
+            loadRooms();
+            loadRoomChoices();
+            loadBills();
+            loadDashboardData();
+        } else {
+            const err = await res.json();
+            showToast(err.error || 'Failed to discharge patient', true);
+        }
+    } catch (err) {
+        console.error(err);
+        showToast('Error executing discharge', true);
     }
 }
 

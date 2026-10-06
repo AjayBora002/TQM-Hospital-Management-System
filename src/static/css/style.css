@@ -483,6 +483,10 @@ tr:hover td {
     animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.modal-card-lg {
+    max-width: 560px;
+}
+
 @keyframes modalPop {
     from { transform: scale(0.92); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
