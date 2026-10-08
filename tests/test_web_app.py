@@ -21,18 +21,21 @@ class TestWebApp(unittest.TestCase):
         self.assertIn(b"Hospital Management System", response.data)
         self.assertIn(b"style.css", response.data)
         self.assertIn(b"app.js", response.data)
+        response.close()
 
     def test_static_css(self):
         """Verify the extracted CSS stylesheet is served properly."""
         response = self.client.get("/static/css/style.css")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"--primary:", response.data)
+        response.close()
 
     def test_static_js(self):
         """Verify the extracted client JavaScript file is served properly."""
         response = self.client.get("/static/js/app.js")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"loadDashboardData", response.data)
+        response.close()
 
     def test_dashboard_stats_api(self):
         """Verify the dashboard stats API endpoint returns valid metrics."""

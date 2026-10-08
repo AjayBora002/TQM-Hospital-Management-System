@@ -127,12 +127,15 @@ HMS_Project/
 │   │
 │   └── utils/
 │       └── validators.py          # Shared date, time, phone, and field validation rules
-│
 ├── docs/
 │   ├── SRS.md                     # Software Requirements Specification
 │   ├── SRS_HMS_AjayBora.docx      # Formal SRS document
 │   ├── architecture.md            # Full layer diagram and file-by-file responsibilities
 │   ├── architecture.png           # System architecture flowchart image
+│   ├── USER_MANUAL.md             # Comprehensive User and Operations Manual
+│   ├── GITHUB_ISSUES.md           # Defect register mapped to checksheets & commits
+│   ├── VIVA_DEFENSE_GUIDE.md      # Oral examination & live demonstration defense guide
+│   ├── PDCA_Log.md                # Continuous improvement log
 │   ├── ER_Diagram.md              # Entity-relationship diagram (Mermaid)
 │   ├── sipoc_diagram.png          # SIPOC process map image
 │   ├── FMEA_RiskAudit.xlsx        # FMEA matrix with formula-driven RPN scores
@@ -151,11 +154,9 @@ HMS_Project/
 │   ├── Pareto.md
 │   ├── Fishbone.md
 │   ├── PDCA.md
-│   ├── customer_requirements.md
 │   ├── error_prevention.md
 │   ├── process_control.md
 │   ├── process_map.md
-│   ├── quality_features.md
 │   ├── quality_monitoring.md
 │   ├── requirements_traceability.md
 │   ├── software_features_tqm_mapping.md
@@ -172,34 +173,36 @@ HMS_Project/
 │   ├── fishbone_diagram.py        # Ishikawa root-cause diagram generator
 │   └── fishbone_diagram.png       # Generated Fishbone diagram
 │
-└── tests/                         # 20 automated unit tests
+└── tests/                         # 28 automated unit & integration tests
     ├── test_db.py                 # Data access layer & CRUD tests
     ├── test_validators.py         # Input validation & boundary condition tests
-    └── test_tqm_services.py       # Dual-tier logging and exception handling tests
+    ├── test_tqm_services.py       # Dual-tier logging and exception handling tests
+    └── test_web_app.py            # Web application endpoints & static asset tests
 ```
 
 ---
 
-## Design Rules
+## Evaluation Deliverables & Marking Scheme (70 Raw Marks)
 
-1. **Models never import Tkinter.** All SQL lives in `src/models/` only.
-2. **Views never run raw SQL.** Data access always goes through a model function.
-3. **Widgets are written once.** `PhoneMaskEntry`, `AutocompleteEntry`, and `confirm_dialog` are defined once and imported wherever needed — not duplicated per form.
-4. **Dropdowns are defined once.** All fixed value lists live in `src/config.py`.
-5. **`log_audit()` is called inside the model, not the view.** The audit trail cannot be bypassed by a view that forgets to call it.
+| Milestone / Deliverable | Max Marks | Mapped COs | Required Artefacts & Submission Files | Status |
+|---|:---:|:---:|---|:---:|
+| **Review 1: Setup & SRS** | 10 Marks | CO1 | GitHub repo initialized, System Architecture Flowchart (`docs/architecture.png`, `docs/architecture.md`), SRS document (`docs/SRS.md`, `docs/SRS_HMS_AjayBora.docx`), Scope definition. | Completed |
+| **Review 2: Base System & CRUD** | 15 Marks | CO1, CO2 | 8 Core CRUD modules + 5 assigned Q07 features (Input Masking, Dropdown Lists, Auto-Complete, Confirmation Modals, Audit Logs). Verified via `tests/test_db.py` & web portal. | Completed |
+| **Review 3: FMEA & Risk Audit** | 15 Marks | CO2 | Formula-driven FMEA Matrix with RPN calculations (`docs/FMEA_RiskAudit.xlsx`, `TQM/FMEA.md`), SIPOC Process Map (`TQM/SIPOC.md`, `docs/sipoc_diagram.png`), CTQ Tree (`TQM/CTQ_Tree.md`), Defect Checksheet (`TQM/data/checksheet.csv`). | Completed |
+| **Review 4: SQC & Continuous Improvement** | 15 Marks | CO2, CO3 | Pareto Chart with 80/20 analysis (`sqc/pareto_chart.png`, `TQM/Pareto.md`), Ishikawa Fishbone Root-Cause Diagram (`sqc/fishbone_diagram.png`, `TQM/Fishbone.md`), PDCA continuous improvement cycle log (`TQM/PDCA.md`, `docs/PDCA_Log.md`). | Completed |
+| **Final Demonstration & Viva** | 10 Marks | CO3 | Live software demonstration (Web Portal `python run.py` / Desktop GUI `python src/main.py`), bug-handling defense, oral viva guide on TQM tools selection (`docs/VIVA_DEFENSE_GUIDE.md`). | Ready |
+| **Documentation & GitHub Health** | 5 Marks | CO3 | Comprehensive `README.md`, User & Operations Manual (`docs/USER_MANUAL.md`), ≥30 meaningful commit history (>50 commits), Defect Register / GitHub Issues (`docs/GITHUB_ISSUES.md`). | Completed |
+| **Total Assessment** | **70 Marks** | **CO1, CO2, CO3** | All 4 reviews, live demonstration, and documentation artifacts fully synchronized. | **100% Complete** |
 
 ---
 
-## TQM Deliverables Map
+## Architectural Design Rules
 
-| Review | Requirement | Files |
-|---|---|---|
-| Review 1 | SRS, Architecture, Scope | `docs/SRS.md`, `docs/SRS_HMS_AjayBora.docx`, `docs/architecture.md`, `docs/architecture.png` |
-| Review 2 | Base CRUD + 5 Q07 Features | `src/` — all models and views; `tests/test_db.py` |
-| Review 3 | FMEA + SIPOC + CTQ + Defect Logging | `TQM/FMEA.md`, `docs/FMEA_RiskAudit.xlsx`, `TQM/SIPOC.md`, `TQM/CTQ_Tree.md`, `docs/sipoc_diagram.png` |
-| Review 4 | Pareto + Fishbone + Checksheets + PDCA | `sqc/pareto_chart.py/.png`, `sqc/fishbone_diagram.py/.png`, `TQM/PDCA.md` |
-| Demo & Viva | Live demonstration | Run `src/main.py`; walk through all 10 tabs and each Q07 feature |
-| GitHub Health | README, ≥30 commits | This file; commit history on `main` branch |
+1. **Models never import UI frameworks.** All SQL lives exclusively in `src/models/`.
+2. **Views never execute raw SQL.** Data access always goes through validated model functions.
+3. **Poka-Yoke widgets are written once.** `PhoneMaskEntry`, `AutocompleteEntry`, and `ConfirmDialog` are centralized in `src/widgets/` and imported everywhere.
+4. **Categorical dropdowns are single-source.** All fixed value lists live in `src/config.py`.
+5. **Atomic audit logging.** `log_audit()` is called inside the model within the database transaction, preventing unlogged side-effects.
 
 ---
 

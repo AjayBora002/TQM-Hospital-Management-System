@@ -43,7 +43,11 @@ ax2.axhline(80, color="gray", linestyle="--", linewidth=1)
 ax2.text(len(categories) - 1, 82, "80% line", fontsize=8, color="gray")
 
 fig.tight_layout()
-fig.savefig("pareto_chart.png", dpi=150)
-print("Saved pareto_chart.png")
+import os
+
+out_dir = os.path.dirname(os.path.abspath(__file__))
+out_path = os.path.join(out_dir, "pareto_chart.png")
+fig.savefig(out_path, dpi=150)
+print(f"Saved {out_path}")
 print("Vital few (>=80% cumulative):",
       [categories[i] for i in range(len(categories)) if cumulative_pct[i] <= 80 or i == 0])

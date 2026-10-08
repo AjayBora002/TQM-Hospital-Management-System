@@ -109,5 +109,9 @@ for r in range(1, ws2.max_row + 1):
     for c in range(1, len(cs_headers) + 1):
         ws2.cell(row=r, column=c).border = border
 
-wb.save("FMEA_RiskAudit.xlsx")
-print("Saved FMEA_RiskAudit.xlsx")
+import os
+
+out_dir = os.path.dirname(os.path.abspath(__file__))
+out_path = os.path.join(out_dir, "FMEA_RiskAudit.xlsx")
+wb.save(out_path)
+print(f"Saved {out_path}")

@@ -52,5 +52,9 @@ ax.set_title("Ishikawa (Fishbone) Diagram -- Root Causes of Data Inaccuracy in H
               fontsize=13, fontweight="bold")
 
 fig.tight_layout()
-fig.savefig("fishbone_diagram.png", dpi=150)
-print("Saved fishbone_diagram.png")
+import os
+
+out_dir = os.path.dirname(os.path.abspath(__file__))
+out_path = os.path.join(out_dir, "fishbone_diagram.png")
+fig.savefig(out_path, dpi=150)
+print(f"Saved {out_path}")
