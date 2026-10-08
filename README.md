@@ -134,8 +134,6 @@ HMS_Project/
 │   ├── architecture.png           # System architecture flowchart image
 │   ├── USER_MANUAL.md             # Comprehensive User and Operations Manual
 │   ├── GITHUB_ISSUES.md           # Defect register mapped to checksheets & commits
-│   ├── VIVA_DEFENSE_GUIDE.md      # Oral examination & live demonstration defense guide
-│   ├── PDCA_Log.md                # Continuous improvement log
 │   ├── ER_Diagram.md              # Entity-relationship diagram (Mermaid)
 │   ├── sipoc_diagram.png          # SIPOC process map image
 │   ├── FMEA_RiskAudit.xlsx        # FMEA matrix with formula-driven RPN scores
@@ -189,8 +187,8 @@ HMS_Project/
 | **Review 1: Setup & SRS** | 10 Marks | CO1 | GitHub repo initialized, System Architecture Flowchart (`docs/architecture.png`, `docs/architecture.md`), SRS document (`docs/SRS.md`, `docs/SRS_HMS_AjayBora.docx`), Scope definition. | Completed |
 | **Review 2: Base System & CRUD** | 15 Marks | CO1, CO2 | 8 Core CRUD modules + 5 assigned Q07 features (Input Masking, Dropdown Lists, Auto-Complete, Confirmation Modals, Audit Logs). Verified via `tests/test_db.py` & web portal. | Completed |
 | **Review 3: FMEA & Risk Audit** | 15 Marks | CO2 | Formula-driven FMEA Matrix with RPN calculations (`docs/FMEA_RiskAudit.xlsx`, `TQM/FMEA.md`), SIPOC Process Map (`TQM/SIPOC.md`, `docs/sipoc_diagram.png`), CTQ Tree (`TQM/CTQ_Tree.md`), Defect Checksheet (`TQM/data/checksheet.csv`). | Completed |
-| **Review 4: SQC & Continuous Improvement** | 15 Marks | CO2, CO3 | Pareto Chart with 80/20 analysis (`sqc/pareto_chart.png`, `TQM/Pareto.md`), Ishikawa Fishbone Root-Cause Diagram (`sqc/fishbone_diagram.png`, `TQM/Fishbone.md`), PDCA continuous improvement cycle log (`TQM/PDCA.md`, `docs/PDCA_Log.md`). | Completed |
-| **Final Demonstration & Viva** | 10 Marks | CO3 | Live software demonstration (Web Portal `python run.py` / Desktop GUI `python src/main.py`), bug-handling defense, oral viva guide on TQM tools selection (`docs/VIVA_DEFENSE_GUIDE.md`). | Ready |
+| **Review 4: SQC & Continuous Improvement** | 15 Marks | CO2, CO3 | Pareto Chart with 80/20 analysis (`sqc/pareto_chart.png`, `TQM/Pareto.md`), Ishikawa Fishbone Root-Cause Diagram (`sqc/fishbone_diagram.png`, `TQM/Fishbone.md`), PDCA continuous improvement cycle log (`TQM/PDCA.md`). | Completed |
+| **Final Demonstration & Viva** | 10 Marks | CO3 | Live software demonstration (Web Portal `python run.py` / Desktop GUI `python src/main.py`), bug-handling defense, oral viva defense on TQM tools selection. | Ready |
 | **Documentation & GitHub Health** | 5 Marks | CO3 | Comprehensive `README.md`, User & Operations Manual (`docs/USER_MANUAL.md`), ≥30 meaningful commit history (>50 commits), Defect Register / GitHub Issues (`docs/GITHUB_ISSUES.md`). | Completed |
 | **Total Assessment** | **70 Marks** | **CO1, CO2, CO3** | All 4 reviews, live demonstration, and documentation artifacts fully synchronized. | **100% Complete** |
 
