@@ -2,7 +2,16 @@
 
 ## Overview
 
-The Hospital Management System is built in three distinct layers — **User Interface**, **Data-Access Models**, and **Database** — with a fourth cross-cutting **Widgets** layer that carries all five Q07 accuracy controls. The strict rule that models never import Tkinter and views never run raw SQL is enforced throughout.
+The Hospital Management System is built with a dual-presentation, multi-tier architecture designed around **Total Quality Management (TQM)** principles and **Quality Goal Q07 (Improve Data Accuracy)**:
+
+1. **Presentation Tier:**
+   - **Modern Web Application Portal:** Flask backend (`run.py`, `src/web_app.py`) serving an executive single-page application (`templates/index.html`, `static/css/style.css`, `static/js/app.js`) backed by modular REST API Blueprints (`src/api/*.py`).
+   - **Native Desktop GUI:** Tkinter multi-tab interface (`src/main.py`, `src/views/*.py`) featuring custom Poka-Yoke accuracy widgets (`src/widgets/*.py`).
+2. **Quality & Validation Layer:** Shared validation routines (`src/utils/validators.py`), global exception handling (`exception_handler.py`), and dual-tier audit logging (`logging_service.py`).
+3. **Data-Access Models Layer:** Pure, framework-agnostic SQL data access functions (`src/models/*.py`).
+4. **Database & Storage Layer:** Relational SQLite storage (`src/database/hms.db`) with foreign-key integrity constraints and immutable audit tables, supplemented by CSV audit datasets (`TQM/data/*.csv`).
+
+Strict separation of concerns is maintained throughout: models never import UI frameworks, and views never run raw SQL queries.
 
 ---
 
@@ -10,24 +19,51 @@ The Hospital Management System is built in three distinct layers — **User Inte
 
 ```mermaid
 flowchart TD
-    U[User / Front-Desk Staff]
-    U --> UI[Views Layer\nsrc/views/*.py]
+    U[User / Hospital Staff]
+    
+    subgraph Presentation ["Presentation Tier"]
+        Web[Web Portal\nrun.py / src/web_app.py]
+        GUI[Desktop GUI\nsrc/main.py & src/views/]
+        WebUI[SPA Frontend\nindex.html, style.css, app.js]
+        Web --> WebUI
+        Web --> API[REST API Blueprints\nsrc/api/*.py]
+        GUI --> W[Q07 Tkinter Widgets\nsrc/widgets/]
+    end
 
-    UI --> W[Q07 Widgets\nsrc/widgets/]
-    W --> V[Validators\nsrc/utils/validators.py]
+    subgraph Quality ["Quality & Validation Tier"]
+        V[Validators\nsrc/utils/validators.py]
+        LOG[Dual-Tier Logger\nsrc/utils/logging_service.py]
+        EXC[Exception Handler\nsrc/utils/exception_handler.py]
+    end
 
-    UI --> M[Models Layer\nsrc/models/*.py]
-    M --> DB[(SQLite Database\nsrc/database/hms.db)]
-    M --> AL[Audit Logger\ndb_manager.log_audit]]
+    subgraph DataAccess ["Data-Access Tier"]
+        M[Models Layer\nsrc/models/*.py]
+    end
 
-    DB --> AL
-    AL --> AuditTable[(audit_log table)]
-    DB --> DefectTable[(defect_log table)]
+    subgraph Persistence ["Persistence & Analytics Tier"]
+        DB[(SQLite Database\nsrc/database/hms.db)]
+        AuditLog[(audit_log table)]
+        DefectLog[(defect_log table)]
+        CSV[(CSV Datasets\nTQM/data/*.csv)]
+        SQC[SQC Analytics & Charts\nsqc/]
+    end
 
-    DefectTable --> SQC[SQC Scripts\nsqc/]
-    AuditTable --> AuditView[Audit Log Tab\nviews/audit_view.py]
-
-    T[Unit Tests\ntests/test_db.py] --> M
+    W --> V
+    API --> V
+    WebUI -.-> API
+    API --> M
+    GUI --> M
+    API --> EXC
+    M --> DB
+    M --> LOG
+    LOG --> AuditLog
+    LOG --> CSV
+    DB --> DefectLog
+    DefectLog --> SQC
+    
+    T[Test Suite\ntests/] --> M
+    T --> API
+    T --> V
 ```
 
 ---
@@ -37,46 +73,77 @@ flowchart TD
 ```text
 User Action (e.g. Patient Registration)
     ↓
-PhoneMaskEntry (Input Masking)
-    → Strips non-digits, enforces +91-XXXXX-XXXXX, caps at 10 digits
+1. Phone Input Masking
+    • Desktop: PhoneMaskEntry enforces +91-XXXXX-XXXXX, strips non-digits
+    • Web: Client-side regex formatter in app.js prevents invalid input patterns
     ↓
-ttk.Combobox state="readonly" (Dropdown Lists)
-    → Gender / Blood Group / Department constrained to fixed lists in config.py
+2. Standardized Dropdown Selection
+    • Desktop: ttk.Combobox state="readonly" constrained to config.py
+    • Web: HTML <select> validated server-side against config.py sets
     ↓
-AutocompleteEntry (Auto-Complete)
-    → Queries patient.name_candidates(prefix) as user types
-    → Surfaces existing records before a new one is created
+3. Auto-Complete Duplicate Prevention
+    • Desktop: AutocompleteEntry queries patient.name_candidates(prefix)
+    • Web: Debounced REST lookup (/api/patients/search) surfaces existing charts
     ↓
-Validators (validators.py)
-    → is_valid_date(), is_valid_time(), not_empty(), is_valid_phone_digits()
+4. Business Rule Validation (validators.py)
+    • is_valid_date(), is_valid_time(), not_empty(), is_valid_phone_digits()
     ↓
-confirm_delete() / confirm_update() (Confirmation Modal)
-    → messagebox.askyesno() before any UPDATE or DELETE
+5. Explicit Confirmation Modals
+    • Desktop: confirm_delete() / confirm_update() dialogs
+    • Web: Accessible DOM modals verifying action before execution
     ↓
-Model function (e.g. patient.add())
-    → SQL INSERT/UPDATE/DELETE
-    → log_audit() called inside same transaction
+6. Atomic Transaction & Model Execution (models/*.py)
+    • SQL INSERT / UPDATE / DELETE with parameter binding
+    • Atomic dual-tier audit logging executed in same transaction
     ↓
-audit_log table (Audit Logs)
-    → table_name, record_id, action, details, performed_by, timestamp
+7. Audit Log Trail & Checksheet
+    • Immutable records written to audit_log table and TQM CSV datasets
 ```
 
 ---
 
 ## File-by-File Responsibilities
 
-### Entry Point
+### Entry Points & Application Routers
 
 | File | Role |
 |---|---|
-| `src/main.py` | Creates `HMSApp(tk.Tk)`, calls `init_db()`, assembles all 10 tabs into a `ttk.Notebook`, wires tab-change events to refresh dependent views |
-| `src/config.py` | Single source of truth for all fixed dropdown lists (`GENDERS`, `BLOOD_GROUPS`, `DEPARTMENTS`, etc.) and app constants |
+| `run.py` | Main web server launcher; binds port (default 5001), auto-seeds initial data, and opens the web portal |
+| `src/web_app.py` | Flask factory; registers 9 REST API blueprints, configures error handling, static asset routes, and SPA template serving |
+| `src/main.py` | Desktop GUI entry point; builds `HMSApp(tk.Tk)`, wires all 10 tabbed views, manages notebook lifecycle |
+| `src/config.py` | Central configuration and single source of truth for categorical dropdown sets (`GENDERS`, `BLOOD_GROUPS`, `DEPARTMENTS`, `ROOM_TYPES`, etc.) |
+
+### Web Portal Presentation & REST APIs
+
+| File | Role |
+|---|---|
+| `src/templates/index.html` | Semantic single-page application layout with sidebar navigation, modal containers, and responsive panels |
+| `src/static/css/style.css` | Comprehensive design system featuring responsive typography, color tokens, and modal styling |
+| `src/static/js/app.js` | Frontend controller; implements real-time phone masking, search autocompletion, dynamic table rendering, and REST client |
+| `src/api/patients.py` | REST endpoints for patient registration, search autocompletion, updating, and room assignment |
+| `src/api/doctors.py` | REST endpoints for doctor directory and department queries |
+| `src/api/appointments.py` | REST endpoints for scheduling, doctor/patient linkage, and status tracking |
+| `src/api/rooms.py` | REST endpoints for room occupancy, ward tariffs, and bed clearance |
+| `src/api/staff.py` | REST endpoints for staff duty roster and shift assignments |
+| `src/api/medicines.py` | REST endpoints for pharmacy inventory and low-stock threshold queries |
+| `src/api/bills.py` | REST endpoints for itemized patient billing, auto-calculated totals, and payments |
+| `src/api/audit.py` | REST endpoints for querying immutable audit trails and filtering logs |
+| `src/api/dashboard.py` | REST endpoints for live executive KPI counter metrics |
+| `src/api/helpers.py` | Helper functions for JSON formatting, standard responses, and validation error wrappers |
+
+### Shared Quality & Utility Services
+
+| File | Role |
+|---|---|
+| `src/utils/validators.py` | Reusable validation methods: date formats, 24-hr time formats, phone digit length, mandatory field presence |
+| `src/utils/logging_service.py` | Dual-tier logging service writing audit events and error reports across SQLite and `TQM/data/*.csv` |
+| `src/utils/exception_handler.py` | Centralized exception handling, logging uncaught errors and generating user-friendly error dialogs/responses |
 
 ### Database Layer
 
 | File | Role |
 |---|---|
-| `src/database/db_manager.py` | `get_connection()` — returns a `sqlite3.Row`-factory connection with `PRAGMA foreign_keys = ON`; `SCHEMA` — `CREATE TABLE IF NOT EXISTS` for all 9 tables; `init_db()` — runs schema once on first launch; `log_audit()` — shared helper called by every model |
+| `src/database/db_manager.py` | Connection factory with `sqlite3.Row` and foreign key enforcement; manages `SCHEMA` definitions for 9 tables; atomic `log_audit()` routine |
 
 ### Q07 Widget Layer
 

@@ -39,7 +39,7 @@ python run.py
 # 3. Launch Desktop GUI (Tkinter)
 python src/main.py
 
-# 4. Run automated test suite (20 tests covering CRUD, Validators & TQM logging)
+# 4. Run automated test suite (28 tests covering CRUD, Validators, TQM logging & Web API)
 python -m unittest discover tests
 
 # 5. Regenerate SQC Pareto & Fishbone charts
@@ -54,32 +54,32 @@ python docs/build_fmea.py
 
 ## System Modules
 
-| Tab | Model | Core Purpose |
+| Tab / Route | Model | Core Purpose |
 |---|---|---|
 | Dashboard | All tables | Live counts — patients, doctors, appointments, available rooms, unpaid bills, defects, audit entries |
-| Patients | `models/patient.py` | Register / update / delete patients with optional room assignment |
-| Doctors | `models/doctor.py` | Doctor roster by department |
+| Patients | `models/patient.py` | Register / update / delete patients with room assignment and autocomplete |
+| Doctors | `models/doctor.py` | Doctor roster grouped by clinical specialty department |
 | Appointments | `models/appointment.py` | Schedule appointments linking a patient and a consulting doctor |
-| Rooms / Wards | `models/room.py` | Room inventory — type, occupancy status, daily rate |
+| Rooms / Wards | `models/room.py` | Room inventory — type, occupancy status, daily rate, bed clearance |
 | Staff | `models/staff.py` | Nursing and support staff by role and shift |
-| Pharmacy | `models/medicine.py` | Medicine stock with automatic low-stock flagging |
-| Billing | `models/bill.py` | Itemized bills with auto-calculated totals and payment tracking |
-| Audit Log | `models/audit.py` | Read-only trail of every INSERT, UPDATE, DELETE across all tables |
-| Defect Checksheet | `models/audit.py` | Quality defect log that feeds the Pareto analysis |
+| Pharmacy | `models/medicine.py` | Medicine stock with automatic low-stock threshold flagging |
+| Billing | `models/bill.py` | Itemized bills with auto-calculated charges and payment tracking |
+| Audit Log | `models/audit.py` | Immutable trail of every INSERT, UPDATE, DELETE across all tables |
+| Defect Checksheet | `models/audit.py` | Quality defect checksheet feeding the Pareto 80/20 analysis |
 
 ---
 
 ## Q07 Feature Implementation
 
-Each feature is written once and reused across every relevant module.
+Quality is enforced through Poka-Yoke mistake-proofing across both Desktop GUI and Web Application interfaces:
 
-| # | Feature | File | How It Works |
-|---|---|---|---|
-| 1 | **Input Masking** | `src/widgets/phone_mask_entry.py` | Subclass of `ttk.Entry`; traces `StringVar` on every keystroke, strips non-digits with `re.sub`, enforces `+91-XXXXX-XXXXX` format, caps at 10 digits |
-| 2 | **Dropdown Lists** | `src/config.py` + `ttk.Combobox(state="readonly")` | All categorical fields (Gender, Blood Group, Department, Status, Role, Shift, Payment) are bound to fixed lists defined once in `config.py` — free-text entry is not possible |
-| 3 | **Auto-Complete** | `src/widgets/autocomplete_entry.py` | Queries `patient.name_candidates(prefix)` on every keystroke; shows a floating `Listbox` of matches; fires `on_select` callback to prevent new duplicate records |
-| 4 | **Confirmation Modals** | `src/widgets/confirm_dialog.py` | `confirm_delete()` and `confirm_update()` wrap `messagebox.askyesno()`; every view checks the boolean return before executing any destructive database operation |
-| 5 | **Audit Logs** | `src/database/db_manager.log_audit()` | Called inside every model write function in the same transaction; records `table_name`, `record_id`, `action (INSERT/UPDATE/DELETE)`, `details`, and `timestamp`; readable in the Audit Log tab |
+| # | Feature | Desktop GUI (Tkinter) | Web Portal (Flask / JS) | How It Works & Poka-Yoke Impact |
+|---|---|---|---|---|
+| 1 | **Input Masking** | `src/widgets/phone_mask_entry.py` | `src/static/js/app.js` | Enforces `+91-XXXXX-XXXXX` on every keystroke, strips non-digit characters via regex, and caps at 10 digits |
+| 2 | **Dropdown Lists** | `src/config.py` + `ttk.Combobox(state="readonly")` | HTML `<select>` validated against `src/config.py` | Categorical values (Gender, Blood Group, Department, Status, Role, Shift, Payment) are strictly locked to standard sets |
+| 3 | **Auto-Complete** | `src/widgets/autocomplete_entry.py` | Dynamic debounce search in `app.js` + `/api/patients/search` | Real-time substring query surfaces existing patient records as user types, preventing accidental duplicate patient charts |
+| 4 | **Confirmation Modals** | `src/widgets/confirm_dialog.py` | Custom async modal dialogs in `app.js` | Critical UPDATE and DELETE operations require explicit two-step user confirmation before database execution |
+| 5 | **Audit Logs** | `db_manager.log_audit()` + `audit_view.py` | Dual-tier logging (`db_manager` + `logging_service.py`) | Atomic transactional logging of `table_name`, `record_id`, `action`, `details`, and `timestamp` across SQLite & CSV trails |
 
 ---
 
@@ -87,18 +87,41 @@ Each feature is written once and reused across every relevant module.
 
 ```
 HMS_Project/
-├── README.md
-├── requirements.txt
-├── .gitignore
+├── run.py                         # Web Application launcher & port configuration
+├── README.md                      # Project documentation and guide
+├── requirements.txt               # Python project dependencies
+├── .gitignore                     # Git ignore rules
 │
 ├── src/
-│   ├── main.py                    # Entry point — HMSApp(tk.Tk), wires all 10 tabs
+│   ├── main.py                    # Entry point — Native Desktop GUI (Tkinter, 10 tabs)
+│   ├── web_app.py                 # Entry point — Flask Web Application & Blueprint router
 │   ├── config.py                  # All dropdown lists + app constants (single source of truth)
 │   │
-│   ├── database/
-│   │   └── db_manager.py          # SQLite schema, get_connection(), init_db(), log_audit()
+│   ├── api/                       # Modular REST API Blueprints for Web Portal
+│   │   ├── patients.py            # Patient CRUD & autocomplete API
+│   │   ├── doctors.py             # Doctor roster API
+│   │   ├── appointments.py        # Appointment scheduling API
+│   │   ├── rooms.py               # Ward & bed inventory API
+│   │   ├── staff.py               # Staff administration API
+│   │   ├── medicines.py           # Pharmacy & low-stock API
+│   │   ├── bills.py               # Billing & itemized invoicing API
+│   │   ├── audit.py               # Audit trail viewer API
+│   │   ├── dashboard.py           # Live KPI counters API
+│   │   └── helpers.py             # API utilities & response helpers
 │   │
-│   ├── models/                    # Data-access layer — pure SQL, no Tkinter imports
+│   ├── templates/                 # Jinja2 HTML templates for Web Application
+│   │   └── index.html             # Responsive Single-Page Application interface
+│   │
+│   ├── static/                    # Responsive UI assets (Vanilla CSS & JS)
+│   │   ├── css/
+│   │   │   └── style.css          # Modern dark/light design system
+│   │   └── js/
+│   │       └── app.js             # Client-side validation, input masking & async REST client
+│   │
+│   ├── database/
+│   │   └── db_manager.py          # SQLite schema, connection pool, init_db(), log_audit()
+│   │
+│   ├── models/                    # Data-access layer — pure SQL, framework-agnostic
 │   │   ├── patient.py
 │   │   ├── doctor.py
 │   │   ├── appointment.py
@@ -108,12 +131,12 @@ HMS_Project/
 │   │   ├── bill.py
 │   │   └── audit.py               # audit_log reads + defect_log CRUD
 │   │
-│   ├── widgets/                   # Q07 reusable controls — written once, imported everywhere
+│   ├── widgets/                   # Q07 Desktop GUI widgets (Tkinter)
 │   │   ├── phone_mask_entry.py    # Feature 1: Input Masking
 │   │   ├── autocomplete_entry.py  # Feature 3: Auto-Complete
 │   │   └── confirm_dialog.py      # Feature 4: Confirmation Modals
 │   │
-│   ├── views/                     # UI tabs — no raw SQL, only model calls
+│   ├── views/                     # Native Desktop GUI tabs (Tkinter)
 │   │   ├── dashboard_view.py
 │   │   ├── patients_view.py
 │   │   ├── doctors_view.py
@@ -125,8 +148,11 @@ HMS_Project/
 │   │   ├── audit_view.py          # Feature 5: Audit Log viewer (read-only)
 │   │   └── defects_view.py        # Defect Checksheet UI
 │   │
-│   └── utils/
-│       └── validators.py          # Shared date, time, phone, and field validation rules
+│   └── utils/                     # Shared cross-cutting utilities
+│       ├── validators.py          # Shared date, time, phone, and field validation rules
+│       ├── logging_service.py     # Dual-tier logging service (SQLite + CSV)
+│       └── exception_handler.py   # Global exception management & error logging
+│
 ├── docs/
 │   ├── SRS.md                     # Software Requirements Specification
 │   ├── SRS_HMS_AjayBora.docx      # Formal SRS document
