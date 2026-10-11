@@ -575,3 +575,67 @@ footer {
     justify-content: space-between;
     align-items: center;
 }
+
+/* Clinical Poka-Yoke & Patient Safety Styles */
+.badge-allergy {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.slot-pill {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.slot-pill.available {
+    background: #f0fdf4;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.slot-pill.available:hover {
+    background: #dcfce7;
+    border-color: #86efac;
+}
+
+.slot-pill.booked {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.clinical-warning-box {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    margin-top: 8px;
+}
+
+.clinical-danger-box {
+    background: #fef2f2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.84rem;
+    margin-top: 8px;
+}
+
