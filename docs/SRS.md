@@ -49,6 +49,9 @@ These may be considered separately only if required later.
 | FR-11 | The system shall require explicit confirmation before update or delete operations. |
 | FR-12 | The system shall maintain an immutable audit trail for all INSERT, UPDATE, and DELETE events. |
 | FR-13 | The system shall allow staff to log software defects in a checksheet for SQC analysis. |
+| FR-14 | The system shall prevent doctor double-booking and patient schedule conflicts via automated slot-level conflict checks. |
+| FR-15 | The system shall record patient allergies and perform automated pre-flight contraindication checks against prescribed medications. |
+| FR-16 | The system shall validate clinical triage vital signs against physiological limits and automatically categorize triage risk severity. |
 
 ## 4. Non-Functional Requirements
 
