@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS patients (
     blood_group    TEXT NOT NULL CHECK(blood_group IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')),
     phone          TEXT NOT NULL,
     address        TEXT,
+    allergies      TEXT NOT NULL DEFAULT 'None',
     room_id        INTEGER,
     created_at     TEXT NOT NULL,
     updated_at     TEXT NOT NULL,
@@ -113,6 +114,21 @@ CREATE TABLE IF NOT EXISTS defect_log (
     status         TEXT NOT NULL DEFAULT 'Open',
     logged_at      TEXT NOT NULL
 );
+
+-- Clinical Poka-Yoke: Triage Vitals Log with physiological boundaries
+CREATE TABLE IF NOT EXISTS vitals_log (
+    vital_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id     INTEGER NOT NULL,
+    systolic       INTEGER,
+    diastolic      INTEGER,
+    pulse          INTEGER,
+    temperature    REAL,
+    spo2           INTEGER,
+    triage_status  TEXT NOT NULL DEFAULT 'Normal',
+    recorded_at    TEXT NOT NULL,
+    recorded_by    TEXT NOT NULL DEFAULT 'front_desk_user',
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
+);
 """
 
 
@@ -120,6 +136,12 @@ def init_db():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     conn = get_connection()
     conn.executescript(SCHEMA)
+
+    # Backward compatibility migration for patients.allergies
+    cols = [r["name"] for r in conn.execute("PRAGMA table_info(patients)").fetchall()]
+    if "allergies" not in cols:
+        conn.execute("ALTER TABLE patients ADD COLUMN allergies TEXT NOT NULL DEFAULT 'None'")
+
     conn.commit()
     conn.close()
 
