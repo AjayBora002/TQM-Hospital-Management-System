@@ -39,7 +39,8 @@ def create_patient():
         blood_group=data.get("blood_group", "O+"),
         phone=data.get("phone", ""),
         address=data.get("address", ""),
-        room_id=room_id
+        room_id=room_id,
+        allergies=data.get("allergies", "None")
     )
     return jsonify({"patient_id": new_id, "status": "created"}), 201
 
@@ -57,7 +58,8 @@ def update_patient(patient_id):
         blood_group=data.get("blood_group"),
         phone=data.get("phone"),
         address=data.get("address"),
-        room_id=room_id
+        room_id=room_id,
+        allergies=data.get("allergies", "None")
     )
     return jsonify({"status": "updated"})
 
@@ -82,4 +84,58 @@ def discharge_patient(patient_id):
     if not result:
         return jsonify({"error": "Patient not found"}), 404
     return jsonify({"status": "discharged", "details": result})
+
+
+@patients_bp.route("/patients/<int:patient_id>/allergies", methods=["GET"])
+def get_patient_allergies(patient_id):
+    """Retrieve recorded patient allergies for prescription safety checking."""
+    allergies = patient_model.get_allergies(patient_id)
+    return jsonify({"patient_id": patient_id, "allergies": allergies})
+
+
+@patients_bp.route("/patients/<int:patient_id>/allergy-check", methods=["POST"])
+def check_patient_allergy(patient_id):
+    """Clinical Poka-Yoke: Pre-flight contraindication check for medications."""
+    from utils.validators import check_drug_allergy_contraindication
+    data = request.json or {}
+    med_name = data.get("medicine_name", "")
+    med_category = data.get("category", "")
+    allergies = patient_model.get_allergies(patient_id)
+
+    result = check_drug_allergy_contraindication(allergies, med_name, med_category)
+    result["patient_id"] = patient_id
+    result["documented_allergies"] = allergies
+    return jsonify(result)
+
+
+@patients_bp.route("/patients/<int:patient_id>/vitals", methods=["POST"])
+def add_patient_vitals(patient_id):
+    """Clinical Poka-Yoke: Record triage vitals with boundary validation."""
+    from utils.validators import validate_vital_signs
+    data = request.json or {}
+    parsed = validate_vital_signs(data)
+
+    vital_id = patient_model.record_vitals(
+        patient_id=patient_id,
+        systolic=parsed.get("systolic"),
+        diastolic=parsed.get("diastolic"),
+        pulse=parsed.get("pulse"),
+        temperature=parsed.get("temperature"),
+        spo2=parsed.get("spo2"),
+        triage_status=parsed.get("triage_status", "Normal")
+    )
+    return jsonify({
+        "vital_id": vital_id,
+        "triage_status": parsed.get("triage_status"),
+        "alerts": parsed.get("alerts", []),
+        "status": "recorded"
+    }), 201
+
+
+@patients_bp.route("/patients/<int:patient_id>/vitals", methods=["GET"])
+def get_patient_vitals(patient_id):
+    """Retrieve chronological vitals history for patient chart."""
+    rows = patient_model.get_vitals_history(patient_id)
+    return jsonify(rows_to_list(rows))
+
 
