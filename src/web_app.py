@@ -23,7 +23,7 @@ from config import (
     APP_TITLE, GENDERS, BLOOD_GROUPS, DEPARTMENTS, APPT_STATUS,
     ROOM_TYPES, ROOM_STATUS, STAFF_ROLES, SHIFTS, PAYMENT_METHODS,
     PAYMENT_STATUS, MEDICINE_CATEGORIES, DEFECT_CATEGORIES,
-    DEFECT_SEVERITY, DEFECT_STATUS
+    DEFECT_SEVERITY, DEFECT_STATUS, ALLERGIES, STANDARD_APPOINTMENT_SLOTS
 )
 from database.db_manager import init_db
 from api import register_api
@@ -64,7 +64,9 @@ def index():
         medicine_categories=MEDICINE_CATEGORIES,
         defect_categories=DEFECT_CATEGORIES,
         defect_severities=DEFECT_SEVERITY,
-        defect_statuses=DEFECT_STATUS
+        defect_statuses=DEFECT_STATUS,
+        allergies=ALLERGIES,
+        standard_slots=STANDARD_APPOINTMENT_SLOTS
     )
 
 

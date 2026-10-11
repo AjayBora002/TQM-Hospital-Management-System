@@ -165,7 +165,7 @@ async function loadPatients(query = '') {
         const data = await res.json();
         const tbody = document.getElementById('patients-table-body');
         if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No patients found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No patients found.</td></tr>';
             return;
         }
         tbody.innerHTML = data.map(p => `
@@ -175,6 +175,7 @@ async function loadPatients(query = '') {
                 <td>${p.gender}</td>
                 <td>${p.dob}</td>
                 <td><span class="badge badge-info">${p.blood_group}</span></td>
+                <td>${p.allergies && p.allergies !== 'None' ? `<span class="badge badge-danger">⚠️ ${p.allergies}</span>` : '<span class="badge badge-secondary">None</span>'}</td>
                 <td>${p.phone}</td>
                 <td>${p.room_id ? `<span class="badge badge-purple">Room ${p.room_number || p.room_id} (${p.room_type || 'Ward'})</span>` : '<span style="color:var(--text-muted); font-size:0.8rem;">Outpatient</span>'}</td>
                 <td>
@@ -209,6 +210,7 @@ async function savePatient(e) {
         blood_group: document.getElementById('patient-blood').value,
         phone: document.getElementById('patient-phone').value,
         address: document.getElementById('patient-address').value,
+        allergies: document.getElementById('patient-allergies').value || 'None',
         room_id: document.getElementById('patient-room').value || null
     };
 
@@ -240,6 +242,7 @@ function editPatient(p) {
     document.getElementById('patient-gender').value = p.gender;
     document.getElementById('patient-dob').value = p.dob;
     document.getElementById('patient-blood').value = p.blood_group;
+    document.getElementById('patient-allergies').value = p.allergies || 'None';
     document.getElementById('patient-phone').value = p.phone;
     document.getElementById('patient-address').value = p.address || '';
     document.getElementById('patient-room').value = p.room_id || '';
@@ -249,6 +252,7 @@ function editPatient(p) {
 function resetPatientForm() {
     document.getElementById('patient-form').reset();
     document.getElementById('patient-id').value = '';
+    document.getElementById('patient-allergies').value = 'None';
     document.getElementById('patient-form-title').innerText = 'Register Patient';
 }
 
@@ -379,12 +383,21 @@ async function saveAppointment(e) {
     const method = id ? 'PUT' : 'POST';
     const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)});
     if (res.ok) {
-        showToast('Appointment saved');
+        showToast('Appointment booked successfully');
         resetApptForm();
         loadAppointments();
         loadDashboardData();
     } else {
-        showToast('Error booking appointment', true);
+        const err = await res.json();
+        showToast(err.message || err.error || 'Error booking appointment', true);
+        const indicator = document.getElementById('slot-conflict-indicator');
+        if (indicator && err.message) {
+            indicator.style.display = 'block';
+            indicator.style.background = 'rgba(239, 68, 68, 0.15)';
+            indicator.style.color = '#ef4444';
+            indicator.style.border = '1px solid #ef4444';
+            indicator.innerHTML = `⚠️ <strong>Poka-Yoke Error Prevention:</strong> ${err.message}`;
+        }
     }
 }
 
@@ -395,6 +408,7 @@ function editAppt(a) {
     document.getElementById('appt-time').value = a.appt_time;
     document.getElementById('appt-status').value = a.status;
     document.getElementById('appt-form-title').innerText = `Edit Appointment #${a.appointment_id}`;
+    checkApptConflict();
 }
 
 function resetApptForm() {
@@ -402,6 +416,91 @@ function resetApptForm() {
     document.getElementById('appt-id').value = '';
     document.getElementById('appt-patient-id').value = '';
     document.getElementById('appt-form-title').innerText = 'Schedule Appointment';
+    const indicator = document.getElementById('slot-conflict-indicator');
+    if (indicator) indicator.style.display = 'none';
+    const container = document.getElementById('quick-slots-container');
+    if (container) container.style.display = 'none';
+}
+
+async function checkApptConflict() {
+    const docId = document.getElementById('appt-doctor-id').value;
+    const patId = document.getElementById('appt-patient-id').value;
+    const date = document.getElementById('appt-date').value;
+    const time = document.getElementById('appt-time').value;
+    const excludeId = document.getElementById('appt-id').value;
+    const indicator = document.getElementById('slot-conflict-indicator');
+
+    if (!docId || !date || !time) {
+        if (indicator) indicator.style.display = 'none';
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/appointments/check-conflict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ doctor_id: docId, patient_id: patId, appt_date: date, appt_time: time, exclude_id: excludeId })
+        });
+        const data = await res.json();
+        if (indicator) {
+            indicator.style.display = 'block';
+            if (data.has_conflict) {
+                indicator.style.background = 'rgba(239, 68, 68, 0.15)';
+                indicator.style.color = '#ef4444';
+                indicator.style.border = '1px solid #ef4444';
+                indicator.innerHTML = `⚠️ <strong>Poka-Yoke Alert:</strong> ${data.message}`;
+            } else {
+                indicator.style.background = 'rgba(16, 185, 129, 0.15)';
+                indicator.style.color = '#10b981';
+                indicator.style.border = '1px solid #10b981';
+                indicator.innerHTML = `✓ <strong>Slot Available:</strong> Doctor is free at ${time} on ${date}.`;
+            }
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function fetchDoctorAvailableSlots() {
+    const docId = document.getElementById('appt-doctor-id').value;
+    const date = document.getElementById('appt-date').value;
+    const container = document.getElementById('quick-slots-container');
+
+    if (!docId) {
+        showToast('Please select a doctor first to check free slots', true);
+        return;
+    }
+    if (!date) {
+        showToast('Please select an appointment date first', true);
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/doctors/${docId}/slots?date=${encodeURIComponent(date)}`);
+        const data = await res.json();
+        if (res.ok && container) {
+            container.style.display = 'flex';
+            container.innerHTML = `
+                <div style="width:100%; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+                    Available slots on ${date} (${data.total_available} free):
+                </div>
+                ` + data.slots.map(s => `
+                    <button type="button" class="btn btn-sm ${s.available ? 'btn-secondary' : 'btn-danger'}" 
+                            style="padding: 2px 8px; font-size:0.75rem; ${s.available ? '' : 'opacity:0.4; cursor:not-allowed;'}" 
+                            ${s.available ? `onclick="selectApptSlot('${s.slot}')"` : 'disabled'}
+                            title="${s.available ? 'Click to select slot' : 'Booked'}">
+                        ${s.slot} ${s.available ? '' : '🔒'}
+                    </button>
+                `).join('');
+        }
+    } catch (err) {
+        showToast('Failed to check doctor slots', true);
+    }
+}
+
+function selectApptSlot(slot) {
+    document.getElementById('appt-time').value = slot;
+    checkApptConflict();
 }
 
 function confirmDeleteAppt(id) {

@@ -174,6 +174,13 @@
                             <input type="text" id="patient-address" class="form-control" placeholder="City, Street">
                         </div>
                         <div class="form-group">
+                            <label>Known Drug Allergies (Clinical Poka-Yoke) *</label>
+                            <select id="patient-allergies" class="form-control">
+                                {% for a in allergies %}<option value="{{ a }}">{{ a }}</option>{% endfor %}
+                            </select>
+                            <div class="form-hint">Used for automated contraindication & adverse reaction checks</div>
+                        </div>
+                        <div class="form-group">
                             <label>Assign Ward / Room</label>
                             <select id="patient-room" class="form-control">
                                 <option value="">-- None / Outpatient --</option>
@@ -200,13 +207,14 @@
                                     <th>Gender</th>
                                     <th>DOB</th>
                                     <th>Blood</th>
+                                    <th>Allergies</th>
                                     <th>Phone</th>
                                     <th>Room</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="patients-table-body">
-                                <tr><td colspan="8" style="text-align: center;">Loading patients...</td></tr>
+                                <tr><td colspan="9" style="text-align: center;">Loading patients...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -293,7 +301,12 @@
                         </div>
                         <div class="form-group">
                             <label>Time (HH:MM) *</label>
-                            <input type="time" id="appt-time" class="form-control" required>
+                            <div style="display:flex; gap: 8px;">
+                                <input type="time" id="appt-time" class="form-control" required style="flex:1;" onchange="checkApptConflict()">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="fetchDoctorAvailableSlots()" title="Check Doctor Free Slots">Free Slots</button>
+                            </div>
+                            <div id="slot-conflict-indicator" style="display:none; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 500;"></div>
+                            <div id="quick-slots-container" style="display:none; margin-top: 8px; display:flex; gap: 4px; flex-wrap: wrap;"></div>
                         </div>
                         <div class="form-group">
                             <label>Status (Q07 Dropdown) *</label>

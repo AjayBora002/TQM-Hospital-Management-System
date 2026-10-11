@@ -8,11 +8,11 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import DB_PATH  # noqa: E402
+import config  # noqa: E402
 
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
+    conn = sqlite3.connect(config.DB_PATH, timeout=30.0)
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
     return conn
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS vitals_log (
 
 
 def init_db():
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    os.makedirs(os.path.dirname(config.DB_PATH), exist_ok=True)
     conn = get_connection()
     conn.executescript(SCHEMA)
 
