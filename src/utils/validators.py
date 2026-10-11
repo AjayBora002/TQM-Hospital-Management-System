@@ -93,3 +93,128 @@ def validate_billing_payload(data: dict):
         except (ValueError, TypeError):
             raise ValidationError(f"{charge_field} must be a valid numeric amount.", field=charge_field)
     return True
+
+
+# Clinical Poka-Yoke: Triage Vitals & Boundary Validators
+def validate_vital_signs(data: dict) -> dict:
+    """Validates patient vital signs against physiological limits and computes triage severity."""
+    from config import VITALS_RANGES
+
+    parsed = {}
+    is_warning = False
+    is_critical = False
+    alerts = []
+
+    # Systolic
+    if "systolic" in data and data["systolic"] not in (None, ""):
+        try:
+            sys_val = int(data["systolic"])
+            cfg = VITALS_RANGES["systolic"]
+            if sys_val < cfg["min"] or sys_val > cfg["max"]:
+                raise ValidationError(f"Systolic BP ({sys_val}) is outside survivable physiological range [{cfg['min']}-{cfg['max']}].", field="systolic")
+            if sys_val < cfg["normal_min"] or sys_val > cfg["normal_max"]:
+                is_warning = True
+                alerts.append(f"Abnormal Systolic BP: {sys_val} mmHg")
+            if sys_val >= 180 or sys_val < 85:
+                is_critical = True
+            parsed["systolic"] = sys_val
+        except (ValueError, TypeError):
+            raise ValidationError("Systolic BP must be an integer.", field="systolic")
+
+    # Diastolic
+    if "diastolic" in data and data["diastolic"] not in (None, ""):
+        try:
+            dia_val = int(data["diastolic"])
+            cfg = VITALS_RANGES["diastolic"]
+            if dia_val < cfg["min"] or dia_val > cfg["max"]:
+                raise ValidationError(f"Diastolic BP ({dia_val}) is outside survivable physiological range [{cfg['min']}-{cfg['max']}].", field="diastolic")
+            if dia_val < cfg["normal_min"] or dia_val > cfg["normal_max"]:
+                is_warning = True
+                alerts.append(f"Abnormal Diastolic BP: {dia_val} mmHg")
+            if dia_val >= 120 or dia_val < 50:
+                is_critical = True
+            parsed["diastolic"] = dia_val
+        except (ValueError, TypeError):
+            raise ValidationError("Diastolic BP must be an integer.", field="diastolic")
+
+    # Pulse
+    if "pulse" in data and data["pulse"] not in (None, ""):
+        try:
+            pulse_val = int(data["pulse"])
+            cfg = VITALS_RANGES["pulse"]
+            if pulse_val < cfg["min"] or pulse_val > cfg["max"]:
+                raise ValidationError(f"Heart rate ({pulse_val}) is outside allowable range [{cfg['min']}-{cfg['max']}].", field="pulse")
+            if pulse_val < cfg["normal_min"] or pulse_val > cfg["normal_max"]:
+                is_warning = True
+                alerts.append(f"Abnormal Heart Rate: {pulse_val} bpm")
+            if pulse_val > 140 or pulse_val < 45:
+                is_critical = True
+            parsed["pulse"] = pulse_val
+        except (ValueError, TypeError):
+            raise ValidationError("Heart rate must be an integer.", field="pulse")
+
+    # Temperature
+    if "temperature" in data and data["temperature"] not in (None, ""):
+        try:
+            temp_val = float(data["temperature"])
+            cfg = VITALS_RANGES["temperature"]
+            if temp_val < cfg["min"] or temp_val > cfg["max"]:
+                raise ValidationError(f"Temperature ({temp_val} F) is outside allowable range [{cfg['min']}-{cfg['max']}].", field="temperature")
+            if temp_val < cfg["normal_min"] or temp_val > cfg["normal_max"]:
+                is_warning = True
+                alerts.append(f"Abnormal Temperature: {temp_val} F")
+            if temp_val >= 104.0 or temp_val < 95.0:
+                is_critical = True
+            parsed["temperature"] = temp_val
+        except (ValueError, TypeError):
+            raise ValidationError("Temperature must be a numeric value.", field="temperature")
+
+    # SpO2
+    if "spo2" in data and data["spo2"] not in (None, ""):
+        try:
+            spo2_val = int(data["spo2"])
+            cfg = VITALS_RANGES["spo2"]
+            if spo2_val < cfg["min"] or spo2_val > cfg["max"]:
+                raise ValidationError(f"SpO2 saturation ({spo2_val}%) is outside allowable range [{cfg['min']}-{cfg['max']}].", field="spo2")
+            if spo2_val < cfg["normal_min"]:
+                is_warning = True
+                alerts.append(f"Low Oxygen Saturation (SpO2): {spo2_val}%")
+            if spo2_val < 90:
+                is_critical = True
+            parsed["spo2"] = spo2_val
+        except (ValueError, TypeError):
+            raise ValidationError("SpO2 must be an integer percentage (0-100).", field="spo2")
+
+    triage_status = "Critical" if is_critical else ("Warning" if is_warning else "Normal")
+    parsed["triage_status"] = triage_status
+    parsed["alerts"] = alerts
+    return parsed
+
+
+# Clinical Poka-Yoke: Drug Allergy & Adverse Reaction Checker
+def check_drug_allergy_contraindication(patient_allergies: str, medicine_name: str, medicine_category: str = "") -> dict:
+    """Evaluates whether prescribing a medicine triggers a documented patient allergy."""
+    from config import DRUG_CONTRAINDICATION_MAP
+
+    if not patient_allergies or patient_allergies.strip().lower() in ("none", ""):
+        return {"contraindicated": False, "reason": "No documented patient allergies."}
+
+    med_lower = (medicine_name or "").lower()
+    cat_lower = (medicine_category or "").lower()
+    allergies_list = [a.strip() for a in patient_allergies.split(",") if a.strip()]
+
+    for allergy in allergies_list:
+        keywords = DRUG_CONTRAINDICATION_MAP.get(allergy, [])
+        for kw in keywords:
+            if kw in med_lower or kw in cat_lower:
+                return {
+                    "contraindicated": True,
+                    "allergy": allergy,
+                    "matched_trigger": kw,
+                    "medicine": medicine_name,
+                    "severity": "CRITICAL",
+                    "reason": f"POTENTIAL ADVERSE DRUG REACTION: Patient has recorded '{allergy}' allergy. '{medicine_name}' contains or belongs to '{kw}' class."
+                }
+
+    return {"contraindicated": False, "reason": "Medication does not trigger documented patient allergies."}
+
