@@ -39,7 +39,7 @@ python run.py
 # 3. Launch Desktop GUI (Tkinter)
 python src/main.py
 
-# 4. Run automated test suite (28 tests covering CRUD, Validators, TQM logging & Web API)
+# 4. Run automated test suite (31 tests covering CRUD, Validators, TQM logging, Web API & Clinical Poka-Yoke)
 python -m unittest discover tests
 
 # 5. Regenerate SQC Pareto & Fishbone charts
@@ -57,29 +57,32 @@ python docs/build_fmea.py
 | Tab / Route | Model | Core Purpose |
 |---|---|---|
 | Dashboard | All tables | Live counts — patients, doctors, appointments, available rooms, unpaid bills, defects, audit entries |
-| Patients | `models/patient.py` | Register / update / delete patients with room assignment and autocomplete |
+| Patients | `models/patient.py` | Register / update / delete patients with allergy documentation, vitals, and bed management |
 | Doctors | `models/doctor.py` | Doctor roster grouped by clinical specialty department |
-| Appointments | `models/appointment.py` | Schedule appointments linking a patient and a consulting doctor |
+| Appointments | `models/appointment.py` | Schedule appointments with automated slot conflict prevention & free slot lookup |
 | Rooms / Wards | `models/room.py` | Room inventory — type, occupancy status, daily rate, bed clearance |
 | Staff | `models/staff.py` | Nursing and support staff by role and shift |
-| Pharmacy | `models/medicine.py` | Medicine stock with automatic low-stock threshold flagging |
+| Pharmacy | `models/medicine.py` | Medicine stock with automated low-stock threshold flagging |
 | Billing | `models/bill.py` | Itemized bills with auto-calculated charges and payment tracking |
 | Audit Log | `models/audit.py` | Immutable trail of every INSERT, UPDATE, DELETE across all tables |
 | Defect Checksheet | `models/audit.py` | Quality defect checksheet feeding the Pareto 80/20 analysis |
 
 ---
 
-## Q07 Feature Implementation
+## Q07 Feature Implementation (Poka-Yoke & Clinical Safety)
 
 Quality is enforced through Poka-Yoke mistake-proofing across both Desktop GUI and Web Application interfaces:
 
 | # | Feature | Desktop GUI (Tkinter) | Web Portal (Flask / JS) | How It Works & Poka-Yoke Impact |
 |---|---|---|---|---|
 | 1 | **Input Masking** | `src/widgets/phone_mask_entry.py` | `src/static/js/app.js` | Enforces `+91-XXXXX-XXXXX` on every keystroke, strips non-digit characters via regex, and caps at 10 digits |
-| 2 | **Dropdown Lists** | `src/config.py` + `ttk.Combobox(state="readonly")` | HTML `<select>` validated against `src/config.py` | Categorical values (Gender, Blood Group, Department, Status, Role, Shift, Payment) are strictly locked to standard sets |
+| 2 | **Dropdown Lists** | `src/config.py` + `ttk.Combobox(state="readonly")` | HTML `<select>` validated against `src/config.py` | Categorical values (Gender, Blood Group, Department, Status, Role, Shift, Payment, Allergies) are strictly locked to standard sets |
 | 3 | **Auto-Complete** | `src/widgets/autocomplete_entry.py` | Dynamic debounce search in `app.js` + `/api/patients/search` | Real-time substring query surfaces existing patient records as user types, preventing accidental duplicate patient charts |
 | 4 | **Confirmation Modals** | `src/widgets/confirm_dialog.py` | Custom async modal dialogs in `app.js` | Critical UPDATE and DELETE operations require explicit two-step user confirmation before database execution |
 | 5 | **Audit Logs** | `db_manager.log_audit()` + `audit_view.py` | Dual-tier logging (`db_manager` + `logging_service.py`) | Atomic transactional logging of `table_name`, `record_id`, `action`, `details`, and `timestamp` across SQLite & CSV trails |
+| 6 | **Schedule Conflict Prevention** | `src/models/appointment.py` (`has_conflict`) | Real-time pre-flight checker + Slot Picker in `app.js` | Blocks doctor double-booking and patient time slot clashes with HTTP 409 conflict safeguards |
+| 7 | **Drug Allergy Safety (ADR)** | `src/utils/validators.py` | Patient allergy badges + Pre-flight contraindication API | Checks patient allergy history against prescribed medicine classes to prevent adverse drug reactions |
+| 8 | **Triage Vitals Validation** | `src/models/patient.py` (`record_vitals`) | Boundary checks in `validators.py` | Validates BP, pulse, temp, SpO2 against physiological limits and automatically flags critical triage severity |
 
 ---
 
@@ -197,11 +200,12 @@ HMS_Project/
 │   ├── fishbone_diagram.py        # Ishikawa root-cause diagram generator
 │   └── fishbone_diagram.png       # Generated Fishbone diagram
 │
-└── tests/                         # 28 automated unit & integration tests
+└── tests/                         # 31 automated unit & integration tests
     ├── test_db.py                 # Data access layer & CRUD tests
     ├── test_validators.py         # Input validation & boundary condition tests
     ├── test_tqm_services.py       # Dual-tier logging and exception handling tests
-    └── test_web_app.py            # Web application endpoints & static asset tests
+    ├── test_web_app.py            # Web application endpoints & static asset tests
+    └── test_clinical_poka_yoke.py # Schedule conflict, allergy safety & triage vitals tests
 ```
 
 ---
