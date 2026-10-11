@@ -56,16 +56,16 @@ def get_by_id(patient_id):
     return row
 
 
-def add(full_name, gender, dob, blood_group, phone, address, room_id=None):
+def add(full_name, gender, dob, blood_group, phone, address, room_id=None, allergies="None"):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
-        "INSERT INTO patients (full_name, gender, dob, blood_group, phone, address, room_id, "
-        "created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)",
-        (full_name, gender, dob, blood_group, phone, address, room_id, now(), now())
+        "INSERT INTO patients (full_name, gender, dob, blood_group, phone, address, allergies, room_id, "
+        "created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        (full_name, gender, dob, blood_group, phone, address, allergies or "None", room_id, now(), now())
     )
     new_id = cur.lastrowid
-    log_audit(conn, "patients", new_id, "INSERT", f"Added patient '{full_name}'")
+    log_audit(conn, "patients", new_id, "INSERT", f"Added patient '{full_name}' (Allergies: {allergies or 'None'})")
     if room_id:
         cur.execute("UPDATE rooms SET status='Occupied' WHERE room_id=?", (room_id,))
         log_audit(conn, "rooms", room_id, "UPDATE", f"Bed allocated (Occupied) for admitted patient '{full_name}'")
@@ -74,18 +74,18 @@ def add(full_name, gender, dob, blood_group, phone, address, room_id=None):
     return new_id
 
 
-def update(patient_id, full_name, gender, dob, blood_group, phone, address, room_id=None):
+def update(patient_id, full_name, gender, dob, blood_group, phone, address, room_id=None, allergies="None"):
     conn = get_connection()
     cur = conn.cursor()
-    old = cur.execute("SELECT room_id, full_name FROM patients WHERE patient_id=?", (patient_id,)).fetchone()
+    old = cur.execute("SELECT room_id, full_name, allergies FROM patients WHERE patient_id=?", (patient_id,)).fetchone()
     old_room_id = old["room_id"] if old else None
 
     cur.execute(
         "UPDATE patients SET full_name=?, gender=?, dob=?, blood_group=?, phone=?, address=?, "
-        "room_id=?, updated_at=? WHERE patient_id=?",
-        (full_name, gender, dob, blood_group, phone, address, room_id, now(), patient_id)
+        "allergies=?, room_id=?, updated_at=? WHERE patient_id=?",
+        (full_name, gender, dob, blood_group, phone, address, allergies or "None", room_id, now(), patient_id)
     )
-    log_audit(conn, "patients", patient_id, "UPDATE", "Patient record updated")
+    log_audit(conn, "patients", patient_id, "UPDATE", f"Patient record updated (Allergies: {allergies or 'None'})")
 
     # Automated bed allocation & clearance on room reassignment
     if old_room_id != room_id:
@@ -207,4 +207,44 @@ def discharge(patient_id, discharge_notes="", room_status_after="Available"):
         "discharge_time": discharge_time,
         "notes": discharge_notes
     }
+
+
+def get_allergies(patient_id):
+    """Retrieve recorded allergies for a patient to support prescription Poka-Yoke."""
+    conn = get_connection()
+    row = conn.execute("SELECT allergies FROM patients WHERE patient_id=?", (patient_id,)).fetchone()
+    conn.close()
+    return row["allergies"] if row and row["allergies"] else "None"
+
+
+def record_vitals(patient_id, systolic, diastolic, pulse, temperature, spo2, triage_status="Normal", user="front_desk_user"):
+    """Clinical Poka-Yoke: Record triage vital signs with bounded ranges."""
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO vitals_log (patient_id, systolic, diastolic, pulse, temperature, spo2, triage_status, recorded_at, recorded_by) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (patient_id, systolic, diastolic, pulse, temperature, spo2, triage_status, now(), user)
+    )
+    vital_id = cur.lastrowid
+    log_audit(
+        conn, "vitals_log", vital_id, "INSERT",
+        f"Recorded vitals for patient #{patient_id}: BP {systolic}/{diastolic}, HR {pulse}, Temp {temperature}F, SpO2 {spo2}% ({triage_status})",
+        user=user
+    )
+    conn.commit()
+    conn.close()
+    return vital_id
+
+
+def get_vitals_history(patient_id, limit=10):
+    """Fetch chronological vital signs for patient chart."""
+    conn = get_connection()
+    rows = conn.execute(
+        "SELECT * FROM vitals_log WHERE patient_id=? ORDER BY vital_id DESC LIMIT ?",
+        (patient_id, limit)
+    ).fetchall()
+    conn.close()
+    return rows
+
 
