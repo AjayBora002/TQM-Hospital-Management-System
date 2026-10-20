@@ -40,19 +40,21 @@ pip install -r requirements.txt
 
 The HMS platform provides two distinct, fully synchronized user interfaces:
 
-### Option A: Web Application Portal (Recommended for Modern Browsers)
+### Option A: Native Desktop GUI (Tkinter) — Primary Syllabus Deliverable
 ```bash
 python run.py
 ```
-- Automatically initializes the database with pre-seeded sample data.
-- Launches the local HTTP server at `http://127.0.0.1:5001`.
-- Provides an executive responsive web interface with live KPI cards, interactive data grids, modal dialogs, and real-time validation.
+- Automatically initializes the database schema and default records on first launch.
+- Launches the **multi-tab native Tkinter desktop application** (10 module tabs).
+- Implements all 5 Q07 widget-level controls: Input Masking, Dropdown Lists, Auto-Complete, Confirmation Modals, and Audit Logs.
+- Prescribed by **BBAT104 Section 6.1**: *"Tkinter/CustomTkinter (GUI interfaces)"*
 
-### Option B: Native Desktop GUI (Tkinter)
+### Option B: Web Application Portal (Optional Demo)
 ```bash
-python src/main.py
+python run.py --web
 ```
-- Launches the multi-tab native desktop application with full widget-level input masking and autocomplete dropdowns.
+- Launches the local HTTP server at `http://127.0.0.1:5000`.
+- Provides an interactive browser-based dashboard with REST API endpoints and the same 5 Q07 features implemented in JavaScript + Flask.
 
 ### Option C: Automated Quality Verification (Unit Test Suite)
 ```bash

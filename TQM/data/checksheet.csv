@@ -1,11 +1,16 @@
 date,module,error_category,count,remarks
-2026-10-04,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-04,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-04,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-06,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-06,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-06,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-06,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-08,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-08,TEST_MODULE,FormatError,3,Test defect remarks
-2026-10-08,TEST_MODULE,FormatError,3,Test defect remarks
+2026-10-04,Patient Registration,Data Entry,5,Phone numbers entered without +91 prefix; format rejected by PhoneMaskEntry post-fix
+2026-10-04,Patient Registration,Data Entry,3,Blood group entered as free text (e.g. 'b positive'); fixed by Combobox enforcement
+2026-10-04,Appointments,Data Entry,2,Patient name typed incorrectly causing duplicate record; intercepted by AutocompleteEntry
+2026-10-05,Patient Registration,Validation,4,Date of birth field accepted future dates; validator updated to reject DOB > today
+2026-10-05,Billing,Validation,3,Total bill amount manually overridden by user; auto-calc enforced, field set read-only
+2026-10-05,Rooms/Wards,Data Entry,2,Room number duplicated on re-entry; UNIQUE constraint now enforced at DB level
+2026-10-06,Appointments,UI,2,Delete appointment button triggered without confirmation; ConfirmDialog integrated
+2026-10-06,Patient Registration,UI,1,Record updated without confirmation prompt; ConfirmDialog now required for all UPDATE ops
+2026-10-06,Pharmacy,Validation,3,Medicine quantity entered as negative value; validator now enforces qty >= 1
+2026-10-07,Billing,Business Logic,2,Bill total computed incorrectly when medicine charges were null; null coerced to 0.0
+2026-10-07,Pharmacy,Data Entry,1,Medicine name saved with leading/trailing spaces causing search mismatch; strip() added
+2026-10-08,Audit Log,Validation,1,Audit entry missing record_id for one DELETE action; log_audit() call corrected in model
+2026-10-08,Staff,Data Entry,1,Staff shift entered as free text ('morning'); fixed by read-only Combobox binding
+2026-10-09,Appointments,Validation,2,Doctor double-booking not prevented; slot conflict checker implemented in appointment model
+2026-10-10,Patient Registration,Validation,1,Allergy field accepted free text; now restricted to predefined ALLERGIES list in config

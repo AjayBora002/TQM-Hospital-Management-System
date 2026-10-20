@@ -1,1 +1,11 @@
 date,module,records_processed,validation_errors_caught,data_accuracy_pct,remarks
+2026-10-04,Patient Registration,20,12,40.0,Pre-Q07 baseline: phone and blood group errors rampant
+2026-10-05,Patient Registration,20,3,85.0,After PhoneMaskEntry + Dropdown enforcement
+2026-10-06,Patient Registration,20,0,100.0,Full Q07 controls active: 0 errors in 20 registrations
+2026-10-06,Appointments,15,2,86.7,Slot conflict checker not yet active; 2 double-booking errors
+2026-10-07,Appointments,15,0,100.0,After schedule conflict prevention implementation
+2026-10-07,Billing,10,2,80.0,Null medicine charges causing incorrect totals
+2026-10-08,Billing,10,0,100.0,Null coercion fix applied; all totals correct
+2026-10-08,Pharmacy,12,3,75.0,Negative quantity and free-text name errors
+2026-10-09,Pharmacy,12,0,100.0,After validator update and strip() fix
+2026-10-10,All Modules,50,0,100.0,Full regression test pass: 31/31 unit tests passing

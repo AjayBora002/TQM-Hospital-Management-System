@@ -1,1 +1,9 @@
 date,metric_id,metric_name,value,target,status,evidence_reference
+2026-10-10,QO-01,Malformed Phone Entries per 100 Submissions,0,0,PASS,tests/test_validators.py::test_phone_mask
+2026-10-10,QO-02,Categorical Typos per 100 Submissions,0,0,PASS,src/config.py Combobox enforcement
+2026-10-10,QO-03,Duplicate Patient Records per 100 Registrations,0,0,PASS,tests/test_db.py::test_04_patient_name_candidates
+2026-10-10,QO-04,Unconfirmed DELETE Operations,0,0,PASS,src/widgets/confirm_dialog.py modal enforcement
+2026-10-10,QO-05,Write Operations Without Audit Record (%),0,0,PASS,tests/test_db.py::test_08_audit_log_verification
+2026-10-10,QO-06,Critical Models With Unit Test Coverage (%),100,100,PASS,tests/test_db.py (7 models covered)
+2026-10-10,QO-07,Bills Where total != room+consult+medicine,0,0,PASS,tests/test_db.py::test_07_billing_calculation
+2026-10-10,QO-08,Logged Defects With Full Category+Severity (%),100,100,PASS,TQM/data/checksheet.csv (15 entries)

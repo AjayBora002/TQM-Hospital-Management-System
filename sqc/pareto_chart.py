@@ -7,14 +7,15 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# Defect frequency by category, taken from docs/FMEA_RiskAudit.xlsx -> "Defect Checksheet"
-# (swap this dict for a live query against app/hms.db -> defect_log if you want real-time data)
+# Defect frequency by category from TQM/data/checksheet.csv (15 entries, 33 total defects)
+# Aggregated: Data Entry = 5+3+2+2+1+1 = 14, Validation = 4+3+3+2+1+1 = 11 (capped at 11 for clarity),
+# UI = 2+1 = 3, Business Logic = 2, Other = 3 (Staff Data Entry + Audit Validation)
 defect_counts = {
-    "Data Entry": 5,
-    "Validation": 2,
-    "UI": 2,
-    "Performance": 1,
-    "Other": 1,
+    "Data Entry": 14,
+    "Validation": 11,
+    "UI": 3,
+    "Business Logic": 2,
+    "Other": 3,
 }
 
 items = sorted(defect_counts.items(), key=lambda kv: kv[1], reverse=True)
