@@ -6,8 +6,9 @@ Baseline System: Hospital Management System
 Assigned Quality Goal: Q07 - Improve Data Accuracy
 
 Usage:
-    python run.py             # Launches interactive Local Web Application on http://127.0.0.1:5000
-    python run.py --desktop   # Launches Desktop GUI (Tkinter) window
+    python run.py             # Launches Desktop GUI (Tkinter) window [Syllabus Section 6.1]
+    python run.py --web       # (Optional) Launches Local Web Portal on http://127.0.0.1:5000
+    python run.py --desktop   # Explicit flag for Desktop GUI (Tkinter)
 """
 import sys
 import os
@@ -60,15 +61,18 @@ def launch_desktop():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="HMS Application Runner")
+    parser = argparse.ArgumentParser(description="HMS Application Runner (BBAT104 Project)")
     parser.add_argument(
-        "--desktop", action="store_true", help="Launch Tkinter desktop GUI instead of web"
+        "--web", action="store_true", help="Launch optional web portal interface instead of Tkinter"
+    )
+    parser.add_argument(
+        "--desktop", action="store_true", help="Launch Tkinter desktop GUI (default behavior)"
     )
     parser.add_argument("--port", type=int, default=5000, help="Web server port (default: 5000)")
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Web server host (default: 127.0.0.1)")
     args = parser.parse_args()
 
-    if args.desktop:
-        launch_desktop()
-    else:
+    if args.web:
         launch_web(host=args.host, port=args.port)
+    else:
+        launch_desktop()

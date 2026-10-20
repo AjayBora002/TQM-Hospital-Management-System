@@ -32,12 +32,13 @@ Quality is built into every data entry point using **Poka-Yoke (mistake-proofing
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Launch the System (Web Portal - Recommended)
+# 2. Launch the Desktop GUI (Tkinter - Primary Syllabus Deliverable)
 python run.py
-# Open http://127.0.0.1:5001 in your browser
+# (Or directly via: python src/main.py)
 
-# 3. Launch Desktop GUI (Tkinter)
-python src/main.py
+# 3. (Optional) Launch Web Portal Demo
+python run.py --web
+# Opens http://127.0.0.1:5000 in your browser
 
 # 4. Run automated test suite (31 tests covering CRUD, Validators, TQM logging, Web API & Clinical Poka-Yoke)
 python -m unittest discover tests
@@ -167,8 +168,6 @@ HMS_Project/
 │   ├── sipoc_diagram.png          # SIPOC process map image
 │   ├── FMEA_RiskAudit.xlsx        # FMEA matrix with formula-driven RPN scores
 │   ├── build_fmea.py              # Regenerates FMEA_RiskAudit.xlsx
-│   ├── project_overview.md        # Project info table and objective
-│   ├── quality_objectives.md      # Measurable quality objectives
 │   └── testing.md                 # Testing strategy and test record format
 │
 ├── TQM/                           # TQM documentation
