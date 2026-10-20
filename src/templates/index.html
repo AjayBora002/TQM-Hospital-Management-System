@@ -18,6 +18,11 @@
             </div>
         </div>
         <div class="header-badges">
+            <div class="user-profile-container">
+                <span class="role-badge role-admin" id="currentRoleBadge">Admin</span>
+                <span id="currentUserNameDisplay" style="font-size:0.85rem; font-weight:500;">Dr. Ajay Bora</span>
+                <button type="button" onclick="openLoginModal()" style="font-size:0.75rem; padding:3px 8px; border-radius:4px; border:1px solid rgba(255,255,255,0.4); background:transparent; color:#fff; cursor:pointer;">🔄 Switch Role</button>
+            </div>
             <span class="badge-tqm">BBAT104 TQM</span>
             <span class="badge-live"><span class="live-dot"></span> System Live</span>
         </div>
@@ -25,16 +30,18 @@
 
     <!-- Navigation Tabs -->
     <nav id="navBar">
-        <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-        <button class="nav-tab" onclick="switchTab('patients')">👤 Patients</button>
-        <button class="nav-tab" onclick="switchTab('doctors')">👨‍⚕️ Doctors</button>
-        <button class="nav-tab" onclick="switchTab('appointments')">📅 Appointments</button>
-        <button class="nav-tab" onclick="switchTab('rooms')">🏥 Rooms / Wards</button>
-        <button class="nav-tab" onclick="switchTab('staff')">👥 Staff</button>
-        <button class="nav-tab" onclick="switchTab('pharmacy')">💊 Pharmacy</button>
-        <button class="nav-tab" onclick="switchTab('billing')">💳 Billing</button>
-        <button class="nav-tab" onclick="switchTab('audit')">🛡️ Audit Log</button>
-        <button class="nav-tab" onclick="switchTab('defects')">📋 Defect Checksheet</button>
+        <button class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-tab" data-tab="patients" onclick="switchTab('patients')">👤 Patients</button>
+        <button class="nav-tab" data-tab="doctors" onclick="switchTab('doctors')">👨‍⚕️ Doctors</button>
+        <button class="nav-tab" data-tab="appointments" onclick="switchTab('appointments')">📅 Appointments</button>
+        <button class="nav-tab" data-tab="rooms" onclick="switchTab('rooms')">🏥 Rooms / Wards</button>
+        <button class="nav-tab" data-tab="admissions" onclick="switchTab('admissions')">🛏️ Admissions & Stays</button>
+        <button class="nav-tab" data-tab="prescriptions" onclick="switchTab('prescriptions')">📝 Prescriptions</button>
+        <button class="nav-tab" data-tab="staff" onclick="switchTab('staff')">👥 Staff</button>
+        <button class="nav-tab" data-tab="pharmacy" onclick="switchTab('pharmacy')">💊 Pharmacy</button>
+        <button class="nav-tab" data-tab="billing" onclick="switchTab('billing')">💳 Billing</button>
+        <button class="nav-tab" data-tab="audit" onclick="switchTab('audit')">🛡️ Audit Log</button>
+        <button class="nav-tab" data-tab="defects" onclick="switchTab('defects')">📋 Defect Checksheet</button>
     </nav>
 
     <!-- Main Content Area -->
@@ -135,6 +142,22 @@
                     </ul>
                 </div>
             </div>
+
+            <!-- Database Automated Backup Management Card -->
+            <div style="margin-top: 20px; background: #ffffff; border-radius: 10px; padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="font-size: 1.05rem; color: var(--text-dark);">💾 System Administration & Automated Database Backup</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Atomic online SQLite database snapshots with audit logging and retention history.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="triggerManualBackup()" style="display: flex; align-items: center; gap: 6px;">
+                        💾 Create Backup Snapshot Now
+                    </button>
+                </div>
+                <div id="backup-status-area" style="font-size: 0.84rem; color: var(--text-muted); background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <span id="backup-last-status">Recent Snapshot: System ready. Click button to create a new verified backup.</span>
+                </div>
+            </div>
         </section>
 
         <!-- ================= PATIENTS TAB ================= -->
@@ -196,7 +219,10 @@
                 <div class="table-card">
                     <div class="table-header">
                         <h3>Registered Patients</h3>
-                        <input type="text" class="search-input" id="search-patients" placeholder="Search by name..." oninput="loadPatients(this.value)">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-patients" placeholder="Search name or phone..." oninput="loadPatients(this.value)">
+                            <a href="/api/export/patients" class="btn btn-secondary btn-sm" download style="text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">📥 Export CSV</a>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table>
@@ -324,6 +350,10 @@
                 <div class="table-card">
                     <div class="table-header">
                         <h3>Appointments Schedule</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-appointments" placeholder="Search doctor or patient..." oninput="filterAppointmentsTable(this.value)">
+                            <a href="/api/export/appointments" class="btn btn-secondary btn-sm" download style="text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">📥 Export CSV</a>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table>
@@ -399,6 +429,72 @@
                             </thead>
                             <tbody id="rooms-table-body">
                                 <tr><td colspan="6" style="text-align: center;">Loading rooms...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= INPATIENT ADMISSIONS & STAYS TAB ================= -->
+        <section id="tab-admissions" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Admit Inpatient to Bed</h3>
+                    <form id="admit-form" onsubmit="saveAdmission(event)">
+                        <div class="form-group">
+                            <label>Patient (Q07 Auto-Complete) *</label>
+                            <input type="text" id="admit-patient-name" class="form-control" required placeholder="Type patient name..." autocomplete="off">
+                            <input type="hidden" id="admit-patient-id">
+                            <div id="admit-patient-autocomplete" class="autocomplete-items" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Allocate Room / Bed *</label>
+                            <select id="admit-room-id" class="form-control" required>
+                                <option value="">-- Select Available Room --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Admission Date *</label>
+                            <input type="date" id="admit-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Admission Diagnosis / Clinical Reason</label>
+                            <textarea id="admit-diagnosis" class="form-control" rows="3" placeholder="e.g. Acute appendicitis, scheduled for laparoscopy"></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">✓ Admit Patient & Reserve Bed</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetAdmitForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Inpatient Admissions & Stays</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label style="font-size: 0.82rem; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="checkbox" id="admissions-active-only" onchange="loadAdmissions()" checked> Active Stays Only
+                            </label>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stay ID</th>
+                                    <th>Patient</th>
+                                    <th>Room</th>
+                                    <th>Type</th>
+                                    <th>Admitted Date</th>
+                                    <th>Discharged Date</th>
+                                    <th>Diagnosis</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admissions-table-body">
+                                <tr><td colspan="9" style="text-align: center;">Loading admissions...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -526,6 +622,91 @@
                         </table>
                     </div>
                 </div>
+        </section>
+
+        <!-- ================= PRESCRIPTIONS & MEDICAL HISTORY TAB ================= -->
+        <section id="tab-prescriptions" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Prescribe Medication (Clinical Safety)</h3>
+                    <form id="rx-form" onsubmit="savePrescription(event)">
+                        <div class="form-group">
+                            <label>Patient (Q07 Auto-Complete) *</label>
+                            <input type="text" id="rx-patient-name" class="form-control" required placeholder="Type patient name..." autocomplete="off">
+                            <input type="hidden" id="rx-patient-id">
+                            <input type="hidden" id="rx-patient-allergies" value="None">
+                            <div id="rx-patient-autocomplete" class="autocomplete-items" style="display:none;"></div>
+                            <div id="rx-patient-allergy-notice" style="display:none; font-size:0.8rem; margin-top:4px;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Attending Doctor *</label>
+                            <select id="rx-doctor-id" class="form-control" required>
+                                <option value="">-- Select Doctor --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Prescribe Medicine *</label>
+                            <select id="rx-medicine-id" class="form-control" required onchange="checkPrescriptionAllergyWarning()">
+                                <option value="">-- Select Pharmacy Item --</option>
+                            </select>
+                            <div id="rx-allergy-alert" class="clinical-danger-box" style="display:none;"></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Dosage *</label>
+                                <input type="text" id="rx-dosage" class="form-control" required placeholder="e.g. 500mg, 1 tab">
+                            </div>
+                            <div class="form-group">
+                                <label>Frequency *</label>
+                                <select id="rx-frequency" class="form-control" required>
+                                    {% for f in dosage_frequencies %}<option value="{{ f }}">{{ f }}</option>{% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (Days) *</label>
+                            <input type="number" id="rx-duration" class="form-control" required value="5" min="1" max="90">
+                        </div>
+                        <div class="form-group">
+                            <label>Doctor's Advice / Clinical Instructions</label>
+                            <input type="text" id="rx-instructions" class="form-control" placeholder="e.g. Take after food with warm water">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" id="rx-submit-btn" style="flex:1;">✓ Prescribe Medication</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetRxForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Prescription History & Medical Orders</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-prescriptions" placeholder="Search patient or medicine..." oninput="filterPrescriptionsTable(this.value)">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rx ID</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                    <th>Duration</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescriptions-table-body">
+                                <tr><td colspan="10" style="text-align: center;">Loading prescriptions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -580,6 +761,10 @@
                 <div class="table-card">
                     <div class="table-header">
                         <h3>Patient Invoices</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-bills" placeholder="Search patient name..." oninput="filterBillsTable(this.value)">
+                            <a href="/api/export/bills" class="btn btn-secondary btn-sm" download style="text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">📥 Export CSV</a>
+                        </div>
                     </div>
                     <div class="table-responsive">
                         <table>
@@ -771,6 +956,52 @@
                 <button type="button" class="btn btn-primary" id="ds-confirm-btn" onclick="executeDischarge()" style="background-color:var(--primary);">
                     ✓ Confirm Discharge & Release Bed
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Authentication & Role Switcher Modal -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-icon-success" style="background:#e0f2fe; color:var(--primary); font-size:1.3rem;">🔐</div>
+                <div>
+                    <div class="modal-title">Switch Active Role / User Login</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Role-Based Access Control (Admin, Doctor, Receptionist)</div>
+                </div>
+            </div>
+            <div class="modal-body" style="margin-bottom: 1rem;">
+                <div style="margin-bottom: 14px;">
+                    <div style="font-size:0.82rem; font-weight:600; color:var(--text-dark); margin-bottom:8px;">Fast-Switch Demo Profile:</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('admin', 'admin123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#2563eb;">👑 Admin</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Full Access</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('doctor', 'doctor123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#059669;">👨‍⚕️ Doctor</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Clinical & Rx</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('receptionist', 'recep123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#d97706;">📋 Reception</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Intake & Billing</div>
+                        </button>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                    <div class="form-group" style="margin-bottom:8px;">
+                        <label style="font-size:0.82rem;">Username</label>
+                        <input type="text" id="login-username" class="form-control" placeholder="admin, doctor, receptionist">
+                    </div>
+                    <div class="form-group" style="margin-bottom:8px;">
+                        <label style="font-size:0.82rem;">Password</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="••••••••">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitCustomLogin()">Login</button>
             </div>
         </div>
     </div>

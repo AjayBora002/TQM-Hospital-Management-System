@@ -129,7 +129,57 @@ CREATE TABLE IF NOT EXISTS vitals_log (
     recorded_by    TEXT NOT NULL DEFAULT 'front_desk_user',
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
 );
+
+-- Authentication & Role-Based Access Control (Admin, Doctor, Receptionist)
+CREATE TABLE IF NOT EXISTS users (
+    user_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    username      TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    role          TEXT NOT NULL CHECK(role IN ('Admin','Doctor','Receptionist')),
+    full_name     TEXT NOT NULL,
+    email         TEXT,
+    created_at    TEXT NOT NULL
+);
+
+-- Inpatient Admission & Bed Stay Tracking Workflow
+CREATE TABLE IF NOT EXISTS admissions (
+    admission_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id      INTEGER NOT NULL,
+    room_id         INTEGER NOT NULL,
+    admission_date  TEXT NOT NULL,
+    discharge_date  TEXT,
+    status          TEXT NOT NULL DEFAULT 'Admitted' CHECK(status IN ('Admitted','Discharged')),
+    diagnosis       TEXT,
+    discharge_notes TEXT,
+    created_at      TEXT NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE RESTRICT
+);
+
+-- Prescriptions & Clinical Medical History per Visit (Linking Medicines to Patients)
+CREATE TABLE IF NOT EXISTS prescriptions (
+    prescription_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id      INTEGER NOT NULL,
+    doctor_id       INTEGER NOT NULL,
+    appointment_id  INTEGER,
+    medicine_id     INTEGER NOT NULL,
+    dosage          TEXT NOT NULL,
+    frequency       TEXT NOT NULL,
+    duration_days   INTEGER NOT NULL DEFAULT 5,
+    instructions    TEXT,
+    prescribed_date TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'Active' CHECK(status IN ('Active','Dispensed','Completed','Discontinued')),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE SET NULL,
+    FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id) ON DELETE RESTRICT
+);
 """
+
+
+def _hash_pw(password: str) -> str:
+    import hashlib
+    return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
 
 def init_db():
@@ -141,6 +191,21 @@ def init_db():
     cols = [r["name"] for r in conn.execute("PRAGMA table_info(patients)").fetchall()]
     if "allergies" not in cols:
         conn.execute("ALTER TABLE patients ADD COLUMN allergies TEXT NOT NULL DEFAULT 'None'")
+
+    # Seed initial demo user accounts if empty
+    user_count = conn.execute("SELECT COUNT(*) as c FROM users").fetchone()["c"]
+    if user_count == 0:
+        from datetime import datetime
+        now_str = datetime.now().isoformat(timespec="seconds")
+        demo_users = [
+            ("admin", _hash_pw("admin123"), "Admin", "Dr. Ajay Bora (System Admin)", "admin@hospital.local"),
+            ("doctor", _hash_pw("doctor123"), "Doctor", "Dr. Rajesh Sharma (Lead Physician)", "doctor@hospital.local"),
+            ("receptionist", _hash_pw("recep123"), "Receptionist", "Priya Verma (Front Desk)", "reception@hospital.local"),
+        ]
+        conn.executemany(
+            "INSERT INTO users (username, password_hash, role, full_name, email, created_at) VALUES (?,?,?,?,?,?)",
+            [(u[0], u[1], u[2], u[3], u[4], now_str) for u in demo_users]
+        )
 
     conn.commit()
     conn.close()

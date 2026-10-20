@@ -54,11 +54,13 @@ function switchTab(tabId) {
     });
 
     // Lazy data refreshes
-    if (tabId === 'dashboard') loadDashboardData();
+    if (tabId === 'dashboard') { loadDashboardData(); loadBackupStatus(); }
     if (tabId === 'patients') { loadPatients(); loadRoomChoices(); }
     if (tabId === 'doctors') loadDoctors();
     if (tabId === 'appointments') { loadAppointments(); loadDoctorChoices(); }
     if (tabId === 'rooms') loadRooms();
+    if (tabId === 'admissions') { loadAdmissions(); loadAvailableRoomChoicesForAdmit(); }
+    if (tabId === 'prescriptions') { loadPrescriptions(); loadDoctorChoicesForRx(); loadMedicineChoicesForRx(); }
     if (tabId === 'staff') loadStaff();
     if (tabId === 'pharmacy') loadMedicines();
     if (tabId === 'billing') loadBills();
@@ -961,6 +963,477 @@ async function executeDischarge() {
     }
 }
 
+// ================= AUTHENTICATION & ROLE-BASED ACCESS CONTROL =================
+let activeUserRole = 'Admin';
+
+async function loadCurrentUser() {
+    try {
+        const res = await fetch('/api/auth/current');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.user) {
+                activeUserRole = data.user.role;
+                const roleBadge = document.getElementById('currentRoleBadge');
+                const nameDisplay = document.getElementById('currentUserNameDisplay');
+                if (roleBadge) {
+                    roleBadge.innerText = activeUserRole;
+                    roleBadge.className = `role-badge role-${activeUserRole.toLowerCase()}`;
+                }
+                if (nameDisplay) {
+                    nameDisplay.innerText = data.user.full_name;
+                }
+                applyRolePermissions(activeUserRole);
+            }
+        }
+    } catch (e) {
+        console.error('Error loading current user', e);
+    }
+}
+
+function applyRolePermissions(role) {
+    const allTabs = document.querySelectorAll('.nav-tab');
+    allTabs.forEach(tab => {
+        const tName = tab.getAttribute('data-tab');
+        if (!tName) return;
+        if (role === 'Doctor') {
+            if (['staff', 'pharmacy', 'billing', 'audit', 'defects', 'rooms'].includes(tName)) {
+                tab.style.display = 'none';
+            } else {
+                tab.style.display = 'inline-flex';
+            }
+        } else if (role === 'Receptionist') {
+            if (['doctors', 'prescriptions', 'staff', 'pharmacy', 'audit', 'defects'].includes(tName)) {
+                tab.style.display = 'none';
+            } else {
+                tab.style.display = 'inline-flex';
+            }
+        } else {
+            tab.style.display = 'inline-flex';
+        }
+    });
+}
+
+function openLoginModal() {
+    const m = document.getElementById('loginModal');
+    if (m) m.classList.add('show');
+}
+
+function closeLoginModal() {
+    const m = document.getElementById('loginModal');
+    if (m) m.classList.remove('show');
+}
+
+async function quickLogin(username, password) {
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            showToast(`Role switched: ${data.user.full_name} (${data.user.role})`);
+            closeLoginModal();
+            await loadCurrentUser();
+            switchTab('dashboard');
+        } else {
+            showToast('Login authentication failed', true);
+        }
+    } catch (e) {
+        showToast('Error during role authentication', true);
+    }
+}
+
+async function submitCustomLogin() {
+    const u = document.getElementById('login-username').value.trim();
+    const p = document.getElementById('login-password').value;
+    if (!u || !p) {
+        showToast('Please enter both username and password', true);
+        return;
+    }
+    await quickLogin(u, p);
+}
+
+// ================= INPATIENT ADMISSIONS & STAYS =================
+async function loadAdmissions() {
+    const activeOnly = document.getElementById('admissions-active-only')?.checked ? 1 : 0;
+    try {
+        const res = await fetch(`/api/admissions?active_only=${activeOnly}`);
+        if (!res.ok) return;
+        const list = await res.json();
+        const tbody = document.getElementById('admissions-table-body');
+        if (!tbody) return;
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-muted); padding:16px;">No inpatient admission stays found.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map(a => `
+            <tr>
+                <td>#${a.admission_id}</td>
+                <td><strong>${escapeHtml(a.patient_name)}</strong></td>
+                <td><span class="badge badge-info">Room #${escapeHtml(a.room_number)}</span></td>
+                <td>${escapeHtml(a.room_type)}</td>
+                <td>${escapeHtml(a.admission_date)}</td>
+                <td>${a.discharge_date ? escapeHtml(a.discharge_date) : '<span style="color:var(--warning); font-weight:600;">In Stay</span>'}</td>
+                <td style="font-size:0.82rem; color:var(--text-muted);">${escapeHtml(a.diagnosis || 'General Inpatient Stay')}</td>
+                <td>
+                    <span class="badge ${a.status === 'Admitted' ? 'badge-danger' : 'badge-success'}">
+                        ${escapeHtml(a.status)}
+                    </span>
+                </td>
+                <td>
+                    ${a.status === 'Admitted' ? `<button class="btn btn-warning btn-sm" onclick="openDischargeModal(${a.patient_id})" title="Discharge and clear bed">🛏️ Discharge</button>` : '<span style="color:var(--text-muted); font-size:0.8rem;">Discharged</span>'}
+                </td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function loadAvailableRoomChoicesForAdmit() {
+    try {
+        const res = await fetch('/api/rooms/choices?available_only=1');
+        if (res.ok) {
+            const rooms = await res.json();
+            const sel = document.getElementById('admit-room-id');
+            if (sel) {
+                sel.innerHTML = '<option value="">-- Select Available Room --</option>' +
+                    rooms.map(r => `<option value="${r.room_id}">Room #${r.room_number} (${r.room_type} - ₹${r.rate_per_day}/day)</option>`).join('');
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function saveAdmission(e) {
+    e.preventDefault();
+    const pid = document.getElementById('admit-patient-id').value;
+    const rid = document.getElementById('admit-room-id').value;
+    const date = document.getElementById('admit-date').value;
+    const diag = document.getElementById('admit-diagnosis').value;
+
+    if (!pid) {
+        showToast('Please search and select a patient from auto-complete', true);
+        return;
+    }
+    if (!rid) {
+        showToast('Please select an available room/bed', true);
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admissions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ patient_id: pid, room_id: rid, admission_date: date, diagnosis: diag })
+        });
+        if (res.ok) {
+            showToast('Patient admitted and bed reserved successfully!');
+            resetAdmitForm();
+            loadAdmissions();
+            loadAvailableRoomChoicesForAdmit();
+            loadRooms();
+            loadDashboardData();
+        } else {
+            const err = await res.json();
+            showToast(err.error || 'Failed to admit patient', true);
+        }
+    } catch (err) {
+        showToast('Error admitting patient', true);
+    }
+}
+
+function resetAdmitForm() {
+    document.getElementById('admit-patient-id').value = '';
+    document.getElementById('admit-patient-name').value = '';
+    document.getElementById('admit-room-id').value = '';
+    document.getElementById('admit-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('admit-diagnosis').value = '';
+}
+
+// ================= PRESCRIPTIONS & CLINICAL SAFETY =================
+let allPrescriptionsList = [];
+
+async function loadPrescriptions() {
+    try {
+        const res = await fetch('/api/prescriptions');
+        if (!res.ok) return;
+        allPrescriptionsList = await res.json();
+        renderPrescriptionsTable(allPrescriptionsList);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderPrescriptionsTable(list) {
+    const tbody = document.getElementById('prescriptions-table-body');
+    if (!tbody) return;
+    if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; color:var(--text-muted); padding:16px;">No prescription orders found.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = list.map(rx => `
+        <tr>
+            <td>#${rx.prescription_id}</td>
+            <td><strong>${escapeHtml(rx.patient_name)}</strong></td>
+            <td>${escapeHtml(rx.doctor_name)} <span style="font-size:0.75rem; color:var(--text-muted);">(${escapeHtml(rx.department)})</span></td>
+            <td><span style="font-weight:600; color:var(--primary);">${escapeHtml(rx.medicine_name)}</span></td>
+            <td>${escapeHtml(rx.dosage)}</td>
+            <td>${escapeHtml(rx.frequency)}</td>
+            <td>${rx.duration_days} days</td>
+            <td>${escapeHtml(rx.prescribed_date)}</td>
+            <td>
+                <span class="badge ${rx.status === 'Active' ? 'badge-info' : 'badge-success'}">
+                    ${escapeHtml(rx.status)}
+                </span>
+            </td>
+            <td>
+                ${rx.status === 'Active' ? `<button class="btn btn-primary btn-sm" onclick="dispenseRx(${rx.prescription_id})">💊 Dispense</button>` : '<span style="color:var(--success); font-size:0.8rem; font-weight:600;">✓ Dispensed</span>'}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filterPrescriptionsTable(query) {
+    if (!query || !query.trim()) {
+        renderPrescriptionsTable(allPrescriptionsList);
+        return;
+    }
+    const q = query.toLowerCase();
+    const filtered = allPrescriptionsList.filter(rx =>
+        (rx.patient_name && rx.patient_name.toLowerCase().includes(q)) ||
+        (rx.medicine_name && rx.medicine_name.toLowerCase().includes(q)) ||
+        (rx.doctor_name && rx.doctor_name.toLowerCase().includes(q))
+    );
+    renderPrescriptionsTable(filtered);
+}
+
+async function loadDoctorChoicesForRx() {
+    try {
+        const res = await fetch('/api/doctors/choices');
+        if (res.ok) {
+            const docs = await res.json();
+            const sel = document.getElementById('rx-doctor-id');
+            if (sel) {
+                sel.innerHTML = '<option value="">-- Select Doctor --</option>' +
+                    docs.map(d => `<option value="${d.doctor_id}">${escapeHtml(d.full_name)} (${escapeHtml(d.department)})</option>`).join('');
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+let rxMedicinesList = [];
+async function loadMedicineChoicesForRx() {
+    try {
+        const res = await fetch('/api/medicines');
+        if (res.ok) {
+            rxMedicinesList = await res.json();
+            const sel = document.getElementById('rx-medicine-id');
+            if (sel) {
+                sel.innerHTML = '<option value="">-- Select Pharmacy Item --</option>' +
+                    rxMedicinesList.map(m => `<option value="${m.medicine_id}" data-name="${escapeHtml(m.name)}" data-stock="${m.stock_qty}">${escapeHtml(m.name)} (Stock: ${m.stock_qty})</option>`).join('');
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function checkPrescriptionAllergyWarning() {
+    const allergies = (document.getElementById('rx-patient-allergies')?.value || 'None').toLowerCase();
+    const medSelect = document.getElementById('rx-medicine-id');
+    const alertBox = document.getElementById('rx-allergy-alert');
+    const submitBtn = document.getElementById('rx-submit-btn');
+
+    if (!medSelect || !alertBox) return;
+
+    const selectedOpt = medSelect.options[medSelect.selectedIndex];
+    const medName = (selectedOpt?.getAttribute('data-name') || '').toLowerCase();
+
+    alertBox.style.display = 'none';
+    if (submitBtn) submitBtn.disabled = false;
+
+    if (!medName || allergies === 'none' || allergies === '') return;
+
+    const conflicts = {
+        'penicillin': ['amoxicillin', 'ampicillin', 'penicillin', 'augmentin', 'moxikind'],
+        'sulfa drugs': ['bactrim', 'sulfamethoxazole', 'septra', 'sulfa'],
+        'aspirin / nsaids': ['aspirin', 'ibuprofen', 'diclofenac', 'combiflam'],
+        'paracetamol': ['paracetamol', 'crocin', 'calpol', 'dolo', 'acetaminophen'],
+        'cephalosporins': ['cefixime', 'ceftriaxone', 'taxim']
+    };
+
+    for (const [allergyGroup, keywords] of Object.entries(conflicts)) {
+        if (allergies.includes(allergyGroup)) {
+            for (const kw of keywords) {
+                if (medName.includes(kw)) {
+                    alertBox.innerHTML = `⚠️ <strong>CLINICAL SAFETY ALERT:</strong> Patient has documented allergy to <strong>${escapeHtml(allergies)}</strong>. '${escapeHtml(selectedOpt.getAttribute('data-name'))}' is contraindicated!`;
+                    alertBox.style.display = 'block';
+                    if (submitBtn) submitBtn.disabled = true;
+                    return;
+                }
+            }
+        }
+    }
+}
+
+async function savePrescription(e) {
+    e.preventDefault();
+    const pid = document.getElementById('rx-patient-id').value;
+    const did = document.getElementById('rx-doctor-id').value;
+    const mid = document.getElementById('rx-medicine-id').value;
+    const dosage = document.getElementById('rx-dosage').value.trim();
+    const freq = document.getElementById('rx-frequency').value;
+    const dur = document.getElementById('rx-duration').value;
+    const instr = document.getElementById('rx-instructions').value.trim();
+
+    if (!pid) {
+        showToast('Please search and select a patient from auto-complete', true);
+        return;
+    }
+    if (!did) {
+        showToast('Please select a prescribing doctor', true);
+        return;
+    }
+    if (!mid) {
+        showToast('Please select a pharmacy medicine', true);
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/prescriptions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                patient_id: pid,
+                doctor_id: did,
+                medicine_id: mid,
+                dosage: dosage,
+                frequency: freq,
+                duration_days: dur,
+                instructions: instr
+            })
+        });
+        if (res.ok) {
+            showToast('Prescription recorded and logged to clinical history!');
+            resetRxForm();
+            loadPrescriptions();
+            loadDashboardData();
+        } else {
+            const err = await res.json();
+            showToast(err.error || 'Failed to record prescription', true);
+        }
+    } catch (err) {
+        showToast('Error recording prescription', true);
+    }
+}
+
+function resetRxForm() {
+    document.getElementById('rx-patient-id').value = '';
+    document.getElementById('rx-patient-name').value = '';
+    document.getElementById('rx-patient-allergies').value = 'None';
+    const notice = document.getElementById('rx-patient-allergy-notice');
+    if (notice) notice.style.display = 'none';
+    document.getElementById('rx-doctor-id').value = '';
+    document.getElementById('rx-medicine-id').value = '';
+    document.getElementById('rx-dosage').value = '';
+    document.getElementById('rx-instructions').value = '';
+    const alertBox = document.getElementById('rx-allergy-alert');
+    if (alertBox) alertBox.style.display = 'none';
+    const submitBtn = document.getElementById('rx-submit-btn');
+    if (submitBtn) submitBtn.disabled = false;
+}
+
+async function dispenseRx(rxId) {
+    openConfirmModal(
+        'Dispense Prescription',
+        `Dispense prescription #${rxId} and deduct pharmacy stock?`,
+        async () => {
+            try {
+                const res = await fetch(`/api/prescriptions/${rxId}/dispense`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    showToast('Prescription dispensed and medicine inventory updated!');
+                    loadPrescriptions();
+                    loadMedicines();
+                    loadMedicineChoicesForRx();
+                    loadDashboardData();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || 'Dispense failed', true);
+                }
+            } catch (e) {
+                showToast('Error dispensing prescription', true);
+            }
+        }
+    );
+}
+
+// ================= AUTOMATED BACKUPS =================
+async function triggerManualBackup() {
+    try {
+        showToast('Creating database snapshot...');
+        const res = await fetch('/api/system/backup', { method: 'POST' });
+        if (res.ok) {
+            const data = await res.json();
+            showToast(`Backup verified! ${data.backup.filename} (${data.backup.size_kb} KB)`);
+            loadBackupStatus();
+        } else {
+            showToast('Backup creation failed', true);
+        }
+    } catch (e) {
+        showToast('Error creating backup', true);
+    }
+}
+
+async function loadBackupStatus() {
+    const area = document.getElementById('backup-last-status');
+    if (!area) return;
+    try {
+        const res = await fetch('/api/system/backups');
+        if (res.ok) {
+            const backups = await res.json();
+            if (backups.length > 0) {
+                const latest = backups[0];
+                area.innerHTML = `<strong>Latest Backup:</strong> <code>${escapeHtml(latest.filename)}</code> (${latest.size_kb} KB, saved ${escapeHtml(latest.modified_at)}) | Total retention: ${backups.length} snapshots available.`;
+            } else {
+                area.innerHTML = 'No backups created yet. Click "Create Backup Snapshot Now" to initialize.';
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// ================= TABLE SEARCH FILTERS =================
+function filterAppointmentsTable(query) {
+    const tbody = document.getElementById('appts-table-body');
+    if (!tbody) return;
+    const q = (query || '').toLowerCase();
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        r.style.display = text.includes(q) ? '' : 'none';
+    });
+}
+
+function filterBillsTable(query) {
+    const tbody = document.getElementById('bills-table-body');
+    if (!tbody) return;
+    const q = (query || '').toLowerCase();
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(r => {
+        const text = r.innerText.toLowerCase();
+        r.style.display = text.includes(q) ? '' : 'none';
+    });
+}
+
 // Initial setup on window load
 window.addEventListener('DOMContentLoaded', () => {
     setupPhoneMasking();
@@ -985,6 +1458,48 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     );
 
-    // Load initial view
+    // Setup patient auto-complete for admissions tab
+    setupAutocomplete(
+        document.getElementById('admit-patient-name'),
+        document.getElementById('admit-patient-autocomplete'),
+        '/api/patients/autocomplete',
+        (item) => {
+            document.getElementById('admit-patient-id').value = item.id;
+        }
+    );
+
+    // Setup patient auto-complete for prescriptions tab
+    setupAutocomplete(
+        document.getElementById('rx-patient-name'),
+        document.getElementById('rx-patient-autocomplete'),
+        '/api/patients/autocomplete',
+        async (item) => {
+            document.getElementById('rx-patient-id').value = item.id;
+            try {
+                const res = await fetch(`/api/patients/${item.id}`);
+                if (res.ok) {
+                    const p = await res.json();
+                    document.getElementById('rx-patient-allergies').value = p.allergies || 'None';
+                    const notice = document.getElementById('rx-patient-allergy-notice');
+                    if (notice) {
+                        if (p.allergies && p.allergies !== 'None') {
+                            notice.innerHTML = `<span class="badge-allergy">⚠️ Allergy: ${escapeHtml(p.allergies)}</span>`;
+                            notice.style.display = 'block';
+                        } else {
+                            notice.innerHTML = `<span style="color:var(--success);">✓ No allergies documented</span>`;
+                            notice.style.display = 'block';
+                        }
+                    }
+                    checkPrescriptionAllergyWarning();
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    );
+
+    // Load current user and initial dashboard view
+    loadCurrentUser();
     loadDashboardData();
+    loadBackupStatus();
 });

@@ -62,3 +62,22 @@ VITALS_RANGES = {
     "spo2": {"min": 50, "max": 100, "normal_min": 95, "normal_max": 100}
 }
 
+# ---- Authentication & Role Management --------------------------------------
+USER_ROLES = ["Admin", "Doctor", "Receptionist"]
+
+# ---- Inpatient Admission & Stays -------------------------------------------
+ADMISSION_STATUS = ["Admitted", "Discharged"]
+
+# ---- Prescriptions & Pharmacy Clinical Workflow ----------------------------
+DOSAGE_FREQUENCIES = [
+    "Once daily (OD)",
+    "Twice daily (BD)",
+    "Thrice daily (TDS)",
+    "Four times daily (QID)",
+    "As needed (SOS)"
+]
+PRESCRIPTION_STATUS = ["Active", "Dispensed", "Completed", "Discontinued"]
+
+# ---- Automated Database Backup ---------------------------------------------
+BACKUP_DIR = os.path.join(BASE_DIR, "backups")
+

@@ -18,6 +18,13 @@ def low_stock():
     return rows
 
 
+def get_by_id(medicine_id):
+    conn = get_connection()
+    row = conn.execute("SELECT * FROM medicines WHERE medicine_id=?", (medicine_id,)).fetchone()
+    conn.close()
+    return row
+
+
 def add(name, category, stock_qty, unit_price, reorder_level):
     conn = get_connection()
     cur = conn.cursor()

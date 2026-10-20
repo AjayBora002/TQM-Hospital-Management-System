@@ -54,6 +54,7 @@ class BillingTab(ttk.Frame):
         ttk.Button(btns, text="Generate Bill", command=self.add_bill).pack(side="left", padx=4)
         ttk.Button(btns, text="Mark Paid (Selected)", command=self.mark_paid).pack(side="left", padx=4)
         ttk.Button(btns, text="Delete Selected", command=self.delete_bill).pack(side="left", padx=4)
+        ttk.Button(btns, text="Export CSV", command=self.export_csv).pack(side="left", padx=4)
         ttk.Button(btns, text="Clear Form", command=self.clear_form).pack(side="left", padx=4)
 
     def _build_table(self):
@@ -140,3 +141,24 @@ class BillingTab(ttk.Frame):
         messagebox.showinfo("Deleted", "Bill deleted.")
         self.clear_form()
         self.refresh()
+
+    def export_csv(self):
+        import csv
+        from tkinter import filedialog
+        path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialfile="hms_billing_export.csv"
+        )
+        if not path:
+            return
+        bills = bill_model.list_all()
+        try:
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Bill ID", "Patient Name", "Room Charges", "Consultation", "Medicine", "Total Amount", "Payment Method", "Status"])
+                for b in bills:
+                    writer.writerow([b["bill_id"], b["patient_name"], b["room_charges"], b["consultation_charges"], b["medicine_charges"], b["total_amount"], b["payment_method"], b["payment_status"]])
+            messagebox.showinfo("Export Successful", f"Billing report exported successfully to:\n{path}")
+        except Exception as e:
+            messagebox.showerror("Export Failed", f"Could not write CSV: {e}")

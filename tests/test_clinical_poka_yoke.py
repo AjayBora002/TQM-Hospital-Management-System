@@ -12,6 +12,10 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
 import config
+import tempfile
+import shutil
+import utils.logging_service as ls
+
 config.DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_clinical_hms.db")
 
 from database.db_manager import init_db
@@ -28,6 +32,10 @@ from utils.exception_handler import ValidationError
 class TestClinicalPokaYoke(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.orig_audit = ls.AUDIT_LOG_CSV
+        ls.AUDIT_LOG_CSV = os.path.join(cls.temp_dir, "test_audit.csv")
+
         if os.path.exists(config.DB_PATH):
             try:
                 os.remove(config.DB_PATH)
@@ -37,7 +45,13 @@ class TestClinicalPokaYoke(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        ls.AUDIT_LOG_CSV = cls.orig_audit
+        shutil.rmtree(cls.temp_dir, ignore_errors=True)
         if os.path.exists(config.DB_PATH):
+            try:
+                os.remove(config.DB_PATH)
+            except Exception:
+                pass
             try:
                 os.remove(config.DB_PATH)
             except OSError:

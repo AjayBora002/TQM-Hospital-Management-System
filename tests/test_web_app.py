@@ -2,10 +2,25 @@
 test_web_app.py -- Automated unit and integration tests for HMS Web Application
 BBAT104 Quality Goal: Q07 - Improve Data Accuracy
 """
+import sys
+import os
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+src_path = os.path.join(project_root, "src")
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
+
 import unittest
 import json
-from src.web_app import app
-from src.database.db_manager import init_db
+
+try:
+    from src.web_app import app
+    from src.database.db_manager import init_db
+except ImportError:
+    from web_app import app
+    from database.db_manager import init_db
 
 
 class TestWebApp(unittest.TestCase):

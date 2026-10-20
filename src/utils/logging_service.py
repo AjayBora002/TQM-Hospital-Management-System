@@ -35,15 +35,34 @@ def _ensure_csv_headers():
                 writer.writerow(headers)
 
 
+def _get_path(env_var, default_path):
+    return os.environ.get(env_var, default_path)
+
+
+def is_test_environment():
+    if os.environ.get("HMS_TEST_MODE") == "1":
+        return True
+    try:
+        import config
+        if "test" in os.path.basename(config.DB_PATH).lower():
+            return True
+    except Exception:
+        pass
+    return False
+
+
 _ensure_csv_headers()
 
 
 def log_audit_event(module, action, record_id="", result="SUCCESS", description="", user_id="front_desk_user", role="Staff"):
     """Logs an operational data modification to TQM audit_logs.csv."""
+    if is_test_environment() and "HMS_AUDIT_LOG_CSV" not in os.environ:
+        return
     _ensure_csv_headers()
+    target_csv = _get_path("HMS_AUDIT_LOG_CSV", AUDIT_LOG_CSV)
     ts = datetime.now().isoformat(timespec="seconds")
     try:
-        with open(AUDIT_LOG_CSV, "a", newline="", encoding="utf-8") as f:
+        with open(target_csv, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([ts, user_id, role, module, action, str(record_id), result, description])
     except Exception as e:
@@ -52,12 +71,15 @@ def log_audit_event(module, action, record_id="", result="SUCCESS", description=
 
 def log_error_event(module, error_type, severity="HIGH", message="", user_id="front_desk_user", action="Execute"):
     """Logs an operational error or exception to TQM error_logs.csv."""
-    _ensure_csv_headers()
-    ts = datetime.now().isoformat(timespec="seconds")
     err_id = f"ERR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+    if is_test_environment() and "HMS_ERROR_LOG_CSV" not in os.environ:
+        return err_id
+    _ensure_csv_headers()
+    target_csv = _get_path("HMS_ERROR_LOG_CSV", ERROR_LOG_CSV)
+    ts = datetime.now().isoformat(timespec="seconds")
     clean_msg = str(message).replace("\n", " ").replace(",", ";")[:250]
     try:
-        with open(ERROR_LOG_CSV, "a", newline="", encoding="utf-8") as f:
+        with open(target_csv, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([ts, err_id, module, error_type, severity, user_id, action, "Logged", clean_msg])
     except Exception as e:
@@ -67,10 +89,13 @@ def log_error_event(module, error_type, severity="HIGH", message="", user_id="fr
 
 def log_defect(module, error_category, count=1, remarks=""):
     """Logs defect checksheet count for Pareto chart & SQC tracking."""
+    if is_test_environment() and "HMS_CHECKSHEET_CSV" not in os.environ:
+        return
     _ensure_csv_headers()
+    target_csv = _get_path("HMS_CHECKSHEET_CSV", CHECKSHEET_CSV)
     date_str = datetime.now().strftime("%Y-%m-%d")
     try:
-        with open(CHECKSHEET_CSV, "a", newline="", encoding="utf-8") as f:
+        with open(target_csv, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([date_str, module, error_category, count, remarks])
     except Exception as e:
@@ -79,10 +104,13 @@ def log_defect(module, error_category, count=1, remarks=""):
 
 def log_metric(metric_id, metric_name, value, target, status="Compliant", evidence="System Audit"):
     """Logs quality assurance metric tracking record."""
+    if is_test_environment() and "HMS_QUALITY_METRICS_CSV" not in os.environ:
+        return
     _ensure_csv_headers()
+    target_csv = _get_path("HMS_QUALITY_METRICS_CSV", QUALITY_METRICS_CSV)
     date_str = datetime.now().strftime("%Y-%m-%d")
     try:
-        with open(QUALITY_METRICS_CSV, "a", newline="", encoding="utf-8") as f:
+        with open(target_csv, "a", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow([date_str, metric_id, metric_name, value, target, status, evidence])
     except Exception as e:

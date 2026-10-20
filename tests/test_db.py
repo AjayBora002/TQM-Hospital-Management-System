@@ -10,6 +10,10 @@ import unittest
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
 import config
+import tempfile
+import shutil
+import utils.logging_service as ls
+
 config.DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_hms.db")
 
 from database.db_manager import init_db, get_connection  # noqa: E402
@@ -19,14 +23,23 @@ from models import patient, doctor, room, appointment, staff, medicine, bill, au
 class TestHMSModels(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.temp_dir = tempfile.mkdtemp()
+        cls.orig_audit = ls.AUDIT_LOG_CSV
+        ls.AUDIT_LOG_CSV = os.path.join(cls.temp_dir, "test_audit.csv")
+
         if os.path.exists(config.DB_PATH):
             os.remove(config.DB_PATH)
         init_db()
 
     @classmethod
     def tearDownClass(cls):
+        ls.AUDIT_LOG_CSV = cls.orig_audit
+        shutil.rmtree(cls.temp_dir, ignore_errors=True)
         if os.path.exists(config.DB_PATH):
-            os.remove(config.DB_PATH)
+            try:
+                os.remove(config.DB_PATH)
+            except Exception:
+                pass
 
     def test_01_room_crud(self):
         """Test Room module: Add, List, and verify properties."""

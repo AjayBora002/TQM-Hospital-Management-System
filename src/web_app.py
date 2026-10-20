@@ -23,7 +23,8 @@ from config import (
     APP_TITLE, GENDERS, BLOOD_GROUPS, DEPARTMENTS, APPT_STATUS,
     ROOM_TYPES, ROOM_STATUS, STAFF_ROLES, SHIFTS, PAYMENT_METHODS,
     PAYMENT_STATUS, MEDICINE_CATEGORIES, DEFECT_CATEGORIES,
-    DEFECT_SEVERITY, DEFECT_STATUS, ALLERGIES, STANDARD_APPOINTMENT_SLOTS
+    DEFECT_SEVERITY, DEFECT_STATUS, ALLERGIES, STANDARD_APPOINTMENT_SLOTS,
+    USER_ROLES, DOSAGE_FREQUENCIES, ADMISSION_STATUS
 )
 from database.db_manager import init_db
 from api import register_api
@@ -38,6 +39,7 @@ app = Flask(
     template_folder=TEMPLATE_DIR,
     static_folder=STATIC_DIR
 )
+app.secret_key = "hms-tqm-q07-secret-key-2026"
 
 # Initialize database schema and default records
 init_db()
@@ -66,7 +68,10 @@ def index():
         defect_severities=DEFECT_SEVERITY,
         defect_statuses=DEFECT_STATUS,
         allergies=ALLERGIES,
-        standard_slots=STANDARD_APPOINTMENT_SLOTS
+        standard_slots=STANDARD_APPOINTMENT_SLOTS,
+        user_roles=USER_ROLES,
+        dosage_frequencies=DOSAGE_FREQUENCIES,
+        admission_statuses=ADMISSION_STATUS
     )
 
 

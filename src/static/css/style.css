@@ -639,3 +639,54 @@ footer {
     margin-top: 8px;
 }
 
+/* User Profile Badge & RBAC */
+.user-profile-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.role-badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.role-badge.role-admin { background: #3b82f6; color: #ffffff; }
+.role-badge.role-doctor { background: #10b981; color: #ffffff; }
+.role-badge.role-receptionist { background: #f59e0b; color: #ffffff; }
+
+.search-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.search-input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+.search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+

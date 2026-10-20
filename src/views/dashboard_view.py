@@ -16,8 +16,22 @@ class DashboardTab(ttk.Frame):
 
         self.cards_frame = ttk.Frame(self)
         self.cards_frame.pack(fill="x", padx=15)
-        ttk.Button(self, text="Refresh Dashboard", command=self.refresh).pack(anchor="w", padx=15, pady=10)
+
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(anchor="w", padx=15, pady=10)
+        ttk.Button(btn_frame, text="Refresh Dashboard", command=self.refresh).pack(side="left", padx=4)
+        ttk.Button(btn_frame, text="Backup Database Now", command=self.backup_database_action).pack(side="left", padx=4)
         self.refresh()
+
+    def backup_database_action(self):
+        from utils.backup_service import backup_database
+        from tkinter import messagebox
+        try:
+            res = backup_database(performed_by="desktop_admin")
+            messagebox.showinfo("Backup Successful", f"Database snapshot created successfully!\n\nFile: {res['filename']}\nSize: {res['size_kb']} KB")
+            self.refresh()
+        except Exception as e:
+            messagebox.showerror("Backup Failed", f"Could not create backup: {e}")
 
     def _stat(self, label, query):
         conn = get_connection()

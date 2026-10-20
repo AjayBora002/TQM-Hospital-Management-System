@@ -7,16 +7,30 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# Defect frequency by category from TQM/data/checksheet.csv (15 entries, 33 total defects)
-# Aggregated: Data Entry = 5+3+2+2+1+1 = 14, Validation = 4+3+3+2+1+1 = 11 (capped at 11 for clarity),
-# UI = 2+1 = 3, Business Logic = 2, Other = 3 (Staff Data Entry + Audit Validation)
-defect_counts = {
-    "Data Entry": 14,
-    "Validation": 11,
-    "UI": 3,
-    "Business Logic": 2,
-    "Other": 3,
-}
+import os
+import csv
+from collections import defaultdict
+
+# Defect frequency dynamically parsed from TQM/data/checksheet.csv (15 entries, 33 total defects)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+csv_path = os.path.join(base_dir, "TQM", "data", "checksheet.csv")
+
+defect_counts = defaultdict(int)
+if os.path.exists(csv_path):
+    with open(csv_path, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            cat = row["error_category"].strip()
+            count = int(row["count"])
+            defect_counts[cat] += count
+else:
+    # Exact fallback matching checksheet.csv: 14 Data Entry, 14 Validation, 3 UI, 2 Business Logic
+    defect_counts = {
+        "Data Entry": 14,
+        "Validation": 14,
+        "UI": 3,
+        "Business Logic": 2,
+    }
 
 items = sorted(defect_counts.items(), key=lambda kv: kv[1], reverse=True)
 categories = [k for k, _ in items]

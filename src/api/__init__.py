@@ -10,6 +10,11 @@ from .staff import staff_bp
 from .medicines import medicines_bp
 from .bills import bills_bp
 from .audit import audit_bp
+from .auth import auth_bp
+from .admissions import admissions_bp
+from .prescriptions import prescriptions_bp
+from .export import export_bp
+from .system import system_bp
 
 def register_api(app):
     """
@@ -25,3 +30,8 @@ def register_api(app):
     app.register_blueprint(medicines_bp, url_prefix="/api")
     app.register_blueprint(bills_bp, url_prefix="/api")
     app.register_blueprint(audit_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(admissions_bp, url_prefix="/api")
+    app.register_blueprint(prescriptions_bp, url_prefix="/api")
+    app.register_blueprint(export_bp, url_prefix="/api")
+    app.register_blueprint(system_bp, url_prefix="/api")

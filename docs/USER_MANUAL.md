@@ -2,10 +2,10 @@
 
 **Course:** BBAT104 — Fundamentals of Total Quality Management  
 **Academic Session:** 2026–27  
-**Student:** Ajay Bora (Branch: CSE — Section B)  
+**Student:** Ajay Bora (Roll No: 2410302008 — Branch: CSE — Section B)  
 **Baseline System:** Hospital Management System (Digit 2)  
 **Assigned Quality Goal:** Q07 — Improve Data Accuracy  
-**Repository:** `TQM-Hospital-Management-System`  
+**Repository Identifier:** `BBAT104_TQM_2410302008` (GitHub: `TQM-Hospital-Management-System`)  
 
 ---
 

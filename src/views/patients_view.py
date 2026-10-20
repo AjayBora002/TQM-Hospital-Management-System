@@ -63,6 +63,7 @@ class PatientsTab(ttk.Frame):
         ttk.Button(btns, text="Update Selected", command=self.update_patient).pack(side="left", padx=4)
         ttk.Button(btns, text="Discharge Patient", command=self.discharge_patient).pack(side="left", padx=4)
         ttk.Button(btns, text="Delete Selected", command=self.delete_patient).pack(side="left", padx=4)
+        ttk.Button(btns, text="Export CSV", command=self.export_csv).pack(side="left", padx=4)
         ttk.Button(btns, text="Clear Form", command=self.clear_form).pack(side="left", padx=4)
         ttk.Button(btns, text="Refresh Rooms", command=self._load_room_choices).pack(side="left", padx=4)
 
@@ -214,4 +215,25 @@ class PatientsTab(ttk.Frame):
         self.clear_form()
         self._load_room_choices()
         self.refresh()
+
+    def export_csv(self):
+        import csv
+        from tkinter import filedialog
+        path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+            initialfile="hms_patients_export.csv"
+        )
+        if not path:
+            return
+        patients = patient_model.list_all()
+        try:
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow(["Patient ID", "Full Name", "Gender", "DOB", "Blood Group", "Phone", "Allergies", "Room", "Address"])
+                for p in patients:
+                    writer.writerow([p["patient_id"], p["full_name"], p["gender"], p["dob"], p["blood_group"], p["phone"], p["allergies"], p["room_number"] or "None", p["address"]])
+            messagebox.showinfo("Export Successful", f"Patient directory exported successfully to:\n{path}")
+        except Exception as e:
+            messagebox.showerror("Export Failed", f"Could not write CSV: {e}")
 
