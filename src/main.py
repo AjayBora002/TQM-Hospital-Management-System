@@ -37,14 +37,49 @@ from views.medicines_view import MedicinesTab
 from views.billing_view import BillingTab
 from views.audit_view import AuditLogTab
 from views.defects_view import DefectLogTab
+from views.login_dialog import show_login_dialog
 
 
 class HMSApp(tk.Tk):
-    def __init__(self):
+    def __init__(self, prompt_login=True):
         super().__init__()
         self.title(APP_TITLE)
         self.geometry(WINDOW_SIZE)
         init_db()
+
+        # Prompt for user login or load default Admin demo
+        if prompt_login:
+            self.current_user = show_login_dialog(self)
+        else:
+            self.current_user = {"username": "admin", "role": "Admin", "full_name": "Dr. Ajay Bora (System Admin)"}
+
+        self._update_title_and_header()
+
+        # Top User & Role Status Bar
+        self.header_bar = tk.Frame(self, bg="#004085", height=32)
+        self.header_bar.pack(fill="x")
+        self.header_bar.pack_propagate(False)
+
+        self.user_lbl = tk.Label(
+            self.header_bar,
+            text=f"👤 Operator: {self.current_user['full_name']} | Role: {self.current_user['role']}",
+            font=("Segoe UI", 9, "bold"),
+            fg="#ffffff",
+            bg="#004085"
+        )
+        self.user_lbl.pack(side="left", padx=12)
+
+        switch_btn = tk.Button(
+            self.header_bar,
+            text="🔄 Switch User / Role",
+            font=("Segoe UI", 8),
+            bg="#0056b3",
+            fg="#ffffff",
+            relief="flat",
+            cursor="hand2",
+            command=self._switch_role
+        )
+        switch_btn.pack(side="right", padx=12, pady=3)
 
         notebook = ttk.Notebook(self)
         notebook.pack(fill="both", expand=True)
@@ -58,6 +93,7 @@ class HMSApp(tk.Tk):
         self.medicines_tab = MedicinesTab(notebook)
         self.billing_tab = BillingTab(notebook)
         self.audit_tab = AuditLogTab(notebook)
+
         self.defect_tab = DefectLogTab(notebook)
 
         notebook.add(self.dashboard_tab, text="Dashboard")
@@ -86,7 +122,19 @@ class HMSApp(tk.Tk):
 
         notebook.bind("<<NotebookTabChanged>>", on_tab_change)
 
+    def _update_title_and_header(self):
+        u = self.current_user
+        self.title(f"{APP_TITLE} | Operator: {u.get('full_name', 'Admin')} [{u.get('role', 'Admin')}]")
+
+    def _switch_role(self):
+        new_user = show_login_dialog(self)
+        if new_user:
+            self.current_user = new_user
+            self._update_title_and_header()
+            self.user_lbl.config(text=f"👤 Operator: {self.current_user['full_name']} | Role: {self.current_user['role']}")
+
 
 if __name__ == "__main__":
     app = HMSApp()
     app.mainloop()
+

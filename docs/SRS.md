@@ -52,6 +52,16 @@ These may be considered separately only if required later.
 | FR-14 | The system shall prevent doctor double-booking and patient schedule conflicts via automated slot-level conflict checks. |
 | FR-15 | The system shall record patient allergies and perform automated pre-flight contraindication checks against prescribed medications. |
 | FR-16 | The system shall validate clinical triage vital signs against physiological limits and automatically categorize triage risk severity. |
+| FR-17 | The system shall enforce medicine batch tracking and automatically block the prescribing, dispensing, or billing of expired medications. |
+| FR-18 | The system shall provide diagnostic lab test ordering and automatically flag quantitative results that fall outside biological reference ranges. |
+| FR-19 | The system shall generate print-ready, formatted medical tax invoices and inpatient clinical discharge summaries. |
+| FR-20 | The system shall evaluate real-time physiological vitals and maintain an emergency queue sorted by Code Red / Yellow / Green triage severity. |
+| FR-21 | The system shall assemble a consolidated Patient 360° timeline detailing all historic admissions, appointments, vitals, prescriptions, and payments. |
+| FR-22 | The system shall compute Statistical Process Control (SPC) Shewhart c-chart limits (CL, UCL, LCL) to mathematically verify process stabilization. |
+| FR-23 | The system shall calculate live Six Sigma Defect Per Million Opportunities (DPMO) and Process Sigma Level ratings. |
+| FR-24 | The system shall detect low pharmaceutical inventory below reorder thresholds and generate automated replenishment purchase orders. |
+| FR-25 | The system shall provide an NABH & ISO 9001 compliance audit checklist with automated departmental percentage scoring. |
+| FR-26 | The system shall enforce Role-Based Access Control (Admin, Doctor, Receptionist) with secure password hashing and 1-click evaluation logins. |
 
 ## 4. Non-Functional Requirements
 

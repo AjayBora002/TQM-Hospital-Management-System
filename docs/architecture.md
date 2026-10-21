@@ -129,6 +129,10 @@ User Action (e.g. Patient Registration)
 | `src/api/bills.py` | REST endpoints for itemized patient billing, auto-calculated totals, and payments |
 | `src/api/audit.py` | REST endpoints for querying immutable audit trails and filtering logs |
 | `src/api/dashboard.py` | REST endpoints for live executive KPI counter metrics |
+| `src/api/lab_tests.py` | REST endpoints for diagnostic pathology and radiology orders with biological reference checks |
+| `src/api/triage.py` | REST endpoints for emergency triage queue and priority evaluation |
+| `src/api/purchase_orders.py` | REST endpoints for automated pharmacy low-stock purchase orders |
+| `src/api/quality_audit.py` | REST endpoints for NABH/ISO quality checklists and compliance scoring |
 | `src/api/helpers.py` | Helper functions for JSON formatting, standard responses, and validation error wrappers |
 
 ### Shared Quality & Utility Services
@@ -138,6 +142,10 @@ User Action (e.g. Patient Registration)
 | `src/utils/validators.py` | Reusable validation methods: date formats, 24-hr time formats, phone digit length, mandatory field presence |
 | `src/utils/logging_service.py` | Dual-tier logging service writing audit events and error reports across SQLite and `TQM/data/*.csv` |
 | `src/utils/exception_handler.py` | Centralized exception handling, logging uncaught errors and generating user-friendly error dialogs/responses |
+| `src/utils/report_generator.py` | Printable HTML/PDF formatting for medical tax invoices and inpatient discharge summaries |
+| `src/utils/spc_service.py` | Statistical Process Control calculation engine for Shewhart control chart parameters |
+| `src/utils/sigma_calculator.py` | TQM Six Sigma calculator for DPU, DPO, DPMO, and process sigma capability |
+| `src/views/login_dialog.py` | Desktop GUI authentication dialog with 1-click Quick Login and Guest Demo bypass |
 
 ### Database Layer
 

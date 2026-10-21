@@ -136,6 +136,40 @@ The system features 10 integrated modules:
 - Records defect category (`Data Entry`, `Validation`, `UI`, `Database`, `Business Logic`), description, and severity (`Low`, `Medium`, `High`, `Critical`).
 - Provides the empirical dataset feeding the Pareto analysis and Ishikawa diagrams.
 
+### 5.11 Pharmacy Batch & Expiry Date Poka-Yoke Safeguard
+- **Location:** Pharmacy tab & REST API `/api/medicines/expired`.
+- **Functionality:** Every medicine tracks `batch_no` and `expiry_date`.
+- **Clinical Poka-Yoke:** The system **automatically blocks** prescribing or dispensing any expired pharmaceutical batch with an immediate `CLINICAL SAFETY ALERT`.
+
+### 5.12 Diagnostic Laboratory Testing & Reference Intervals
+- **Location:** Lab Diagnostics module & REST API `/api/lab-tests`.
+- **Functionality:** Orders pathology and radiology tests. Pre-populated biological reference ranges (e.g., Hemoglobin $12.0 - 17.5$ g/dL, Fasting Sugar $70 - 99$ mg/dL).
+- **Poka-Yoke Flagging:** Results outside standard reference boundaries automatically flag `abnormal_flag = 1` in bold red for immediate physician attention.
+
+### 5.13 Printable Medical Invoices & Discharge Summaries
+- **Location:** Billing & Admissions routes (`/api/bills/<id>/receipt`, `/api/admissions/<id>/discharge-summary`).
+- **Functionality:** Instant print-ready HTML documents with `@media print` styling, itemized financial breakdowns, and NABH-compliant discharge summaries.
+
+### 5.14 Emergency Priority Triage Queue
+- **Location:** Dashboard & `/api/triage/queue`.
+- **Functionality:** Automated Manchester/ESI triage engine ranking emergency arrivals into **Code Red (Resuscitation)**, **Code Yellow (Urgent)**, and **Code Green (Stable)** based on real-time vitals ($SpO_2$, BP, pulse, temperature).
+
+### 5.15 Patient 360° Comprehensive Medical Journey
+- **Location:** Patient Chart & `/api/patients/<id>/timeline`.
+- **Functionality:** Aggregates a complete, single-screen chronological timeline of all patient interactions: registration, vitals history, consultations, admissions, lab orders, prescriptions, and payments.
+
+### 5.16 Automated Pharmacy Purchase Orders (PO)
+- **Location:** Pharmacy & `/api/purchase-orders`.
+- **Functionality:** Automatically scans for inventory at or below reorder levels and generates standardized supplier orders. Receiving an order automatically restocks inventory.
+
+### 5.17 NABH & ISO 9001 Hospital Quality Inspection Checklist
+- **Location:** Quality Audit & `/api/quality-audits`.
+- **Functionality:** Formal compliance inspection tool across departments (Patient Safety, Pharmacy, Infection Control, Invoicing) computing compliance percentages.
+
+### 5.18 Desktop Startup Login Dialog & Role Switcher
+- **Location:** Desktop Tkinter startup window (`src/views/login_dialog.py`).
+- **Functionality:** Secure credentials entry with 1-click Quick Login buttons for Admin (`admin123`), Doctor (`doctor123`), and Receptionist (`recep123`), or Guest Demo Bypass.
+
 ---
 
 ## 6. Statistical Quality Control (SQC) Tools Execution
@@ -155,7 +189,15 @@ python sqc/fishbone_diagram.py
 ```
 - **Output:** Saves root-cause visualization to `sqc/fishbone_diagram.png`.
 
-### 6.3 FMEA Risk Matrix Generation
+### 6.3 Shewhart Statistical Process Control (SPC c-Chart)
+Generate the analytical Shewhart control chart to verify process stabilization:
+```bash
+python sqc/spc_chart.py
+```
+- **Output:** Saves control chart to `sqc/spc_control_chart.png` and CSV parameters to `TQM/data/spc_metrics.csv`.
+- **Finding:** Demonstrates process capability shift from initial high error rates (pre-intervention) to zero 3-sigma violations under active Poka-Yoke controls.
+
+### 6.4 FMEA Risk Matrix Generation
 Regenerate the automated Excel workbook containing formula-driven RPN risk scores:
 ```bash
 python docs/build_fmea.py

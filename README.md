@@ -42,14 +42,17 @@ python run.py
 python run.py --web
 # Opens http://127.0.0.1:5000 in your browser
 
-# 4. Run automated test suite (31 tests covering CRUD, Validators, TQM logging, Web API & Clinical Poka-Yoke)
+# 4. Run automated test suite (62 tests covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, and Six Sigma)
 python -m unittest discover tests
 
 # 5. Regenerate SQC Pareto & Fishbone charts
 python sqc/pareto_chart.py
 python sqc/fishbone_diagram.py
 
-# 6. Regenerate FMEA Excel workbook
+# 6. Regenerate Shewhart SPC Control Chart (c-Chart)
+python sqc/spc_chart.py
+
+# 7. Regenerate FMEA Excel workbook
 python docs/build_fmea.py
 ```
 
@@ -59,16 +62,19 @@ python docs/build_fmea.py
 
 | Tab / Route | Model | Core Purpose |
 |---|---|---|
-| Dashboard | All tables | Live counts — patients, doctors, appointments, available rooms, unpaid bills, defects, audit entries |
-| Patients | `models/patient.py` | Register / update / delete patients with allergy documentation, vitals, and bed management |
+| Dashboard | All tables | Live counts — patients, doctors, appointments, available rooms, unpaid bills, defects, DPMO, and Sigma level |
+| Patients | `models/patient.py` | Register / update / delete patients with allergy documentation, vitals, and Patient 360° timeline |
 | Doctors | `models/doctor.py` | Doctor roster grouped by clinical specialty department |
 | Appointments | `models/appointment.py` | Schedule appointments with automated slot conflict prevention & free slot lookup |
 | Rooms / Wards | `models/room.py` | Room inventory — type, occupancy status, daily rate, bed clearance |
 | Staff | `models/staff.py` | Nursing and support staff by role and shift |
-| Pharmacy | `models/medicine.py` | Medicine stock with automated low-stock threshold flagging |
-| Billing | `models/bill.py` | Itemized bills with auto-calculated charges and payment tracking |
+| Pharmacy | `models/medicine.py` | Medicine stock with automated low-stock threshold flagging, batch tracking, and expiry Poka-Yoke |
+| Billing | `models/bill.py` | Itemized bills with auto-calculated charges, payment tracking, and printable HTML receipts |
 | Audit Log | `models/audit.py` | Immutable trail of every INSERT, UPDATE, DELETE across all tables |
-| Defect Checksheet | `models/audit.py` | Quality defect checksheet feeding the Pareto 80/20 analysis |
+| Defect Checksheet | `models/audit.py` | Quality defect checksheet feeding Pareto 80/20 and Shewhart SPC analyses |
+| Lab Diagnostics | `models/lab_test.py` | Pathology & radiology test ordering with biological reference range Poka-Yoke |
+| Emergency Triage | `models/triage.py` | Real-time emergency priority queue auto-sorted by Code Red / Yellow / Green severity |
+| Quality Audits | `models/quality_audit.py` | NABH & ISO 9001 hospital quality inspection checklist with departmental compliance scoring |
 
 ---
 
@@ -86,6 +92,16 @@ Quality is enforced through Poka-Yoke mistake-proofing across both Desktop GUI a
 | 6 | **Schedule Conflict Prevention** | `src/models/appointment.py` (`has_conflict`) | Real-time pre-flight checker + Slot Picker in `app.js` | Blocks doctor double-booking and patient time slot clashes with HTTP 409 conflict safeguards |
 | 7 | **Drug Allergy Safety (ADR)** | `src/utils/validators.py` | Patient allergy badges + Pre-flight contraindication API | Checks patient allergy history against prescribed medicine classes to prevent adverse drug reactions |
 | 8 | **Triage Vitals Validation** | `src/models/patient.py` (`record_vitals`) | Boundary checks in `validators.py` | Validates BP, pulse, temp, SpO2 against physiological limits and automatically flags critical triage severity |
+| 9 | **Medicine Expiry Poka-Yoke** | `src/models/medicine.py` (`is_expired`) | API `/api/medicines/expired` | Blocks dispensing, billing, and prescribing of expired batches automatically |
+| 10 | **Diagnostic Lab Reference Flags** | `src/models/lab_test.py` (`record_result`) | API `/api/lab-tests` | Automatically flags abnormal lab results outside biological reference intervals ($0$ or $1$) |
+| 11 | **Emergency Priority Queue** | `src/models/triage.py` (`get_emergency_queue`) | API `/api/triage/queue` | Automatically prioritizes patients into Code Red, Yellow, Green based on vital boundaries |
+| 12 | **Patient 360° Timeline** | `src/models/patient.py` (`get_patient_360_timeline`) | API `/api/patients/<id>/timeline` | Aggregates all chronological hospital touchpoints into a unified electronic health journey |
+| 13 | **Printable Invoices & Summaries** | `src/utils/report_generator.py` | API `/api/bills/<id>/receipt` | Instant print-ready HTML & PDF receipts and clinical discharge summaries |
+| 14 | **Shewhart SPC Control Chart** | `sqc/spc_chart.py` (`spc_service.py`) | `sqc/spc_control_chart.png` | Analyzes daily defect rates against 3-sigma UCL/LCL and verifies process stabilization |
+| 15 | **Six Sigma DPMO Engine** | `src/utils/sigma_calculator.py` | API `/api/tqm/six-sigma` | Live DPMO and process sigma capability rating calculated on dashboard |
+| 16 | **Automated Pharmacy POs** | `src/models/purchase_order.py` | API `/api/purchase-orders` | Auto-detects inventory at/below reorder level and replenishes stock upon receipt |
+| 17 | **NABH & ISO Quality Checklist** | `src/models/quality_audit.py` | API `/api/quality-audits` | Standardized hospital audit matrix with departmental compliance percentages |
+| 18 | **Startup Authentication & RBAC** | `src/views/login_dialog.py` | Top status bar in `main.py` | Desktop GUI login modal with 1-click Quick Login for Admin, Doctor, Receptionist |
 
 ---
 
