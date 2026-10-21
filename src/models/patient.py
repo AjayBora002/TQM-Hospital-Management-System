@@ -248,3 +248,157 @@ def get_vitals_history(patient_id, limit=10):
     return rows
 
 
+def get_patient_360_timeline(patient_id: int):
+    """
+    Patient 360° Comprehensive Journey:
+    Aggregates all chronological hospital touchpoints for the patient:
+    Registration, Triage Vitals, Appointments, Inpatient Admissions, Prescriptions, Lab Tests, and Bills.
+    Returns: {"patient": dict, "total_events": int, "timeline": list of sorted event dicts}.
+    """
+    conn = get_connection()
+    try:
+        p_row = conn.execute("""
+            SELECT p.*, r.room_number, r.room_type, r.rate_per_day
+            FROM patients p
+            LEFT JOIN rooms r ON p.room_id = r.room_id
+            WHERE p.patient_id = ?
+        """, (patient_id,)).fetchone()
+
+        if not p_row:
+            return None
+
+        patient_info = dict(p_row)
+        events = []
+
+        # 1. Registration Event
+        events.append({
+            "event_type": "Registration",
+            "timestamp": patient_info["created_at"],
+            "title": "Patient Registered",
+            "badge_color": "#17a2b8",
+            "icon": "📝",
+            "details": f"Registered in HMS. Gender: {patient_info['gender']}, DOB: {patient_info['dob']}, Blood Group: {patient_info['blood_group']}, Allergies: {patient_info.get('allergies', 'None')}."
+        })
+
+        # 2. Vitals Events
+        v_rows = conn.execute("SELECT * FROM vitals_log WHERE patient_id = ? ORDER BY recorded_at", (patient_id,)).fetchall()
+        for v in v_rows:
+            events.append({
+                "event_type": "Triage Vitals",
+                "timestamp": v["recorded_at"],
+                "title": f"Vitals Recorded ({v['triage_status']})",
+                "badge_color": "#28a745" if v["triage_status"] == "Normal" else "#dc3545",
+                "icon": "💓",
+                "details": f"BP: {v['systolic']}/{v['diastolic']} mmHg, Pulse: {v['pulse']} bpm, Temp: {v['temperature']}°F, SpO2: {v['spo2']}%. Evaluated by: {v['recorded_by']}."
+            })
+
+        # 3. Appointments
+        appt_rows = conn.execute("""
+            SELECT a.*, d.full_name as doctor_name, d.department
+            FROM appointments a
+            JOIN doctors d ON a.doctor_id = d.doctor_id
+            WHERE a.patient_id = ?
+            ORDER BY a.appt_date, a.appt_time
+        """, (patient_id,)).fetchall()
+        for a in appt_rows:
+            events.append({
+                "event_type": "Appointment",
+                "timestamp": f"{a['appt_date']}T{a['appt_time']}:00",
+                "title": f"Consultation with {a['doctor_name']} ({a['status']})",
+                "badge_color": "#007bff" if a["status"] == "Scheduled" else ("#28a745" if a["status"] == "Completed" else "#6c757d"),
+                "icon": "📅",
+                "details": f"Department: {a['department']}. Slot: {a['appt_date']} at {a['appt_time']}. Notes: {a['notes'] or 'None'}."
+            })
+
+        # 4. Inpatient Admissions
+        adm_rows = conn.execute("""
+            SELECT a.*, r.room_number, r.room_type
+            FROM admissions a
+            JOIN rooms r ON a.room_id = r.room_id
+            WHERE a.patient_id = ?
+            ORDER BY a.admission_date
+        """, (patient_id,)).fetchall()
+        for adm in adm_rows:
+            events.append({
+                "event_type": "Inpatient Admission",
+                "timestamp": adm["created_at"],
+                "title": f"Admitted to Room {adm['room_number']} ({adm['room_type']})",
+                "badge_color": "#6f42c1",
+                "icon": "🛏️",
+                "details": f"Admission Date: {adm['admission_date'][:10]}. Diagnosis: {adm.get('diagnosis') or 'Clinical admission'}. Status: {adm['status']}."
+            })
+            if adm["discharge_date"]:
+                events.append({
+                    "event_type": "Inpatient Discharge",
+                    "timestamp": adm["discharge_date"] if "T" in adm["discharge_date"] else f"{adm['discharge_date']}T12:00:00",
+                    "title": f"Discharged from Room {adm['room_number']}",
+                    "badge_color": "#20c997",
+                    "icon": "🚪",
+                    "details": f"Discharge Notes: {adm.get('discharge_notes') or 'Routine discharge completed'}."
+                })
+
+        # 5. Prescriptions
+        rx_rows = conn.execute("""
+            SELECT pr.*, m.name as medicine_name, d.full_name as doctor_name
+            FROM prescriptions pr
+            JOIN medicines m ON pr.medicine_id = m.medicine_id
+            JOIN doctors d ON pr.doctor_id = d.doctor_id
+            WHERE pr.patient_id = ?
+            ORDER BY pr.prescribed_date
+        """, (patient_id,)).fetchall()
+        for rx in rx_rows:
+            events.append({
+                "event_type": "Prescription",
+                "timestamp": f"{rx['prescribed_date']}T10:00:00" if len(rx['prescribed_date']) == 10 else rx['prescribed_date'],
+                "title": f"Rx: {rx['medicine_name']} ({rx['status']})",
+                "badge_color": "#fd7e14",
+                "icon": "💊",
+                "details": f"Prescribed by {rx['doctor_name']}. Dosage: {rx['dosage']}, Frequency: {rx['frequency']}, Duration: {rx['duration_days']} days. Instructions: {rx['instructions'] or 'As directed'}."
+            })
+
+        # 6. Lab Tests
+        lab_rows = conn.execute("""
+            SELECT l.*, d.full_name as doctor_name
+            FROM lab_tests l
+            JOIN doctors d ON l.doctor_id = d.doctor_id
+            WHERE l.patient_id = ?
+            ORDER BY l.created_at
+        """, (patient_id,)).fetchall()
+        for lab in lab_rows:
+            flag_str = " [ABNORMAL]" if lab["abnormal_flag"] else ""
+            events.append({
+                "event_type": "Diagnostic Lab Test",
+                "timestamp": lab["completed_at"] or lab["created_at"],
+                "title": f"Lab: {lab['test_name']}{flag_str}",
+                "badge_color": "#dc3545" if lab["abnormal_flag"] else "#17a2b8",
+                "icon": "🔬",
+                "details": f"Category: {lab['category']}. Result: {lab['result_value'] or 'Pending'} {lab['unit']} (Ref: {lab['ref_min']}-{lab['ref_max']}). Status: {lab['status']}."
+            })
+
+        # 7. Bills
+        bill_rows = conn.execute("""
+            SELECT * FROM bills WHERE patient_id = ? ORDER BY created_at
+        """, (patient_id,)).fetchall()
+        for b in bill_rows:
+            events.append({
+                "event_type": "Billing & Invoicing",
+                "timestamp": b["created_at"],
+                "title": f"Invoice INV-{b['bill_id']:05d} ({b['payment_status']})",
+                "badge_color": "#28a745" if b["payment_status"] == "Paid" else "#ffc107",
+                "icon": "🧾",
+                "details": f"Total Amount: ₹{float(b['total_amount']):.2f} (Room: ₹{float(b['room_charges']):.2f}, Consult: ₹{float(b['consultation_charges']):.2f}, Meds: ₹{float(b['medicine_charges']):.2f}). Paid via: {b['payment_method']}."
+            })
+
+        # Sort timeline chronologically descending (most recent first)
+        events.sort(key=lambda x: x["timestamp"], reverse=True)
+
+        return {
+            "patient": patient_info,
+            "total_events": len(events),
+            "timeline": events
+        }
+    finally:
+        conn.close()
+
+
+

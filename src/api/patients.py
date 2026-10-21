@@ -139,3 +139,13 @@ def get_patient_vitals(patient_id):
     return jsonify(rows_to_list(rows))
 
 
+@patients_bp.route("/patients/<int:patient_id>/timeline", methods=["GET"])
+def get_patient_timeline(patient_id):
+    """Patient 360° Comprehensive Medical Journey timeline."""
+    data = patient_model.get_patient_360_timeline(patient_id)
+    if not data:
+        return jsonify({"error": f"Patient #{patient_id} not found"}), 404
+    return jsonify(data), 200
+
+
+
