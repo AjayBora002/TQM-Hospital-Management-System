@@ -15,6 +15,7 @@ from .admissions import admissions_bp
 from .prescriptions import prescriptions_bp
 from .export import export_bp
 from .system import system_bp
+from .lab_tests import lab_tests_bp
 
 def register_api(app):
     """
@@ -35,3 +36,5 @@ def register_api(app):
     app.register_blueprint(prescriptions_bp, url_prefix="/api")
     app.register_blueprint(export_bp, url_prefix="/api")
     app.register_blueprint(system_bp, url_prefix="/api")
+    app.register_blueprint(lab_tests_bp, url_prefix="/api")
+

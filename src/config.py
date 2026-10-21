@@ -81,3 +81,16 @@ PRESCRIPTION_STATUS = ["Active", "Dispensed", "Completed", "Discontinued"]
 # ---- Automated Database Backup ---------------------------------------------
 BACKUP_DIR = os.path.join(BASE_DIR, "backups")
 
+# ---- Diagnostic Laboratory & Radiology Testing ----------------------------
+LAB_CATEGORIES = ["Hematology", "Biochemistry", "Pathology", "Radiology", "Microbiology"]
+LAB_TEST_TEMPLATES = {
+    "Hemoglobin": {"category": "Hematology", "unit": "g/dL", "ref_min": 12.0, "ref_max": 17.5},
+    "Fasting Blood Sugar": {"category": "Biochemistry", "unit": "mg/dL", "ref_min": 70.0, "ref_max": 99.0},
+    "Serum Creatinine": {"category": "Biochemistry", "unit": "mg/dL", "ref_min": 0.6, "ref_max": 1.2},
+    "Platelet Count": {"category": "Hematology", "unit": "10^3/uL", "ref_min": 150.0, "ref_max": 450.0},
+    "Total Cholesterol": {"category": "Biochemistry", "unit": "mg/dL", "ref_min": 125.0, "ref_max": 200.0},
+    "Serum Bilirubin": {"category": "Biochemistry", "unit": "mg/dL", "ref_min": 0.2, "ref_max": 1.2},
+    "WBC Count": {"category": "Hematology", "unit": "/mcL", "ref_min": 4000.0, "ref_max": 11000.0},
+}
+
+

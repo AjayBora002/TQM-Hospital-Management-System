@@ -176,6 +176,26 @@ CREATE TABLE IF NOT EXISTS prescriptions (
     FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id) ON DELETE SET NULL,
     FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id) ON DELETE RESTRICT
 );
+
+-- Diagnostic Laboratory & Radiology Testing Module
+CREATE TABLE IF NOT EXISTS lab_tests (
+    test_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id     INTEGER NOT NULL,
+    doctor_id      INTEGER NOT NULL,
+    test_name      TEXT NOT NULL,
+    category       TEXT NOT NULL,
+    result_value   REAL,
+    unit           TEXT NOT NULL,
+    ref_min        REAL NOT NULL,
+    ref_max        REAL NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Completed','Cancelled')),
+    abnormal_flag  INTEGER NOT NULL DEFAULT 0 CHECK(abnormal_flag IN (0, 1)),
+    notes          TEXT,
+    created_at     TEXT NOT NULL,
+    completed_at   TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id)  REFERENCES doctors(doctor_id)  ON DELETE CASCADE
+);
 """
 
 
