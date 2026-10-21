@@ -78,7 +78,9 @@ CREATE TABLE IF NOT EXISTS medicines (
     category       TEXT NOT NULL,
     stock_qty      INTEGER NOT NULL DEFAULT 0,
     unit_price     REAL NOT NULL DEFAULT 0,
-    reorder_level  INTEGER NOT NULL DEFAULT 10
+    reorder_level  INTEGER NOT NULL DEFAULT 10,
+    batch_no       TEXT NOT NULL DEFAULT 'BAT-2026-01',
+    expiry_date    TEXT NOT NULL DEFAULT '2027-12-31'
 );
 
 CREATE TABLE IF NOT EXISTS bills (
@@ -191,6 +193,30 @@ def init_db():
     cols = [r["name"] for r in conn.execute("PRAGMA table_info(patients)").fetchall()]
     if "allergies" not in cols:
         conn.execute("ALTER TABLE patients ADD COLUMN allergies TEXT NOT NULL DEFAULT 'None'")
+
+    # Backward compatibility migration for medicines.batch_no and expiry_date
+    med_cols = [r["name"] for r in conn.execute("PRAGMA table_info(medicines)").fetchall()]
+    if "batch_no" not in med_cols:
+        conn.execute("ALTER TABLE medicines ADD COLUMN batch_no TEXT NOT NULL DEFAULT 'BAT-2026-01'")
+    if "expiry_date" not in med_cols:
+        conn.execute("ALTER TABLE medicines ADD COLUMN expiry_date TEXT NOT NULL DEFAULT '2027-12-31'")
+
+    # Seed initial medicines if table empty
+    med_count = conn.execute("SELECT COUNT(*) as c FROM medicines").fetchone()["c"]
+    if med_count == 0:
+        seed_meds = [
+            ("Paracetamol 650mg", "Tablet", 120, 2.50, 20, "BAT-PCM-01", "2027-10-31"),
+            ("Amoxicillin 500mg", "Capsule", 85, 12.00, 15, "BAT-AMX-02", "2027-08-15"),
+            ("Azithromycin 500mg", "Tablet", 40, 25.00, 10, "BAT-AZM-03", "2027-12-01"),
+            ("Cough Syrup 100ml", "Syrup", 30, 85.00, 10, "BAT-SYR-04", "2027-05-20"),
+            ("Normal Saline 500ml", "Injection", 50, 45.00, 15, "BAT-INJ-05", "2028-01-10"),
+            ("Expired Batch Sample (Doxycycline)", "Capsule", 10, 18.00, 5, "BAT-EXP-00", "2024-01-01"),
+        ]
+        conn.executemany(
+            "INSERT INTO medicines (name, category, stock_qty, unit_price, reorder_level, batch_no, expiry_date) "
+            "VALUES (?,?,?,?,?,?,?)",
+            seed_meds
+        )
 
     # Seed initial demo user accounts if empty
     user_count = conn.execute("SELECT COUNT(*) as c FROM users").fetchone()["c"]

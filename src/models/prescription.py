@@ -62,11 +62,24 @@ def create_prescription(
             raise ValidationError(f"Doctor #{doctor_id} not found", field="doctor_id")
 
         # 3. Fetch medicine
-        m = conn.execute("SELECT medicine_id, name, category, stock_qty, unit_price FROM medicines WHERE medicine_id = ?", (medicine_id,)).fetchone()
+        m = conn.execute("SELECT * FROM medicines WHERE medicine_id = ?", (medicine_id,)).fetchone()
         if not m:
             raise ValidationError(f"Medicine #{medicine_id} not found", field="medicine_id")
 
-        # 4. Clinical Poka-Yoke Safety Contraindication Check
+        # 4. Clinical Poka-Yoke: Expiry Date Safeguard
+        med_dict = dict(m)
+        med_expiry = med_dict.get("expiry_date")
+        if med_expiry:
+            from datetime import date
+            if med_expiry < date.today().isoformat():
+                raise ValidationError(
+                    f"CLINICAL SAFETY ALERT (Poka-Yoke): Cannot prescribe expired medicine '{m['name']}' "
+                    f"(Batch: {med_dict.get('batch_no', 'N/A')}, Expired on: {med_expiry}). "
+                    f"Dispensing expired medication is blocked.",
+                    field="medicine_id"
+                )
+
+        # 5. Clinical Poka-Yoke Safety Contraindication Check
         patient_allergy = p["allergies"] or "None"
         contraindication = check_drug_allergy_contraindication(patient_allergy, m["name"], m["category"])
         if contraindication["contraindicated"]:

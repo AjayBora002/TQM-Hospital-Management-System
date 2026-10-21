@@ -43,32 +43,55 @@ class MedicinesTab(ttk.Frame):
         self.reorder_var = tk.StringVar(value="10")
         ttk.Entry(form, textvariable=self.reorder_var, width=24).grid(row=2, column=1, padx=5)
 
+        ttk.Label(form, text="Batch No*").grid(row=2, column=2, sticky="w", padx=5)
+        self.batch_var = tk.StringVar(value="BAT-2026-01")
+        ttk.Entry(form, textvariable=self.batch_var, width=18).grid(row=2, column=3, padx=5)
+
+        ttk.Label(form, text="Expiry (YYYY-MM-DD)*").grid(row=3, column=0, sticky="w", padx=5, pady=4)
+        self.expiry_var = tk.StringVar(value="2027-12-31")
+        ttk.Entry(form, textvariable=self.expiry_var, width=24).grid(row=3, column=1, padx=5)
+
         btns = ttk.Frame(form)
-        btns.grid(row=3, column=0, columnspan=4, pady=8)
+        btns.grid(row=4, column=0, columnspan=4, pady=8)
         ttk.Button(btns, text="Add", command=self.add_med).pack(side="left", padx=4)
         ttk.Button(btns, text="Update Selected", command=self.update_med).pack(side="left", padx=4)
         ttk.Button(btns, text="Delete Selected", command=self.delete_med).pack(side="left", padx=4)
         ttk.Button(btns, text="Clear Form", command=self.clear_form).pack(side="left", padx=4)
 
     def _build_table(self):
-        cols = ("id", "name", "cat", "stock", "price", "reorder")
+        cols = ("id", "name", "cat", "stock", "price", "reorder", "batch", "expiry")
         self.tree = ttk.Treeview(self, columns=cols, show="headings", height=15)
-        for c, h, w in zip(cols, ["ID", "Name", "Category", "Stock", "Unit Price", "Reorder Lvl"],
-                            [40, 160, 120, 80, 90, 90]):
+        for c, h, w in zip(cols, ["ID", "Name", "Category", "Stock", "Unit Price", "Reorder Lvl", "Batch No", "Expiry Date"],
+                            [40, 150, 110, 70, 80, 80, 95, 100]):
             self.tree.heading(c, text=h)
             self.tree.column(c, width=w)
         self.tree.pack(fill="both", expand=True, padx=10, pady=8)
         self.tree.bind("<<TreeviewSelect>>", self._on_select)
-        ttk.Label(self, text="Rows shown in red (via *) are at/below reorder level.",
+        ttk.Label(self, text="* Low Stock Alert | [EXPIRED] Poka-Yoke Blocked from dispensing",
                   font=("Segoe UI", 8, "italic")).pack(anchor="w", padx=10)
 
     def refresh(self):
         for row in self.tree.get_children():
             self.tree.delete(row)
         for r in medicine_model.list_all():
-            flag = " *" if r["stock_qty"] <= r["reorder_level"] else ""
-            self.tree.insert("", "end", values=(r["medicine_id"], r["name"] + flag, r["category"],
-                                                  r["stock_qty"], r["unit_price"], r["reorder_level"]))
+            r_dict = dict(r)
+            is_low = r_dict["stock_qty"] <= r_dict["reorder_level"]
+            is_exp = medicine_model.is_expired(r_dict.get("expiry_date", ""))
+            flag = ""
+            if is_exp:
+                flag = " [EXPIRED]"
+            elif is_low:
+                flag = " *"
+            self.tree.insert("", "end", values=(
+                r_dict["medicine_id"],
+                r_dict["name"] + flag,
+                r_dict["category"],
+                r_dict["stock_qty"],
+                r_dict["unit_price"],
+                r_dict["reorder_level"],
+                r_dict.get("batch_no", "N/A"),
+                r_dict.get("expiry_date", "N/A")
+            ))
 
     def _on_select(self, _event):
         sel = self.tree.selection()
@@ -76,11 +99,14 @@ class MedicinesTab(ttk.Frame):
             return
         vals = self.tree.item(sel[0])["values"]
         self.selected_id = vals[0]
-        self.name_var.set(str(vals[1]).replace(" *", ""))
+        name_clean = str(vals[1]).replace(" [EXPIRED]", "").replace(" *", "")
+        self.name_var.set(name_clean)
         self.cat_var.set(vals[2])
         self.stock_var.set(vals[3])
         self.price_var.set(vals[4])
         self.reorder_var.set(vals[5])
+        self.batch_var.set(vals[6])
+        self.expiry_var.set(vals[7])
 
     def _validate(self):
         if not not_empty(self.name_var.get()):
@@ -105,12 +131,21 @@ class MedicinesTab(ttk.Frame):
         self.stock_var.set("")
         self.price_var.set("")
         self.reorder_var.set("10")
+        self.batch_var.set("BAT-2026-01")
+        self.expiry_var.set("2027-12-31")
 
     def add_med(self):
         if not self._validate():
             return
-        medicine_model.add(self.name_var.get().strip(), self.cat_var.get(), int(self.stock_var.get()),
-                            float(self.price_var.get()), int(self.reorder_var.get()))
+        medicine_model.add(
+            self.name_var.get().strip(),
+            self.cat_var.get(),
+            int(self.stock_var.get()),
+            float(self.price_var.get()),
+            int(self.reorder_var.get()),
+            batch_no=self.batch_var.get().strip() or "BAT-2026-01",
+            expiry_date=self.expiry_var.get().strip() or "2027-12-31"
+        )
         messagebox.showinfo("Success", "Medicine added.")
         self.clear_form()
         self.refresh()
@@ -123,9 +158,16 @@ class MedicinesTab(ttk.Frame):
             return
         if not confirm_update("medicine", self.selected_id):
             return
-        medicine_model.update(self.selected_id, self.name_var.get().strip(), self.cat_var.get(),
-                               int(self.stock_var.get()), float(self.price_var.get()),
-                               int(self.reorder_var.get()))
+        medicine_model.update(
+            self.selected_id,
+            self.name_var.get().strip(),
+            self.cat_var.get(),
+            int(self.stock_var.get()),
+            float(self.price_var.get()),
+            int(self.reorder_var.get()),
+            batch_no=self.batch_var.get().strip() or "BAT-2026-01",
+            expiry_date=self.expiry_var.get().strip() or "2027-12-31"
+        )
         messagebox.showinfo("Success", "Medicine updated.")
         self.clear_form()
         self.refresh()

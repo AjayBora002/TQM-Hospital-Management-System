@@ -10,10 +10,18 @@ medicines_bp = Blueprint("medicines", __name__)
 @medicines_bp.route("/medicines", methods=["GET"])
 def get_medicines():
     low_stock = request.args.get("low_stock", "0") == "1"
-    if low_stock:
+    expired = request.args.get("expired", "0") == "1"
+    if expired:
+        rows = medicine_model.expired_medicines()
+    elif low_stock:
         rows = medicine_model.low_stock()
     else:
         rows = medicine_model.list_all()
+    return jsonify(rows_to_list(rows))
+
+@medicines_bp.route("/medicines/expired", methods=["GET"])
+def get_expired_medicines():
+    rows = medicine_model.expired_medicines()
     return jsonify(rows_to_list(rows))
 
 @medicines_bp.route("/medicines", methods=["POST"])
@@ -24,7 +32,9 @@ def create_medicine():
         category=data.get("category"),
         stock_qty=int(data.get("stock_qty", 0)),
         unit_price=float(data.get("unit_price", 0)),
-        reorder_level=int(data.get("reorder_level", 10))
+        reorder_level=int(data.get("reorder_level", 10)),
+        batch_no=data.get("batch_no", "BAT-2026-01"),
+        expiry_date=data.get("expiry_date", "2027-12-31")
     )
     return jsonify({"medicine_id": new_id, "status": "created"}), 201
 
@@ -37,7 +47,9 @@ def update_medicine(medicine_id):
         category=data.get("category"),
         stock_qty=int(data.get("stock_qty", 0)),
         unit_price=float(data.get("unit_price", 0)),
-        reorder_level=int(data.get("reorder_level", 10))
+        reorder_level=int(data.get("reorder_level", 10)),
+        batch_no=data.get("batch_no", "BAT-2026-01"),
+        expiry_date=data.get("expiry_date", "2027-12-31")
     )
     return jsonify({"status": "updated"})
 
@@ -45,3 +57,4 @@ def update_medicine(medicine_id):
 def delete_medicine(medicine_id):
     medicine_model.delete(medicine_id)
     return jsonify({"status": "deleted"})
+
