@@ -196,6 +196,20 @@ CREATE TABLE IF NOT EXISTS lab_tests (
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
     FOREIGN KEY (doctor_id)  REFERENCES doctors(doctor_id)  ON DELETE CASCADE
 );
+
+-- Automated Pharmacy Purchase Orders for Low-Stock Replenishment
+CREATE TABLE IF NOT EXISTS purchase_orders (
+    po_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    medicine_id    INTEGER NOT NULL,
+    supplier_name  TEXT NOT NULL,
+    order_qty      INTEGER NOT NULL,
+    unit_cost      REAL NOT NULL,
+    total_cost     REAL NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Received','Cancelled')),
+    order_date     TEXT NOT NULL,
+    received_date  TEXT,
+    FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id) ON DELETE CASCADE
+);
 """
 
 
