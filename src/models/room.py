@@ -23,31 +23,37 @@ def choices_map(only_available=False):
 
 def add(room_number, room_type, status, rate_per_day):
     conn = get_connection()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO rooms (room_number, room_type, status, rate_per_day) VALUES (?,?,?,?)",
-                (room_number, room_type, status, rate_per_day))
-    new_id = cur.lastrowid
-    log_audit(conn, "rooms", new_id, "INSERT", f"Added room '{room_number}'")
-    conn.commit()
-    conn.close()
-    return new_id
+    try:
+        cur = conn.cursor()
+        cur.execute("INSERT INTO rooms (room_number, room_type, status, rate_per_day) VALUES (?,?,?,?)",
+                    (room_number, room_type, status, rate_per_day))
+        new_id = cur.lastrowid
+        log_audit(conn, "rooms", new_id, "INSERT", f"Added room '{room_number}'")
+        conn.commit()
+        return new_id
+    finally:
+        conn.close()
 
 
 def update(room_id, room_number, room_type, status, rate_per_day):
     conn = get_connection()
-    conn.execute("UPDATE rooms SET room_number=?, room_type=?, status=?, rate_per_day=? WHERE room_id=?",
-                 (room_number, room_type, status, rate_per_day, room_id))
-    log_audit(conn, "rooms", room_id, "UPDATE", f"Room {room_number} status updated to {status}")
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("UPDATE rooms SET room_number=?, room_type=?, status=?, rate_per_day=? WHERE room_id=?",
+                     (room_number, room_type, status, rate_per_day, room_id))
+        log_audit(conn, "rooms", room_id, "UPDATE", f"Room {room_number} status updated to {status}")
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def delete(room_id):
     conn = get_connection()
-    conn.execute("DELETE FROM rooms WHERE room_id=?", (room_id,))
-    log_audit(conn, "rooms", room_id, "DELETE", "Room record deleted")
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("DELETE FROM rooms WHERE room_id=?", (room_id,))
+        log_audit(conn, "rooms", room_id, "DELETE", "Room record deleted")
+        conn.commit()
+    finally:
+        conn.close()
 
 
 def get_by_id(room_id):

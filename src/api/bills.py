@@ -34,3 +34,14 @@ def update_bill_status(bill_id):
 def delete_bill(bill_id):
     bill_model.delete(bill_id)
     return jsonify({"status": "deleted"})
+
+@bills_bp.route("/bills/<int:bill_id>/receipt", methods=["GET"])
+def get_bill_receipt(bill_id):
+    from utils.report_generator import generate_bill_receipt_html
+    from flask import Response
+    try:
+        html = generate_bill_receipt_html(bill_id)
+        return Response(html, mimetype="text/html")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
+

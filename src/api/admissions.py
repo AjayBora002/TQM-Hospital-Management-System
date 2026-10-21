@@ -56,3 +56,15 @@ def get_patient_admissions(patient_id):
     stays = admission_model.get_patient_admissions(patient_id)
     active = admission_model.get_active_admission(patient_id)
     return jsonify({"stays": stays, "active_stay": active}), 200
+
+
+@admissions_bp.route("/admissions/<int:admission_id>/discharge-summary", methods=["GET"])
+def get_discharge_summary(admission_id):
+    from utils.report_generator import generate_discharge_summary_html
+    from flask import Response
+    try:
+        html = generate_discharge_summary_html(admission_id)
+        return Response(html, mimetype="text/html")
+    except Exception as e:
+        return jsonify({"error": str(e)}), 404
+
