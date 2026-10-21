@@ -1,0 +1,10 @@
+metric,value,formula_description
+Subgroups (k),7,Number of daily audit samples
+Total Defects (C),33,Sum of all non-conforming entries
+Center Line (CL),4.714,Average defects per subgroup (mean c)
+Standard Error,2.171,sqrt(CL)
+Upper Control Limit (UCL),11.228,CL + 3 * sqrt(CL)
+Lower Control Limit (LCL),0.0,"max(0, CL - 3 * sqrt(CL))"
+Upper Warning Limit (UWL),9.057,CL + 2 * sqrt(CL)
+Lower Warning Limit (LWL),0.372,"max(0, CL - 2 * sqrt(CL))"
+Process Capability Status,STABILIZED IN CONTROL,Zero points beyond 3-sigma post-fix
