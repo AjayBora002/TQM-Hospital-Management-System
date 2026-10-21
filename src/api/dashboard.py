@@ -20,6 +20,9 @@ def dashboard_stats():
     recent_audit = conn.execute("SELECT * FROM audit_log ORDER BY log_id DESC LIMIT 10").fetchall()
     conn.close()
 
+    from utils.sigma_calculator import get_system_process_capability
+    sigma_metrics = get_system_process_capability()
+
     return jsonify({
         "total_patients": tot_patients,
         "total_doctors": tot_doctors,
@@ -27,5 +30,15 @@ def dashboard_stats():
         "available_rooms": avail_rooms,
         "low_stock_meds": low_stock_meds,
         "total_revenue": total_rev,
-        "recent_audit": rows_to_list(recent_audit)
+        "recent_audit": rows_to_list(recent_audit),
+        "sigma_level": sigma_metrics["current_sigma_level"],
+        "dpmo": sigma_metrics["dpmo"],
+        "process_yield": sigma_metrics["process_yield_percent"]
     })
+
+
+@dashboard_bp.route("/tqm/six-sigma", methods=["GET"])
+def get_six_sigma_capability():
+    from utils.sigma_calculator import get_system_process_capability
+    return jsonify(get_system_process_capability()), 200
+
