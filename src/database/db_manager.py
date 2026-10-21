@@ -210,6 +210,20 @@ CREATE TABLE IF NOT EXISTS purchase_orders (
     received_date  TEXT,
     FOREIGN KEY (medicine_id) REFERENCES medicines(medicine_id) ON DELETE CASCADE
 );
+
+-- NABH & ISO 9001 Hospital Quality Inspection Audit Checklist
+CREATE TABLE IF NOT EXISTS quality_audits (
+    audit_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    department         TEXT NOT NULL,
+    standard_code      TEXT NOT NULL,
+    criterion          TEXT NOT NULL,
+    score              INTEGER NOT NULL CHECK(score BETWEEN 0 AND 10),
+    max_score          INTEGER NOT NULL DEFAULT 10,
+    compliance_status  TEXT NOT NULL CHECK(compliance_status IN ('Compliant','Minor Non-Conformance','Major Non-Conformance')),
+    audited_by         TEXT NOT NULL,
+    audit_date         TEXT NOT NULL,
+    corrective_action  TEXT
+);
 """
 
 
@@ -265,6 +279,23 @@ def init_db():
         conn.executemany(
             "INSERT INTO users (username, password_hash, role, full_name, email, created_at) VALUES (?,?,?,?,?,?)",
             [(u[0], u[1], u[2], u[3], u[4], now_str) for u in demo_users]
+        )
+
+    # Seed initial NABH & ISO quality audits if empty
+    audit_count = conn.execute("SELECT COUNT(*) as c FROM quality_audits").fetchone()["c"]
+    if audit_count == 0:
+        seed_audits = [
+            ("Patient Registration", "NABH-AAC.1", "Patient Identification & Keystroke Input Masking (+91 Phone)", 10, 10, "Compliant", "Dr. Ajay Bora (TQM Lead)", "2026-10-10", "Poka-Yoke input masking enforced across UI"),
+            ("Pharmacy & Dispensary", "NABH-MOM.3", "Pharmaceutical Expiry Date Verification & Batch Integrity", 9, 10, "Compliant", "Dr. Ajay Bora (TQM Lead)", "2026-10-10", "Automated system blocks expired batch dispensing"),
+            ("Clinical Consultations", "NABH-COP.4", "Adverse Drug Reaction (ADR) Pre-flight Allergy Contraindication", 10, 10, "Compliant", "Dr. Ajay Bora (TQM Lead)", "2026-10-11", "System blocks contra-indicated prescriptions"),
+            ("Inpatient Wards", "NABH-HIC.2", "Bed Availability Tracking & Infection Control Sanitization", 8, 10, "Compliant", "Dr. Ajay Bora (TQM Lead)", "2026-10-11", "Bed status tracking integrated with discharge flow"),
+            ("Billing & Accounts", "ISO-9001-8.2", "Itemized Invoicing Accuracy & Automated Arithmetic Calculation", 10, 10, "Compliant", "Dr. Ajay Bora (TQM Lead)", "2026-10-12", "Read-only calculation formula eliminates manual error"),
+            ("Emergency & Triage", "NABH-COP.2", "Physiological Vital Boundaries & Severity Priority Triage", 9, 10, "Compliant", "Dr. Ajay Bora (TQM Lead)", "2026-10-12", "Code Red automatic prioritization operational"),
+        ]
+        conn.executemany(
+            "INSERT INTO quality_audits (department, standard_code, criterion, score, max_score, compliance_status, audited_by, audit_date, corrective_action) "
+            "VALUES (?,?,?,?,?,?,?,?,?)",
+            seed_audits
         )
 
     conn.commit()

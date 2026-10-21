@@ -18,6 +18,7 @@ from .system import system_bp
 from .lab_tests import lab_tests_bp
 from .triage import triage_bp
 from .purchase_orders import purchase_orders_bp
+from .quality_audit import quality_audit_bp
 
 def register_api(app):
     """
@@ -41,6 +42,8 @@ def register_api(app):
     app.register_blueprint(lab_tests_bp, url_prefix="/api")
     app.register_blueprint(triage_bp, url_prefix="/api")
     app.register_blueprint(purchase_orders_bp, url_prefix="/api")
+    app.register_blueprint(quality_audit_bp, url_prefix="/api")
+
 
 
 
