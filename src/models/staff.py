@@ -17,10 +17,17 @@ def list_all():
 
 
 def add(full_name, role, shift, phone):
+    from utils.validators import validate_staff_payload
+    validate_staff_payload({
+        "full_name": full_name,
+        "role": role,
+        "shift": shift,
+        "phone": phone
+    })
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("INSERT INTO staff (full_name, role, shift, phone, created_at) VALUES (?,?,?,?,?)",
-                (full_name, role, shift, phone, now()))
+                (str(full_name).strip(), role, shift, phone, now()))
     new_id = cur.lastrowid
     log_audit(conn, "staff", new_id, "INSERT", f"Added staff '{full_name}'")
     conn.commit()
@@ -29,9 +36,16 @@ def add(full_name, role, shift, phone):
 
 
 def update(staff_id, full_name, role, shift, phone):
+    from utils.validators import validate_staff_payload
+    validate_staff_payload({
+        "full_name": full_name,
+        "role": role,
+        "shift": shift,
+        "phone": phone
+    })
     conn = get_connection()
     conn.execute("UPDATE staff SET full_name=?, role=?, shift=?, phone=? WHERE staff_id=?",
-                 (full_name, role, shift, phone, staff_id))
+                 (str(full_name).strip(), role, shift, phone, staff_id))
     log_audit(conn, "staff", staff_id, "UPDATE", "Staff record updated")
     conn.commit()
     conn.close()

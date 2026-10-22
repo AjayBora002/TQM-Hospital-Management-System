@@ -217,6 +217,46 @@ def validate_medicine_payload(data: dict):
     return True
 
 
+def validate_doctor_payload(data: dict):
+    """Validates doctor registration payload against Q07 rules."""
+    name = str(data.get("full_name") or "").strip()
+    if not name or len(name) < 2:
+        raise ValidationError("Doctor full name must be at least 2 characters.", field="full_name")
+
+    dept = str(data.get("department") or "").strip()
+    from config import DEPARTMENTS
+    if dept not in DEPARTMENTS:
+        raise ValidationError(f"Department must be one of {', '.join(DEPARTMENTS)}.", field="department")
+
+    phone = str(data.get("phone") or "")
+    if not is_valid_phone_digits(phone):
+        raise ValidationError("Doctor phone number must contain 10 digits.", field="phone")
+    return True
+
+
+def validate_staff_payload(data: dict):
+    """Validates hospital staff registration payload against Q07 rules."""
+    name = str(data.get("full_name") or "").strip()
+    if not name or len(name) < 2:
+        raise ValidationError("Staff full name must be at least 2 characters.", field="full_name")
+
+    role = str(data.get("role") or "").strip()
+    from config import STAFF_ROLES
+    if role not in STAFF_ROLES:
+        raise ValidationError(f"Role must be one of {', '.join(STAFF_ROLES)}.", field="role")
+
+    shift = str(data.get("shift") or "").strip()
+    from config import SHIFTS
+    if shift not in SHIFTS:
+        raise ValidationError(f"Shift must be one of {', '.join(SHIFTS)}.", field="shift")
+
+    phone = str(data.get("phone") or "")
+    if not is_valid_phone_digits(phone):
+        raise ValidationError("Staff phone number must contain 10 digits.", field="phone")
+    return True
+
+
+
 
 
 

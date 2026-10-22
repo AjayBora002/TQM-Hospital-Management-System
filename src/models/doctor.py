@@ -25,10 +25,16 @@ def choices_map():
 
 
 def add(full_name, department, phone):
+    from utils.validators import validate_doctor_payload
+    validate_doctor_payload({
+        "full_name": full_name,
+        "department": department,
+        "phone": phone
+    })
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("INSERT INTO doctors (full_name, department, phone, created_at) VALUES (?,?,?,?)",
-                (full_name, department, phone, now()))
+                (str(full_name).strip(), department, phone, now()))
     new_id = cur.lastrowid
     log_audit(conn, "doctors", new_id, "INSERT", f"Added doctor '{full_name}'")
     conn.commit()
@@ -37,9 +43,15 @@ def add(full_name, department, phone):
 
 
 def update(doctor_id, full_name, department, phone):
+    from utils.validators import validate_doctor_payload
+    validate_doctor_payload({
+        "full_name": full_name,
+        "department": department,
+        "phone": phone
+    })
     conn = get_connection()
     conn.execute("UPDATE doctors SET full_name=?, department=?, phone=? WHERE doctor_id=?",
-                 (full_name, department, phone, doctor_id))
+                 (str(full_name).strip(), department, phone, doctor_id))
     log_audit(conn, "doctors", doctor_id, "UPDATE", "Doctor record updated")
     conn.commit()
     conn.close()
