@@ -68,16 +68,40 @@ def validate_patient_payload(data: dict):
 
 
 def validate_appointment_payload(data: dict):
-    """Validates appointment booking payload."""
+    """Validates appointment booking payload and calendar constraints."""
     if not data.get("patient_id"):
         raise ValidationError("Patient selection is mandatory.", field="patient_id")
+    try:
+        pid = int(data.get("patient_id"))
+        if pid <= 0:
+            raise ValidationError("Patient ID must be a positive integer.", field="patient_id")
+    except (ValueError, TypeError):
+        raise ValidationError("Patient ID must be an integer.", field="patient_id")
+
     if not data.get("doctor_id"):
         raise ValidationError("Doctor selection is mandatory.", field="doctor_id")
-    if not is_valid_date(data.get("appt_date", "")):
+    try:
+        did = int(data.get("doctor_id"))
+        if did <= 0:
+            raise ValidationError("Doctor ID must be a positive integer.", field="doctor_id")
+    except (ValueError, TypeError):
+        raise ValidationError("Doctor ID must be an integer.", field="doctor_id")
+
+    appt_date = str(data.get("appt_date", "")).strip()
+    if not is_valid_date(appt_date):
         raise ValidationError("Appointment date must be a valid YYYY-MM-DD date.", field="appt_date")
-    if not is_valid_time(data.get("appt_time", "")):
+
+    appt_time = str(data.get("appt_time", "")).strip()
+    if not is_valid_time(appt_time):
         raise ValidationError("Appointment time must be in HH:MM (24-hour) format.", field="appt_time")
+
+    status = data.get("status")
+    if status:
+        from config import APPT_STATUS
+        if status not in APPT_STATUS:
+            raise ValidationError(f"Appointment status must be one of {', '.join(APPT_STATUS)}.", field="status")
     return True
+
 
 
 def validate_billing_payload(data: dict):

@@ -23,9 +23,15 @@ def list_all():
     return rows
 
 
-def add(patient_id, doctor_id, appt_date, appt_time, status):
-    # Ensure appointment dates are not null or empty
-    assert appt_date and appt_time, 'Appointment date and time must be provided'
+def add(patient_id, doctor_id, appt_date, appt_time, status="Scheduled"):
+    from utils.validators import validate_appointment_payload
+    validate_appointment_payload({
+        "patient_id": patient_id,
+        "doctor_id": doctor_id,
+        "appt_date": appt_date,
+        "appt_time": appt_time,
+        "status": status
+    })
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -41,6 +47,14 @@ def add(patient_id, doctor_id, appt_date, appt_time, status):
 
 
 def update(appointment_id, patient_id, doctor_id, appt_date, appt_time, status):
+    from utils.validators import validate_appointment_payload
+    validate_appointment_payload({
+        "patient_id": patient_id,
+        "doctor_id": doctor_id,
+        "appt_date": appt_date,
+        "appt_time": appt_time,
+        "status": status
+    })
     conn = get_connection()
     conn.execute(
         "UPDATE appointments SET patient_id=?, doctor_id=?, appt_date=?, appt_time=?, status=? "

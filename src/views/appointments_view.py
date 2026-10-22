@@ -123,8 +123,28 @@ class AppointmentsTab(ttk.Frame):
         if not self._validate():
             return
         pid = patient_model.get_id_by_name(self.patient_ac.var.get().strip())
-        appt_model.add(pid, self._doctor_map[self.doctor_var.get()],
-                        self.date_var.get().strip(), self.time_var.get().strip(), self.status_var.get())
+        doc_id = self._doctor_map[self.doctor_var.get()]
+        appt_date = self.date_var.get().strip()
+        appt_time = self.time_var.get().strip()
+        status = self.status_var.get()
+
+        conflict = appt_model.has_conflict(doc_id, appt_date, appt_time)
+        if conflict:
+            messagebox.showerror(
+                "Booking Conflict",
+                f"Doctor is already booked for another patient at {appt_time} on {appt_date}."
+            )
+            return
+
+        p_conflict = appt_model.has_patient_conflict(pid, appt_date, appt_time)
+        if p_conflict:
+            messagebox.showerror(
+                "Patient Conflict",
+                f"Patient already has an active appointment at {appt_time} on {appt_date}."
+            )
+            return
+
+        appt_model.add(pid, doc_id, appt_date, appt_time, status)
         messagebox.showinfo("Success", "Appointment booked.")
         self.clear_form()
         self.refresh()
@@ -138,8 +158,28 @@ class AppointmentsTab(ttk.Frame):
         if not confirm_update("appointment", self.selected_id):
             return
         pid = patient_model.get_id_by_name(self.patient_ac.var.get().strip())
-        appt_model.update(self.selected_id, pid, self._doctor_map[self.doctor_var.get()],
-                           self.date_var.get().strip(), self.time_var.get().strip(), self.status_var.get())
+        doc_id = self._doctor_map[self.doctor_var.get()]
+        appt_date = self.date_var.get().strip()
+        appt_time = self.time_var.get().strip()
+        status = self.status_var.get()
+
+        conflict = appt_model.has_conflict(doc_id, appt_date, appt_time, exclude_id=self.selected_id)
+        if conflict:
+            messagebox.showerror(
+                "Booking Conflict",
+                f"Doctor is already booked at {appt_time} on {appt_date}."
+            )
+            return
+
+        p_conflict = appt_model.has_patient_conflict(pid, appt_date, appt_time, exclude_id=self.selected_id)
+        if p_conflict:
+            messagebox.showerror(
+                "Patient Conflict",
+                f"Patient already has an active appointment at {appt_time} on {appt_date}."
+            )
+            return
+
+        appt_model.update(self.selected_id, pid, doc_id, appt_date, appt_time, status)
         messagebox.showinfo("Success", "Appointment updated.")
         self.clear_form()
         self.refresh()

@@ -49,7 +49,7 @@ class TestPatientTimeline(unittest.TestCase):
 
         # 3. Create Doctor & Book Appointment
         d_id = doctor_model.add("Dr. Shalini Kapoor", "Cardiology", "9876543299")
-        appt_id = appointment_model.add(p_id, d_id, "2026-11-05", "10:30", "Regular cardiac follow-up")
+        appt_id = appointment_model.add(p_id, d_id, "2026-11-05", "10:30", "Scheduled")
 
         # 4. Prescribe Medication
         med_id = medicine_model.add("Atorvastatin 20mg", "Tablet", 50, 10.0, 10, batch_no="BAT-ATV-05", expiry_date="2028-10-30")
