@@ -102,6 +102,8 @@ Quality is enforced through Poka-Yoke mistake-proofing across both Desktop GUI a
 | 16 | **Automated Pharmacy POs** | `src/models/purchase_order.py` | API `/api/purchase-orders` | Auto-detects inventory at/below reorder level and replenishes stock upon receipt |
 | 17 | **NABH & ISO Quality Checklist** | `src/models/quality_audit.py` | API `/api/quality-audits` | Standardized hospital audit matrix with departmental compliance percentages |
 | 18 | **Startup Authentication & RBAC** | `src/views/login_dialog.py` | Top status bar in `main.py` | Desktop GUI login modal with 1-click Quick Login for Admin, Doctor, Receptionist |
+| 19 | **Multi-Tier Boundary Validation** | `src/utils/validators.py` | Global REST API handler + Model layers | Enforces non-negative billing charges, DOB boundaries, room tariffs, stock pricing, and dropdown categorizations |
+| 20 | **Dual-Tier Checksheet Synchronization** | `src/models/audit.py` | `src/utils/logging_service.py` | Automatically mirrors defect log additions to `TQM/data/checksheet.csv` in real-time for Pareto analysis |
 
 ---
 
@@ -217,9 +219,17 @@ HMS_Project/
 │   ├── fishbone_diagram.py        # Ishikawa root-cause diagram generator
 │   └── fishbone_diagram.png       # Generated Fishbone diagram
 │
-└── tests/                         # 31 automated unit & integration tests
+└── tests/                         # 120 automated unit & integration tests across 14 test suites
     ├── test_db.py                 # Data access layer & CRUD tests
     ├── test_validators.py         # Input validation & boundary condition tests
+    ├── test_billing_validation.py # Non-negative billing and decimal rounding tests
+    ├── test_appointment_boundaries.py # Slot conflict & calendar boundary tests
+    ├── test_patient_boundaries.py # Future DOB upper bound & phone digit validation
+    ├── test_room_boundaries.py    # Room tariff boundaries & categorical type validation
+    ├── test_medicine_boundaries.py # Pharmacy non-negative stock & unit pricing tests
+    ├── test_staff_doctor_boundaries.py # Staff role, shift & department verification tests
+    ├── test_audit_sync.py         # Real-time checksheet CSV dual-sync tests
+    ├── test_api_error_handling.py # Global REST API validation HTTP 400 error handling
     ├── test_tqm_services.py       # Dual-tier logging and exception handling tests
     ├── test_web_app.py            # Web application endpoints & static asset tests
     └── test_clinical_poka_yoke.py # Schedule conflict, allergy safety & triage vitals tests
@@ -236,7 +246,7 @@ HMS_Project/
 | **Review 3: FMEA & Risk Audit** | 15 Marks | CO2 | Formula-driven FMEA Matrix with RPN calculations (`docs/FMEA_RiskAudit.xlsx`, `TQM/FMEA.md`), SIPOC Process Map (`TQM/SIPOC.md`, `docs/sipoc_diagram.png`), CTQ Tree (`TQM/CTQ_Tree.md`), Defect Checksheet (`TQM/data/checksheet.csv`). | Completed |
 | **Review 4: SQC & Continuous Improvement** | 15 Marks | CO2, CO3 | Pareto Chart with 80/20 analysis (`sqc/pareto_chart.png`, `TQM/Pareto.md`), Ishikawa Fishbone Root-Cause Diagram (`sqc/fishbone_diagram.png`, `TQM/Fishbone.md`), PDCA continuous improvement cycle log (`TQM/PDCA.md`). | Completed |
 | **Final Demonstration & Viva** | 10 Marks | CO3 | Live software demonstration (Web Portal `python run.py` / Desktop GUI `python src/main.py`), bug-handling defense, oral viva defense on TQM tools selection. | Ready |
-| **Documentation & GitHub Health** | 5 Marks | CO3 | Comprehensive `README.md`, User & Operations Manual (`docs/USER_MANUAL.md`), ≥30 meaningful commit history (**76+ commits logged**; verify via `git rev-list --count HEAD` or [GitHub Commits](https://github.com/AjayBora002/TQM-Hospital-Management-System/commits/main)), 15 Defect Issues documented in `docs/GITHUB_ISSUES.md` matching `TQM/data/checksheet.csv`. | Completed |
+| **Documentation & GitHub Health** | 5 Marks | CO3 | Comprehensive `README.md`, User & Operations Manual (`docs/USER_MANUAL.md`), ≥30 meaningful commit history (**95+ commits logged**; verify via `git rev-list --count HEAD` or [GitHub Commits](https://github.com/AjayBora002/TQM-Hospital-Management-System/commits/main)), 15 Defect Issues documented in `docs/GITHUB_ISSUES.md` matching `TQM/data/checksheet.csv`. | Completed |
 | **Total Assessment** | **70 Marks** | **CO1, CO2, CO3** | All 4 reviews, live demonstration, and documentation artifacts fully synchronized. | **100% Complete** |
 
 ---
