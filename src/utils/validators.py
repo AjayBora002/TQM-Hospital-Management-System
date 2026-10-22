@@ -81,18 +81,39 @@ def validate_appointment_payload(data: dict):
 
 
 def validate_billing_payload(data: dict):
-    """Validates billing calculations and status."""
+    """Validates billing calculations, charges, and payment status against Q07 rules."""
     if not data.get("patient_id"):
         raise ValidationError("Billing must be associated with a valid patient ID.", field="patient_id")
+    try:
+        pid = int(data.get("patient_id"))
+        if pid <= 0:
+            raise ValidationError("Patient ID must be a positive integer.", field="patient_id")
+    except (ValueError, TypeError):
+        raise ValidationError("Patient ID must be an integer.", field="patient_id")
+
     for charge_field in ["room_charges", "consultation_charges", "medicine_charges"]:
         val = data.get(charge_field, 0)
         try:
             num = float(val)
             if num < 0:
-                raise ValidationError(f"{charge_field} cannot be negative.", field=charge_field)
+                raise ValidationError(f"{charge_field.replace('_', ' ').capitalize()} cannot be negative.", field=charge_field)
         except (ValueError, TypeError):
-            raise ValidationError(f"{charge_field} must be a valid numeric amount.", field=charge_field)
+            raise ValidationError(f"{charge_field.replace('_', ' ').capitalize()} must be a valid numeric amount.", field=charge_field)
+
+    pm = data.get("payment_method")
+    if pm:
+        from config import PAYMENT_METHODS
+        if pm not in PAYMENT_METHODS:
+            raise ValidationError(f"Payment method must be one of {', '.join(PAYMENT_METHODS)}.", field="payment_method")
+
+    ps = data.get("payment_status")
+    if ps:
+        from config import PAYMENT_STATUS
+        allowed_statuses = set(PAYMENT_STATUS) | {"Unpaid", "Partial"}
+        if ps not in allowed_statuses:
+            raise ValidationError(f"Payment status must be one of {', '.join(sorted(allowed_statuses))}.", field="payment_status")
     return True
+
 
 
 # Clinical Poka-Yoke: Triage Vitals & Boundary Validators

@@ -3,6 +3,9 @@ from datetime import datetime
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.db_manager import get_connection, log_audit  # noqa: E402
+from utils.validators import validate_billing_payload  # noqa: E402
+from utils.exception_handler import ValidationError  # noqa: E402
+from config import PAYMENT_STATUS  # noqa: E402
 
 
 def now():
@@ -22,13 +25,21 @@ def list_all():
 
 def add(patient_id, room_charges, consultation_charges, medicine_charges,
         payment_method, payment_status):
+    validate_billing_payload({
+        "patient_id": patient_id,
+        "room_charges": room_charges,
+        "consultation_charges": consultation_charges,
+        "medicine_charges": medicine_charges,
+        "payment_method": payment_method,
+        "payment_status": payment_status
+    })
     total = round(float(room_charges) + float(consultation_charges) + float(medicine_charges), 2)
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO bills (patient_id, room_charges, consultation_charges, medicine_charges, "
         "total_amount, payment_method, payment_status, created_at) VALUES (?,?,?,?,?,?,?,?)",
-        (patient_id, room_charges, consultation_charges, medicine_charges, total,
+        (patient_id, float(room_charges), float(consultation_charges), float(medicine_charges), total,
          payment_method, payment_status, now())
     )
     new_id = cur.lastrowid
@@ -39,6 +50,9 @@ def add(patient_id, room_charges, consultation_charges, medicine_charges,
 
 
 def update_status(bill_id, payment_status):
+    allowed_statuses = set(PAYMENT_STATUS) | {"Unpaid", "Partial"}
+    if payment_status not in allowed_statuses:
+        raise ValidationError(f"Invalid payment status '{payment_status}'. Allowed: {sorted(allowed_statuses)}", field="payment_status")
     conn = get_connection()
     conn.execute("UPDATE bills SET payment_status=? WHERE bill_id=?", (payment_status, bill_id))
     log_audit(conn, "bills", bill_id, "UPDATE", f"Payment status set to {payment_status}")
