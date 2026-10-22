@@ -177,6 +177,47 @@ def validate_room_payload(data: dict):
     return True
 
 
+def validate_medicine_payload(data: dict):
+    """Validates medicine inventory payload against Q07 rules."""
+    name = str(data.get("name") or "").strip()
+    if not name or len(name) < 2:
+        raise ValidationError("Medicine name must be at least 2 characters.", field="name")
+
+    category = str(data.get("category") or "").strip()
+    from config import MEDICINE_CATEGORIES
+    allowed_categories = set(MEDICINE_CATEGORIES) | {"Capsule"}
+    if category not in allowed_categories:
+        raise ValidationError(f"Category must be one of {', '.join(sorted(allowed_categories))}.", field="category")
+
+    try:
+        stock = int(data.get("stock_qty", 0))
+        if stock < 0:
+            raise ValidationError("Stock quantity cannot be negative.", field="stock_qty")
+    except (ValueError, TypeError):
+        raise ValidationError("Stock quantity must be an integer.", field="stock_qty")
+
+    try:
+        price = float(data.get("unit_price", 0))
+        if price < 0:
+            raise ValidationError("Unit price cannot be negative.", field="unit_price")
+    except (ValueError, TypeError):
+        raise ValidationError("Unit price must be a valid numeric amount.", field="unit_price")
+
+    try:
+        reorder = int(data.get("reorder_level", 0))
+        if reorder < 0:
+            raise ValidationError("Reorder level cannot be negative.", field="reorder_level")
+    except (ValueError, TypeError):
+        raise ValidationError("Reorder level must be an integer.", field="reorder_level")
+
+    expiry = data.get("expiry_date")
+    if expiry and not is_valid_date(str(expiry).strip()):
+        raise ValidationError("Expiry date must be in YYYY-MM-DD format.", field="expiry_date")
+
+    return True
+
+
+
 
 
 # Clinical Poka-Yoke: Triage Vitals & Boundary Validators

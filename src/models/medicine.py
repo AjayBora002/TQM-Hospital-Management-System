@@ -48,11 +48,20 @@ def expired_medicines():
 
 
 def add(name, category, stock_qty, unit_price, reorder_level, batch_no="BAT-2026-01", expiry_date="2027-12-31"):
+    from utils.validators import validate_medicine_payload
+    validate_medicine_payload({
+        "name": name,
+        "category": category,
+        "stock_qty": stock_qty,
+        "unit_price": unit_price,
+        "reorder_level": reorder_level,
+        "expiry_date": expiry_date
+    })
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
         "INSERT INTO medicines (name, category, stock_qty, unit_price, reorder_level, batch_no, expiry_date) VALUES (?,?,?,?,?,?,?)",
-        (name, category, stock_qty, unit_price, reorder_level, batch_no or "BAT-2026-01", expiry_date or "2027-12-31")
+        (str(name).strip(), category, int(stock_qty), float(unit_price), int(reorder_level), batch_no or "BAT-2026-01", expiry_date or "2027-12-31")
     )
     new_id = cur.lastrowid
     log_audit(conn, "medicines", new_id, "INSERT", f"Added medicine '{name}' (Batch: {batch_no}, Expiry: {expiry_date})")
@@ -62,11 +71,20 @@ def add(name, category, stock_qty, unit_price, reorder_level, batch_no="BAT-2026
 
 
 def update(medicine_id, name, category, stock_qty, unit_price, reorder_level, batch_no="BAT-2026-01", expiry_date="2027-12-31"):
+    from utils.validators import validate_medicine_payload
+    validate_medicine_payload({
+        "name": name,
+        "category": category,
+        "stock_qty": stock_qty,
+        "unit_price": unit_price,
+        "reorder_level": reorder_level,
+        "expiry_date": expiry_date
+    })
     conn = get_connection()
     conn.execute(
         "UPDATE medicines SET name=?, category=?, stock_qty=?, unit_price=?, reorder_level=?, batch_no=?, expiry_date=? "
         "WHERE medicine_id=?",
-        (name, category, stock_qty, unit_price, reorder_level, batch_no or "BAT-2026-01", expiry_date or "2027-12-31", medicine_id)
+        (str(name).strip(), category, int(stock_qty), float(unit_price), int(reorder_level), batch_no or "BAT-2026-01", expiry_date or "2027-12-31", medicine_id)
     )
     log_audit(conn, "medicines", medicine_id, "UPDATE", f"Medicine updated (Batch: {batch_no}, Expiry: {expiry_date})")
     conn.commit()

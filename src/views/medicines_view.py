@@ -116,11 +116,19 @@ class MedicinesTab(ttk.Frame):
             messagebox.showerror("Validation Error", "Please select a Category from the dropdown.")
             return False
         try:
-            int(self.stock_var.get())
-            float(self.price_var.get())
-            int(self.reorder_var.get())
+            s = int(self.stock_var.get())
+            p = float(self.price_var.get())
+            r = int(self.reorder_var.get())
+            if s < 0 or p < 0 or r < 0:
+                messagebox.showerror("Validation Error", "Stock, Price, and Reorder Level cannot be negative.")
+                return False
         except ValueError:
             messagebox.showerror("Validation Error", "Stock/Reorder must be integers, Price a number.")
+            return False
+        from utils.validators import is_valid_date
+        exp = self.expiry_var.get().strip()
+        if exp and not is_valid_date(exp):
+            messagebox.showerror("Validation Error", "Expiry Date must be in YYYY-MM-DD format.")
             return False
         return True
 
