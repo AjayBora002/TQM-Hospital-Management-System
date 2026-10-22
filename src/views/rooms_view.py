@@ -86,7 +86,10 @@ class RoomsTab(ttk.Frame):
             messagebox.showerror("Validation Error", "Please select a Status from the dropdown.")
             return False
         try:
-            float(self.rate_var.get())
+            r = float(self.rate_var.get())
+            if r < 0:
+                messagebox.showerror("Validation Error", "Rate/Day cannot be negative.")
+                return False
         except ValueError:
             messagebox.showerror("Validation Error", "Rate/Day must be a number.")
             return False

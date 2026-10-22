@@ -149,6 +149,35 @@ def validate_billing_payload(data: dict):
     return True
 
 
+def validate_room_payload(data: dict):
+    """Validates room fields, types, and tariff boundaries against Q07 rules."""
+    room_number = str(data.get("room_number") or "").strip()
+    if not room_number:
+        raise ValidationError("Room number cannot be empty.", field="room_number")
+
+    room_type = str(data.get("room_type") or "").strip()
+    from config import ROOM_TYPES
+    allowed_types = set(ROOM_TYPES) | {"General", "Deluxe"}
+    if room_type not in allowed_types:
+        raise ValidationError(f"Room type must be one of {', '.join(sorted(allowed_types))}.", field="room_type")
+
+    status = str(data.get("status") or "").strip()
+    from config import ROOM_STATUS
+    if status not in ROOM_STATUS:
+        raise ValidationError(f"Room status must be one of {', '.join(ROOM_STATUS)}.", field="status")
+
+    rate = data.get("rate_per_day")
+    try:
+        rate_val = float(rate)
+        if rate_val < 0:
+            raise ValidationError("Rate per day cannot be negative.", field="rate_per_day")
+    except (ValueError, TypeError):
+        raise ValidationError("Rate per day must be a valid numeric amount.", field="rate_per_day")
+
+    return True
+
+
+
 
 # Clinical Poka-Yoke: Triage Vitals & Boundary Validators
 def validate_vital_signs(data: dict) -> dict:

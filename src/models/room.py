@@ -22,11 +22,18 @@ def choices_map(only_available=False):
 
 
 def add(room_number, room_type, status, rate_per_day):
+    from utils.validators import validate_room_payload
+    validate_room_payload({
+        "room_number": room_number,
+        "room_type": room_type,
+        "status": status,
+        "rate_per_day": rate_per_day
+    })
     conn = get_connection()
     try:
         cur = conn.cursor()
         cur.execute("INSERT INTO rooms (room_number, room_type, status, rate_per_day) VALUES (?,?,?,?)",
-                    (room_number, room_type, status, rate_per_day))
+                    (str(room_number).strip(), room_type, status, float(rate_per_day)))
         new_id = cur.lastrowid
         log_audit(conn, "rooms", new_id, "INSERT", f"Added room '{room_number}'")
         conn.commit()
@@ -36,10 +43,17 @@ def add(room_number, room_type, status, rate_per_day):
 
 
 def update(room_id, room_number, room_type, status, rate_per_day):
+    from utils.validators import validate_room_payload
+    validate_room_payload({
+        "room_number": room_number,
+        "room_type": room_type,
+        "status": status,
+        "rate_per_day": rate_per_day
+    })
     conn = get_connection()
     try:
         conn.execute("UPDATE rooms SET room_number=?, room_type=?, status=?, rate_per_day=? WHERE room_id=?",
-                     (room_number, room_type, status, rate_per_day, room_id))
+                     (str(room_number).strip(), room_type, status, float(rate_per_day), room_id))
         log_audit(conn, "rooms", room_id, "UPDATE", f"Room {room_number} status updated to {status}")
         conn.commit()
     finally:
@@ -64,6 +78,10 @@ def get_by_id(room_id):
 
 
 def set_status(room_id, status):
+    from config import ROOM_STATUS
+    from utils.exception_handler import ValidationError
+    if status not in ROOM_STATUS:
+        raise ValidationError(f"Invalid room status '{status}'. Must be one of {ROOM_STATUS}", field="status")
     conn = get_connection()
     conn.execute("UPDATE rooms SET status=? WHERE room_id=?", (status, room_id))
     log_audit(conn, "rooms", room_id, "UPDATE", f"Room status set to {status}")

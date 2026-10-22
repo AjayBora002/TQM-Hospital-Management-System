@@ -7,10 +7,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from utils.validators import validate_patient_payload
 from utils.exception_handler import ValidationError
+from database.db_manager import init_db
 from models import patient as patient_model
 
 
 class TestPatientBoundaries(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        init_db()
     def test_valid_patient_payload(self):
         payload = {
             "full_name": "Kavita Bisht",

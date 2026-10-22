@@ -6,12 +6,16 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from utils.validators import validate_appointment_payload
 from utils.exception_handler import ValidationError
+from database.db_manager import init_db
 from models import patient as patient_model
 from models import doctor as doctor_model
 from models import appointment as appointment_model
 
 
 class TestAppointmentBoundaries(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        init_db()
     def test_valid_appointment_payload(self):
         payload = {
             "patient_id": 1,
