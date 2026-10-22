@@ -44,6 +44,19 @@ def register_api(app):
     app.register_blueprint(purchase_orders_bp, url_prefix="/api")
     app.register_blueprint(quality_audit_bp, url_prefix="/api")
 
+    # Global Poka-Yoke error handler: serialize domain validation errors cleanly to HTTP 400
+    from utils.exception_handler import ValidationError
+    from flask import jsonify
+
+    @app.errorhandler(ValidationError)
+    def handle_validation_error(err):
+        return jsonify({
+            "error": "Validation failed",
+            "message": str(err.message),
+            "field": getattr(err, "field", None),
+            "status_code": 400
+        }), 400
+
 
 
 
