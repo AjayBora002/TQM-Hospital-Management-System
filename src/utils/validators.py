@@ -52,9 +52,19 @@ def validate_patient_payload(data: dict):
     if gender not in {"Male", "Female", "Other"}:
         raise ValidationError("Gender must be 'Male', 'Female', or 'Other'.", field="gender")
     
-    dob = data.get("dob")
+    dob = (data.get("dob") or "").strip()
     if not is_valid_date(dob):
         raise ValidationError("Date of birth must be a valid YYYY-MM-DD date.", field="dob")
+    
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    if dob > today_str:
+        raise ValidationError(f"Date of birth cannot be in the future ({dob} > {today_str}).", field="dob")
+    try:
+        dob_year = int(dob.split("-")[0])
+        if dob_year < 1890:
+            raise ValidationError(f"Date of birth year ({dob_year}) is outside allowable range (1890-present).", field="dob")
+    except (ValueError, IndexError):
+        pass
         
     blood = data.get("blood_group")
     valid_blood = {"A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"}

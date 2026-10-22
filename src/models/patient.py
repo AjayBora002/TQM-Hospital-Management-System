@@ -57,6 +57,14 @@ def get_by_id(patient_id):
 
 
 def add(full_name, gender, dob, blood_group, phone, address, room_id=None, allergies="None"):
+    from utils.validators import validate_patient_payload
+    validate_patient_payload({
+        "full_name": full_name,
+        "gender": gender,
+        "dob": dob,
+        "blood_group": blood_group,
+        "phone": phone
+    })
     conn = get_connection()
     cur = conn.cursor()
     cur.execute(
@@ -75,6 +83,14 @@ def add(full_name, gender, dob, blood_group, phone, address, room_id=None, aller
 
 
 def update(patient_id, full_name, gender, dob, blood_group, phone, address, room_id=None, allergies="None"):
+    from utils.validators import validate_patient_payload
+    validate_patient_payload({
+        "full_name": full_name,
+        "gender": gender,
+        "dob": dob,
+        "blood_group": blood_group,
+        "phone": phone
+    })
     conn = get_connection()
     cur = conn.cursor()
     old = cur.execute("SELECT room_id, full_name, allergies FROM patients WHERE patient_id=?", (patient_id,)).fetchone()
