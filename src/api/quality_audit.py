@@ -28,17 +28,21 @@ def get_compliance_summary():
 def add_quality_audit():
     data = request.get_json() or {}
     user = session.get("username", "tqm_lead")
+    raw_max = data.get("max_score")
+    max_score = 10 if raw_max is None else raw_max
     try:
         new_id = audit_model.add_audit_entry(
             department=data.get("department"),
             standard_code=data.get("standard_code"),
             criterion=data.get("criterion"),
             score=data.get("score"),
-            max_score=data.get("max_score", 10),
+            max_score=max_score,
             audited_by=user,
             audit_date=data.get("audit_date"),
             corrective_action=data.get("corrective_action", "")
         )
         return jsonify({"message": "Quality audit entry recorded", "audit_id": new_id}), 201
+    except (TypeError, ValueError):
+        return jsonify({"error": "Invalid numeric score or max_score"}), 400
     except ValidationError as e:
         return jsonify({"error": e.message, "field": e.field}), 400

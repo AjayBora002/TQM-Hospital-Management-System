@@ -31,12 +31,23 @@ def add_audit_entry(
         raise ValidationError("Criterion description is required", field="criterion")
 
     try:
-        score = int(score)
         max_score = int(max_score)
+        if max_score < 1:
+            raise ValueError()
+    except (TypeError, ValueError):
+        raise ValidationError("Maximum score must be an integer >= 1", field="max_score")
+
+    try:
+        score = int(score)
         if score < 0 or score > max_score:
             raise ValueError()
     except (TypeError, ValueError):
         raise ValidationError(f"Score must be between 0 and {max_score}", field="score")
+
+    from utils.validators import is_valid_date
+    audit_date = str(audit_date or _now()[:10]).strip()
+    if not is_valid_date(audit_date):
+        raise ValidationError("Audit date must be in YYYY-MM-DD format", field="audit_date")
 
     # Evaluate compliance classification
     ratio = score / max_score
@@ -46,8 +57,6 @@ def add_audit_entry(
         compliance_status = "Minor Non-Conformance"
     else:
         compliance_status = "Major Non-Conformance"
-
-    audit_date = audit_date or _now()[:10]
     conn = get_connection()
     try:
         cur = conn.cursor()
