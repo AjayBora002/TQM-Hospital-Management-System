@@ -10,10 +10,24 @@ from database.db_manager import get_connection
 def evaluate_triage_tier(systolic=None, diastolic=None, pulse=None, temperature=None, spo2=None):
     """
     Computes clinical emergency priority tier based on vital parameters:
-    - Code Red (Resuscitation) -> Priority 1: Imminent life threat (SpO2 < 90, severe tachycardia/bradycardia, crisis BP)
+    - Code Red (Resuscitation) -> Priority 1: Imminent life threat (SpO2 < 90, severe arrhythmia, crisis BP, hyper/hypothermia)
     - Code Yellow (Urgent)     -> Priority 2: Serious illness requiring prompt intervention
     - Code Green (Stable)      -> Priority 3: Non-urgent stable patient
     """
+    def _to_num(val, cast=float):
+        if val is None or str(val).strip() == "":
+            return None
+        try:
+            return cast(val)
+        except (ValueError, TypeError):
+            return None
+
+    systolic = _to_num(systolic, int)
+    diastolic = _to_num(diastolic, int)
+    pulse = _to_num(pulse, int)
+    temperature = _to_num(temperature, float)
+    spo2 = _to_num(spo2, int)
+
     reasons = []
 
     # Check Code Red criteria
@@ -23,8 +37,10 @@ def evaluate_triage_tier(systolic=None, diastolic=None, pulse=None, temperature=
         reasons.append(f"Critical Arrhythmia (Pulse: {pulse} bpm)")
     if systolic is not None and (systolic > 180 or systolic < 80):
         reasons.append(f"Hypertensive Crisis / Shock (BP: {systolic}/{diastolic or '-'} mmHg)")
-    if temperature is not None and temperature >= 104.0:
-        reasons.append(f"Hyperpyrexia (Temp: {temperature}°F)")
+    elif diastolic is not None and (diastolic >= 120 or diastolic < 50):
+        reasons.append(f"Crisis Diastolic BP ({diastolic} mmHg)")
+    if temperature is not None and (temperature >= 104.0 or temperature < 95.0):
+        reasons.append(f"Critical Temperature / Hypothermia (Temp: {temperature}°F)")
 
     if reasons:
         return {
@@ -42,8 +58,10 @@ def evaluate_triage_tier(systolic=None, diastolic=None, pulse=None, temperature=
         reasons.append(f"Abnormal Heart Rate (Pulse: {pulse} bpm)")
     if systolic is not None and (systolic >= 140 or systolic <= 90):
         reasons.append(f"Elevated / Low BP ({systolic}/{diastolic or '-'} mmHg)")
-    if temperature is not None and temperature >= 101.0:
-        reasons.append(f"Significant Pyrexia (Temp: {temperature}°F)")
+    elif diastolic is not None and (diastolic >= 90 or diastolic <= 60):
+        reasons.append(f"Abnormal Diastolic BP ({diastolic} mmHg)")
+    if temperature is not None and (temperature >= 101.0 or temperature < 97.0):
+        reasons.append(f"Significant Pyrexia / Low Temp (Temp: {temperature}°F)")
 
     if reasons:
         return {
