@@ -54,5 +54,7 @@ def dispense_prescription(prescription_id):
         qty_int = int(qty) if qty is not None else None
         prescription_model.dispense_prescription(prescription_id, qty_dispensed=qty_int, performed_by=user)
         return jsonify({"message": f"Prescription #{prescription_id} dispensed and medicine inventory updated"}), 200
+    except (TypeError, ValueError):
+        return jsonify({"error": "Dispensed quantity must be an integer >= 1", "field": "qty"}), 400
     except ValidationError as e:
         return jsonify({"error": e.message, "field": e.field}), 400

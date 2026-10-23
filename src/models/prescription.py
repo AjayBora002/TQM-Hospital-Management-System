@@ -120,7 +120,7 @@ def dispense_prescription(prescription_id: int, qty_dispensed: int = None, perfo
     conn = get_connection()
     try:
         rx = conn.execute(
-            "SELECT rx.*, m.name as medicine_name, m.stock_qty, p.full_name as patient_name "
+            "SELECT rx.*, m.name as medicine_name, m.stock_qty, m.batch_no, m.expiry_date, p.full_name as patient_name "
             "FROM prescriptions rx "
             "JOIN medicines m ON rx.medicine_id = m.medicine_id "
             "JOIN patients p ON rx.patient_id = p.patient_id "
@@ -130,10 +130,25 @@ def dispense_prescription(prescription_id: int, qty_dispensed: int = None, perfo
 
         if not rx:
             raise ValidationError(f"Prescription #{prescription_id} not found", field="prescription_id")
-        if rx["status"] == "Dispensed":
-            raise ValidationError("Prescription is already dispensed", field="prescription_id")
+        if rx["status"] != "Active":
+            raise ValidationError(f"Cannot dispense prescription with status '{rx['status']}' (only 'Active' prescriptions can be dispensed)", field="prescription_id")
 
         qty = qty_dispensed if qty_dispensed is not None else rx["duration_days"]
+        try:
+            qty = int(qty)
+            if qty <= 0:
+                raise ValueError()
+        except (TypeError, ValueError):
+            raise ValidationError("Dispensed quantity must be an integer >= 1", field="qty_dispensed")
+
+        if "expiry_date" in rx.keys() and rx["expiry_date"]:
+            from datetime import date
+            if rx["expiry_date"] < date.today().isoformat():
+                raise ValidationError(
+                    f"CLINICAL SAFETY ALERT (Poka-Yoke): Medicine '{rx['medicine_name']}' in stock has expired on {rx['expiry_date']} (Batch: {rx['batch_no']}). Dispense blocked.",
+                    field="medicine_id"
+                )
+
         if rx["stock_qty"] < qty:
             raise ValidationError(f"Insufficient inventory for '{rx['medicine_name']}'. In stock: {rx['stock_qty']}, required: {qty}", field="stock_qty")
 
