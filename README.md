@@ -42,7 +42,7 @@ python run.py
 python run.py --web
 # Opens http://127.0.0.1:5000 in your browser
 
-# 4. Run automated test suite (62 tests covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, and Six Sigma)
+# 4. Run automated test suite (145+ tests covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, Admissions, PO Replenishment, and Quality Audits)
 python -m unittest discover tests
 
 # 5. Regenerate SQC Pareto & Fishbone charts
@@ -219,7 +219,7 @@ HMS_Project/
 │   ├── fishbone_diagram.py        # Ishikawa root-cause diagram generator
 │   └── fishbone_diagram.png       # Generated Fishbone diagram
 │
-└── tests/                         # 120 automated unit & integration tests across 14 test suites
+└── tests/                         # 147 automated unit & integration tests across 28 test suites
     ├── test_db.py                 # Data access layer & CRUD tests
     ├── test_validators.py         # Input validation & boundary condition tests
     ├── test_billing_validation.py # Non-negative billing and decimal rounding tests
@@ -228,6 +228,13 @@ HMS_Project/
     ├── test_room_boundaries.py    # Room tariff boundaries & categorical type validation
     ├── test_medicine_boundaries.py # Pharmacy non-negative stock & unit pricing tests
     ├── test_staff_doctor_boundaries.py # Staff role, shift & department verification tests
+    ├── test_admission_boundaries.py # Inpatient stay chronology & admission date validations
+    ├── test_purchase_boundaries.py # Supplier name, non-negative unit cost & delivery date chronology
+    ├── test_quality_audit_boundaries.py # Quality audit compliance scoring, non-zero max_score & date checks
+    ├── test_spc_resilience.py     # Checksheet CSV resilient parsing & null-safe API serialization
+    ├── test_triage_boundaries.py  # Emergency vitals safe-casting, hypothermia & crisis diastolic checks
+    ├── test_lab_module.py         # Inverted reference range prevention & non-negative result validation
+    ├── test_prescription_boundaries.py # Non-negative dispense quantity & active status checks
     ├── test_audit_sync.py         # Real-time checksheet CSV dual-sync tests
     ├── test_api_error_handling.py # Global REST API validation HTTP 400 error handling
     ├── test_tqm_services.py       # Dual-tier logging and exception handling tests
@@ -246,7 +253,7 @@ HMS_Project/
 | **Review 3: FMEA & Risk Audit** | 15 Marks | CO2 | Formula-driven FMEA Matrix with RPN calculations (`docs/FMEA_RiskAudit.xlsx`, `TQM/FMEA.md`), SIPOC Process Map (`TQM/SIPOC.md`, `docs/sipoc_diagram.png`), CTQ Tree (`TQM/CTQ_Tree.md`), Defect Checksheet (`TQM/data/checksheet.csv`). | Completed |
 | **Review 4: SQC & Continuous Improvement** | 15 Marks | CO2, CO3 | Pareto Chart with 80/20 analysis (`sqc/pareto_chart.png`, `TQM/Pareto.md`), Ishikawa Fishbone Root-Cause Diagram (`sqc/fishbone_diagram.png`, `TQM/Fishbone.md`), PDCA continuous improvement cycle log (`TQM/PDCA.md`). | Completed |
 | **Final Demonstration & Viva** | 10 Marks | CO3 | Live software demonstration (Web Portal `python run.py` / Desktop GUI `python src/main.py`), bug-handling defense, oral viva defense on TQM tools selection. | Ready |
-| **Documentation & GitHub Health** | 5 Marks | CO3 | Comprehensive `README.md`, User & Operations Manual (`docs/USER_MANUAL.md`), ≥30 meaningful commit history (**95+ commits logged**; verify via `git rev-list --count HEAD` or [GitHub Commits](https://github.com/AjayBora002/TQM-Hospital-Management-System/commits/main)), 15 Defect Issues documented in `docs/GITHUB_ISSUES.md` matching `TQM/data/checksheet.csv`. | Completed |
+| **Documentation & GitHub Health** | 5 Marks | CO3 | Comprehensive `README.md`, User & Operations Manual (`docs/USER_MANUAL.md`), ≥30 meaningful commit history (**100+ commits logged**; verify via `git rev-list --count HEAD` or [GitHub Commits](https://github.com/AjayBora002/TQM-Hospital-Management-System/commits/main)), 15 Defect Issues documented in `docs/GITHUB_ISSUES.md` matching `TQM/data/checksheet.csv`. | Completed |
 | **Total Assessment** | **70 Marks** | **CO1, CO2, CO3** | All 4 reviews, live demonstration, and documentation artifacts fully synchronized. | **100% Complete** |
 
 ---

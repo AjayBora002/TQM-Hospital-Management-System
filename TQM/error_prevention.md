@@ -18,6 +18,11 @@ Errors are prevented at the point of entry, not corrected after the fact (Poka-Y
 | 8 | Doctor Schedule Conflict Prevention | Appointment booking & rescheduling | Doctor double-booking and patient time slot clashes |
 | 9 | Drug Allergy & ADR Safety Check | Patient chart & medication dispensation | Prescribing contraindicated drugs to allergic patients |
 | 10 | Physiological Vitals Validation | Clinical triage vitals entry | Out-of-bounds transcription typos and missed critical triage |
+| 11 | Inpatient Stay Chronology Check | Admission & discharge workflows | Negative length-of-stay and discharge preceding admission |
+| 12 | Purchase Order Cost & Date Chronology | Pharmacy inventory replenishment | Negative unit cost, empty suppliers, or receipt preceding order date |
+| 13 | Lab Biological Reference Boundary | Diagnostic test result logging | Inverted reference ranges and negative clinical values |
+| 14 | Prescription Dispense Quantity Boundary | Medication dispensation counter | Dispensing inactive scripts, negative qty or expired batch drugs |
+| 15 | Quality Audit Non-Zero Metric Guard | NABH/ISO quality checklists | Zero-division in compliance scoring and malformed max scores |
 
 ## Design Rule
 
