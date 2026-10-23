@@ -27,8 +27,15 @@ def calculate_spc_metrics(csv_path=None):
         with open(csv_path, mode="r", encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                d = row["date"].strip()
-                cnt = int(row["count"])
+                if not row:
+                    continue
+                d = (row.get("date") or "").strip()
+                if not d:
+                    continue
+                try:
+                    cnt = int(row.get("count", 0))
+                except (TypeError, ValueError):
+                    cnt = 0
                 daily_counts[d] += cnt
     else:
         # Standard default sequence matching checksheet.csv

@@ -59,15 +59,17 @@ def generate_spc_chart():
                     color="#d9534f" if c > uwl else "#2b5797")
 
     # Annotate Poka-Yoke intervention shift
-    ax.axvline(x=2, color="#6f42c1", linestyle="-.", linewidth=1.5, alpha=0.8)
-    ax.text(2.1, max(counts) - 0.5, "Poka-Yoke Q07 Controls Active\n(PhoneMask, AutoComplete, Dropdowns)",
-            color="#6f42c1", fontsize=9, fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.3", edgecolor="#6f42c1", facecolor="#f3ebff"))
+    max_c = max(counts) if counts else 10
+    if len(dates) > 2:
+        ax.axvline(x=2, color="#6f42c1", linestyle="-.", linewidth=1.5, alpha=0.8)
+        ax.text(2.1, max_c - 0.5, "Poka-Yoke Q07 Controls Active\n(PhoneMask, AutoComplete, Dropdowns)",
+                color="#6f42c1", fontsize=9, fontweight="bold",
+                bbox=dict(boxstyle="round,pad=0.3", edgecolor="#6f42c1", facecolor="#f3ebff"))
 
     ax.set_title("Shewhart Control Chart (c-Chart) — HMS Data Entry Defect Trend (Q07)", fontsize=13, fontweight="bold", pad=12)
     ax.set_xlabel("Audit Sample Date (Subgroup)", fontsize=11, labelpad=8)
     ax.set_ylabel("Defect Occurrences per Day (c)", fontsize=11, labelpad=8)
-    ax.set_ylim(-0.5, max(counts) + 2.5)
+    ax.set_ylim(-0.5, max_c + 2.5)
     ax.grid(True, linestyle="--", alpha=0.4)
     ax.legend(loc="upper right", framealpha=0.9, fontsize=8.5)
 
