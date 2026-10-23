@@ -47,6 +47,18 @@ def order_test(
         ref_min = float(ref_min or 0.0)
         ref_max = float(ref_max or 100.0)
 
+    try:
+        ref_min = float(ref_min)
+        ref_max = float(ref_max)
+    except (ValueError, TypeError):
+        raise ValidationError("Reference ranges must be numeric values", field="ref_min")
+
+    if ref_min >= ref_max:
+        raise ValidationError(f"Reference minimum ({ref_min}) must be strictly less than reference maximum ({ref_max})", field="ref_min")
+
+    if category and category not in (set(config.LAB_CATEGORIES) | {"General"}):
+        raise ValidationError(f"Laboratory category must be one of {', '.join(config.LAB_CATEGORIES)}", field="category")
+
     conn = get_connection()
     try:
         # Check patient & doctor existence
@@ -93,6 +105,9 @@ def record_result(test_id: int, result_value: float, notes: str = "", performed_
             raise ValidationError(f"Lab test #{test_id} not found", field="test_id")
         if t["status"] == "Completed":
             raise ValidationError(f"Lab test #{test_id} is already marked Completed", field="test_id")
+
+        if t["ref_min"] >= 0 and val < 0:
+            raise ValidationError(f"Result value ({val}) cannot be negative for '{t['test_name']}'", field="result_value")
 
         is_abnormal = 1 if (val < t["ref_min"] or val > t["ref_max"]) else 0
         completed_ts = _now()

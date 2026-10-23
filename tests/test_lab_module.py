@@ -94,6 +94,42 @@ class TestLabModule(unittest.TestCase):
         with self.assertRaises(ValidationError):
             lab_model.order_test(patient_id=self.p_id, doctor_id=self.d_id, test_name="")
 
+    def test_05_inverted_reference_range_rejected(self):
+        # ref_min (150) > ref_max (50) is an impossible biological interval
+        with self.assertRaises(ValidationError) as ctx:
+            lab_model.order_test(
+                patient_id=self.p_id,
+                doctor_id=self.d_id,
+                test_name="Custom Analyte",
+                ref_min=150.0,
+                ref_max=50.0
+            )
+        self.assertEqual(ctx.exception.field, "ref_min")
+
+    def test_06_negative_result_value_rejected(self):
+        # Hemoglobin cannot be -10 g/dL
+        test_id = lab_model.order_test(
+            patient_id=self.p_id,
+            doctor_id=self.d_id,
+            test_name="Hemoglobin"
+        )
+        with self.assertRaises(ValidationError) as ctx:
+            lab_model.record_result(test_id, -10.0)
+        self.assertEqual(ctx.exception.field, "result_value")
+
+    def test_07_invalid_category_rejected(self):
+        with self.assertRaises(ValidationError) as ctx:
+            lab_model.order_test(
+                patient_id=self.p_id,
+                doctor_id=self.d_id,
+                test_name="Custom Test",
+                category="NonExistentCategory",
+                ref_min=10.0,
+                ref_max=20.0
+            )
+        self.assertEqual(ctx.exception.field, "category")
+
 
 if __name__ == "__main__":
     unittest.main()
+
