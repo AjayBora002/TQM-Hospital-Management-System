@@ -21,7 +21,14 @@ def admit_patient(patient_id: int, room_id: int, admission_date=None, diagnosis=
     if not room_id:
         raise ValidationError("Room ID is required", field="room_id")
 
-    admission_date = admission_date or _now()[:10]
+    from utils.validators import is_valid_date
+    admission_date = str(admission_date or _now()[:10]).strip()
+    if not is_valid_date(admission_date):
+        raise ValidationError("Admission date must be in YYYY-MM-DD format", field="admission_date")
+    today_str = _now()[:10]
+    if admission_date > today_str:
+        raise ValidationError(f"Admission date cannot be in the future ({admission_date} > {today_str})", field="admission_date")
+
     conn = get_connection()
     try:
         # Verify patient exists
@@ -79,7 +86,11 @@ def discharge_admission(admission_id: int, discharge_date=None, discharge_notes=
     """
     Completes an inpatient admission stay, releases the room/bed, and logs clinical notes.
     """
-    discharge_date = discharge_date or _now()[:10]
+    from utils.validators import is_valid_date
+    discharge_date = str(discharge_date or _now()[:10]).strip()
+    if not is_valid_date(discharge_date):
+        raise ValidationError("Discharge date must be in YYYY-MM-DD format", field="discharge_date")
+
     conn = get_connection()
     try:
         adm = conn.execute(
@@ -94,6 +105,12 @@ def discharge_admission(admission_id: int, discharge_date=None, discharge_notes=
             raise ValidationError(f"Admission stay #{admission_id} not found", field="admission_id")
         if adm["status"] == "Discharged":
             raise ValidationError(f"Admission stay #{admission_id} is already discharged", field="admission_id")
+
+        if discharge_date < adm["admission_date"]:
+            raise ValidationError(
+                f"Discharge date ({discharge_date}) cannot be earlier than admission date ({adm['admission_date']})",
+                field="discharge_date"
+            )
 
         now_ts = _now()
         cursor = conn.cursor()
