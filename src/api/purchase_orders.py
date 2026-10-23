@@ -32,11 +32,12 @@ def create_purchase_order():
             supplier_name=data.get("supplier_name", "National MedSupply Ltd"),
             order_qty=int(data.get("order_qty", 50)),
             unit_cost=data.get("unit_cost"),
+            order_date=data.get("order_date"),
             performed_by=user
         )
         return jsonify({"message": "Purchase order created", "po_id": po_id}), 201
     except (TypeError, ValueError):
-        return jsonify({"error": "Invalid medicine ID or quantity"}), 400
+        return jsonify({"error": "Invalid medicine ID, quantity, or unit cost"}), 400
     except ValidationError as e:
         return jsonify({"error": e.message, "field": e.field}), 400
 
@@ -53,9 +54,14 @@ def auto_generate_pos():
 
 @purchase_orders_bp.route("/purchase-orders/<int:po_id>/receive", methods=["POST"])
 def receive_purchase_order(po_id):
+    data = request.get_json(silent=True) or {}
     user = session.get("username", "pharmacist")
     try:
-        updated = po_model.receive_po(po_id=po_id, performed_by=user)
+        updated = po_model.receive_po(
+            po_id=po_id,
+            received_date=data.get("received_date"),
+            performed_by=user
+        )
         return jsonify({
             "message": f"PO #{po_id} received. Pharmacy stock replenished successfully.",
             "purchase_order": updated

@@ -23,12 +23,22 @@ def create_po(
     """Creates a purchase order for a specific medicine."""
     if not medicine_id:
         raise ValidationError("Medicine ID is required", field="medicine_id")
+
+    supplier_name = str(supplier_name or "").strip()
+    if not supplier_name:
+        raise ValidationError("Supplier name cannot be empty", field="supplier_name")
+
     try:
         order_qty = int(order_qty)
         if order_qty <= 0:
             raise ValueError()
     except (TypeError, ValueError):
         raise ValidationError("Order quantity must be an integer >= 1", field="order_qty")
+
+    from utils.validators import is_valid_date
+    order_date = str(order_date or _now()[:10]).strip()
+    if not is_valid_date(order_date):
+        raise ValidationError("Order date must be in YYYY-MM-DD format", field="order_date")
 
     conn = get_connection()
     try:
@@ -39,16 +49,20 @@ def create_po(
         if unit_cost is None:
             unit_cost = round(float(med["unit_price"]) * 0.70, 2)
         else:
-            unit_cost = round(float(unit_cost), 2)
+            try:
+                unit_cost = round(float(unit_cost), 2)
+                if unit_cost < 0:
+                    raise ValueError()
+            except (TypeError, ValueError):
+                raise ValidationError("Unit cost must be a non-negative number", field="unit_cost")
 
         total_cost = round(order_qty * unit_cost, 2)
-        order_date = order_date or _now()[:10]
 
         cur = conn.cursor()
         cur.execute(
             "INSERT INTO purchase_orders (medicine_id, supplier_name, order_qty, unit_cost, total_cost, status, order_date) "
             "VALUES (?,?,?,?,?,'Pending',?)",
-            (medicine_id, supplier_name.strip(), order_qty, unit_cost, total_cost, order_date)
+            (medicine_id, supplier_name, order_qty, unit_cost, total_cost, order_date)
         )
         po_id = cur.lastrowid
         log_audit(
@@ -122,7 +136,17 @@ def receive_po(po_id: int, received_date: str = None, performed_by: str = "pharm
         if po["status"] != "Pending":
             raise ValidationError(f"PO #{po_id} is already '{po['status']}'", field="po_id")
 
-        rec_date = received_date or _now()[:10]
+        from utils.validators import is_valid_date
+        rec_date = str(received_date or _now()[:10]).strip()
+        if not is_valid_date(rec_date):
+            raise ValidationError("Received date must be in YYYY-MM-DD format", field="received_date")
+
+        if rec_date < po["order_date"]:
+            raise ValidationError(
+                f"Received date ({rec_date}) cannot be earlier than order date ({po['order_date']})",
+                field="received_date"
+            )
+
         qty = po["order_qty"]
         med_id = po["medicine_id"]
 
