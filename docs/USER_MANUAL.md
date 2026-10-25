@@ -88,16 +88,18 @@ The system features 10 integrated modules:
 - **Operation:** Displays live counters and updates automatically whenever records are created, modified, or discharged.
 
 ### 5.2 Patients Registration & Records
+- **Institutional UHID Generation:** Every newly registered patient is automatically assigned an immutable institutional Unique Hospital Identifier (e.g., `UHID-2026-00042`), adhering strictly to NABH and ABDM national guidelines.
 - **Adding a Patient:**
   1. Navigate to the **Patients** tab.
   2. Enter Patient Full Name.
   3. Select **Gender** and **Blood Group** from the restricted dropdown menus.
   4. Input Date of Birth in standard format (`YYYY-MM-DD`).
   5. Enter a 10-digit mobile number in the **Phone** field — notice the automatic prefixing of `+91-` and hyphenation.
-  6. Optionally assign an available hospital room.
-  7. Click **Add Patient**.
+  6. Document known drug allergies (e.g., `Penicillin`, `Sulfa Drugs`) to activate downstream clinical Poka-Yoke prescribing safeguards.
+  7. Optionally assign an available hospital room.
+  8. Click **Add Patient**.
 - **Updating / Deleting:** Select a patient from the record table. The form auto-populates. Edit fields and click **Update** or **Delete**. A confirmation modal will appear requiring explicit verification.
-- **Search:** Enter search terms into the patient query box to locate records by name or telephone number.
+- **Search:** Enter search terms into the patient query box to locate records by name, telephone number, or UHID.
 
 ### 5.3 Doctors Roster
 - Manage attending physicians and specialists.
@@ -107,12 +109,14 @@ The system features 10 integrated modules:
 ### 5.4 Appointments Scheduling
 - Schedule consultations between registered patients and available doctors.
 - **Auto-Complete Integration:** Type the patient name — the system auto-completes from registered records, eliminating typos and scheduling conflicts.
-- Date and time inputs are validated strictly against calendar and 24-hour clock formats (`HH:MM`).
+- **Pre-Flight Conflict Prevention:** Real-time conflict engine (`has_conflict`) intercepts overlapping doctor slots with HTTP 409 conflict blocking.
+- **Standardized Process States:** Supports the complete NABH outpatient lifecycle: `Scheduled`, `Confirmed`, `Checked-in`, `Waiting`, `In consultation`, `Completed`, `Cancelled`, `No-show`.
 
 ### 5.5 Ward & Bed Management
-- Oversee room inventory across four categories: `General`, `Semi-Private`, `Deluxe`, and `ICU`.
-- Monitor bed occupancy statuses (`Available`, `Occupied`, `Maintenance`).
+- Oversee room inventory across five categories: `General Ward`, `Semi-Private`, `Private`, `ICU`, and `Operation Theatre`.
+- Monitor standardized bed states: `Available`, `Occupied`, `Under Maintenance`, `Cleaning / Sanitizing`, `Reserved`, `Blocked`.
 - Pre-configured standard daily tariffs are maintained for automatic integration with patient billing.
+- **Automated Bed Clearance:** Discharging a patient automatically transitions room status to `Cleaning / Sanitizing` or `Available`.
 
 ### 5.6 Staff Administration
 - Manage hospital nursing, administrative, and paramedical staff.
