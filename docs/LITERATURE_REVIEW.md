@@ -34,3 +34,71 @@ Rather than developing features based on anecdotal assumptions or producing a su
 
 ---
 
+## 3. NABH 6th Edition Accreditation Standards Analysis
+
+The National Accreditation Board for Hospitals & Healthcare Providers (NABH 6th Edition, January 2025) organizes hospital operational quality into **10 core chapters**, divided into Patient-Centered and Organization-Centered standards. Our system architecture directly translates these regulatory expectations into testable software controls:
+
+```mermaid
+mindmap
+  root((NABH 6th Edition))
+    Patient-Centered
+      AAC[Access, Assessment & Continuity]
+        ::icon(fa fa-id-card)
+        Unique UHID Generation
+        Triage Vital Boundaries
+      COP[Care of Patients]
+        ::icon(fa fa-stethoscope)
+        Standardized Clinical Documentation
+        Emergency Priority Queue
+      MOM[Management of Medication]
+        ::icon(fa fa-pills)
+        ADR Allergy Cross-Checking
+        Batch Expiry Poka-Yoke
+      PRE[Patient Rights & Education]
+        ::icon(fa fa-user-shield)
+        Itemized Billing Receipts
+        Discharge Summary Transparency
+      HIC[Hospital Infection Control]
+        ::icon(fa fa-shield-virus)
+        Bed Sanitization Tracking
+        Occupancy Clearance Automation
+    Organization-Centered
+      PSQ[Patient Safety & Quality]
+        ::icon(fa fa-chart-line)
+        Shewhart c-Chart SPC
+        Defect Checksheet & Pareto
+      ROM[Responsibilities of Management]
+        ::icon(fa fa-users-cog)
+        Real-Time Operations Dashboard
+        Capacity Planning Metrics
+      FMS[Facility Management & Safety]
+        ::icon(fa fa-hospital)
+        Room Maintenance Logging
+        Ward Occupancy Status
+      HRM[Human Resource Management]
+        ::icon(fa fa-user-tie)
+        Doctor Roster by Specialty
+        Staff Shift Tracking
+      IMS[Information Management System]
+        ::icon(fa fa-database)
+        Immutable Audit Trail
+        Automated Database Backups
+```
+
+### 3.1 Detailed Mapping of NABH Chapters to Implemented Software Modules
+
+| NABH Chapter | Regulatory Objective | Healthcare Risk Addressed | Implemented Software Feature in HMS | Verification / Automated Test |
+|---|---|---|---|---|
+| **AAC** — Access, Assessment & Continuity | Standardized patient identification and continuous clinical tracking across episodes. | Duplicate records, lost historical charts, unrecognized emergency deterioration. | `UHID-2026-XXXXX` permanent internal identifier; Patient 360° longitudinal journey; Triage vital sign scoring. | `test_patient_timeline.py`, `test_patient_boundaries.py` |
+| **COP** — Care of Patients | Uniform clinical care, clinical decision support, and timely intervention. | Inconsistent documentation, mismanaged emergency queue. | Automated emergency priority queue (Code Red/Yellow/Green); Structured clinical consultation notes. | `test_triage_queue.py`, `test_triage_boundaries.py` |
+| **MOM** — Management of Medication | Safe prescription, dispensing, batch control, and adverse event prevention. | Dispensing expired pharmaceuticals; Fatal Adverse Drug Reactions (ADR). | Pre-flight drug allergy contraindication matrix (`config.DRUG_CONTRAINDICATION_MAP`); Expiry date validation (`models/medicine.py`). | `test_clinical_poka_yoke.py`, `test_pharmacy_expiry.py` |
+| **PRE** — Patient Rights & Education | Billing transparency, informed consent, and accessible medical records. | Surprise charges, unclear treatment directions, illegible billing receipts. | Printable HTML receipts with itemized breakdown; Discharge summary advice documentation. | `test_billing_validation.py`, `test_report_generator.py` |
+| **HIC / IPC** — Infection Control | Safe patient placement, bed sanitization, and environmental hygiene. | Cross-contamination from reusing unsanitized ward beds. | Automated bed release state machine (`Occupied` → `Cleaning / Sanitizing` → `Available`). | `test_admission_boundaries.py`, `test_room_boundaries.py` |
+| **PSQ** — Patient Safety & Quality Improvement | Continuous data-driven monitoring of clinical and administrative defects. | Recurrent data entry errors; Lack of root-cause corrective actions. | Real-time defect checksheet (`TQM/data/checksheet.csv`); Pareto 80/20 analysis; Shewhart SPC c-chart (`sqc/spc_chart.py`). | `test_spc_chart.py`, `test_six_sigma.py`, `test_spc_resilience.py` |
+| **ROM** — Responsibilities of Management | Strategic resource allocation, department oversight, and governance. | Administrative blind spots regarding bed shortages and revenue leakages. | Executive dashboard with real-time room occupancy, unpaid invoices, daily patient footfall, and Six Sigma DPMO. | `test_web_app.py`, `test_api_error_handling.py` |
+| **FMS** — Facility Management & Safety | Ward, equipment, and room readiness maintenance. | Double-booking hospital beds; Neglected broken room facilities. | Unique room constraints; Maintenance status tracking (`Under Maintenance`, `Blocked`). | `test_room_boundaries.py` |
+| **HRM** — Human Resource Management | Authorized staffing, role clarity, and duty scheduling. | Unqualified staff performing clinical actions; Conflicting doctor shifts. | Multi-shift staff management; Specialty-indexed doctor directory; Server-side RBAC. | `test_staff_doctor_boundaries.py`, `test_login_dialog.py` |
+| **IMS** — Information Management System | Data confidentiality, integrity, availability, auditability, and business continuity. | Silent data tampering; System crashes causing unrecoverable data loss. | Dual-tier atomic audit logs (`audit_log` table + CSV mirror); Automated SQLite database snapshot backups. | `test_audit_sync.py`, `test_db.py` |
+
+---
+
