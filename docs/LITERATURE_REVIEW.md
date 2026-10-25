@@ -172,3 +172,23 @@ The official NABH case study, *"Small Hospital, Big Leap: A Clinician-Built Digi
 
 ---
 
+## 6. Identified Gaps and Project Problem Statement
+
+### 6.1 Gaps in Current Healthcare Software Implementations
+1. **The CRUD-Only Disconnect:** Most academic and entry-level hospital software tools act merely as passive data repositories ("Add/Edit/Delete screens"). They fail to validate whether the data entered is physiologically plausible, whether a doctor is being double-booked, or whether an expired medicine is being dispensed.
+2. **Retrospective Rather Than Preventive Quality:** In traditional hospital workflows, medication errors and duplicate registrations are caught only after clinical harm has occurred.
+3. **Fragmented Longitudinal Context:** Outpatient consultations frequently occur without immediate access to prior emergency vitals, past inpatient stays, or active allergy histories.
+4. **Disjointed Quality Monitoring:** Quality departments spend hundreds of person-hours manually compiling monthly KPI spreadsheets from paper registers, resulting in delayed corrective actions.
+
+### 6.2 The Deliberate Project Scope
+In strict adherence to the **Base Project Guideline (Section 9.2)**, our team deliberately prioritized a **cohesive, end-to-end Outpatient Department (OPD) and Emergency Triage Journey**, developing it deeply with embedded quality engineering, rather than attempting a shallow, superficial 20-module hospital suite:
+
+$$\text{Voice of Patient} \longrightarrow \text{Poka-Yoke Intake} \longrightarrow \text{Triage Prioritization} \longrightarrow \text{Conflict-Free Booking} \longrightarrow \text{Safe Prescribing} \longrightarrow \text{Transparent Billing} \longrightarrow \text{SPC Improvement}$$
+
+---
+
+## 7. Assumptions & Engineering Boundaries
+
+1. **Synthetic Patient Dataset:** In strict adherence to healthcare privacy ethics and the DPDP Act 2023, zero real-world Protected Health Information (PHI) is used. All clinical test cases utilize synthetic demographic and diagnostic records.
+2. **Interoperability Emulation:** ABDM national gateway exchange and FHIR message serialization are demonstrated conceptually through standardized data schemas and REST API endpoints rather than live national sandbox tokens.
+3. **Single-Facility Scope:** The current relational schema is optimized for a single community hospital or multispecialty clinic, with foreign keys enforcing relational integrity inside a unified SQLite database engine.
