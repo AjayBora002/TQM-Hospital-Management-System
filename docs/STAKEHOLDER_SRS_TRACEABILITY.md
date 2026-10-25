@@ -83,3 +83,10 @@ graph LR
 | **SR-PAT-004** | The system shall provide real-time substring auto-complete search across existing patient records to prevent duplicate patient charts. | P0 | Automated Test + REST |
 | **SR-APT-001** | The system shall allow appointment scheduling only for valid doctor schedules and standard 30-minute time intervals. | P0 | Automated Test |
 | **SR-APT-002** | The system shall execute pre-flight schedule conflict checks and reject overlapping bookings for the same doctor with HTTP 409 Conflict. | P0 | Automated Test |
+| **SR-TRG-001** | The system shall validate physiological vital signs (BP, Pulse, Temp, SpO2) against bounded medical limits upon entry. | P1 | Automated Test |
+| **SR-TRG-002** | The system shall evaluate vital signs and automatically sort patients into an Emergency Queue prioritized by Code Red, Yellow, and Green. | P1 | Automated Test |
+| **SR-CLN-001** | The system shall assemble a longitudinal Patient 360° timeline aggregating registration, vitals, consultations, lab tests, and billing events. | P1 | Automated Test |
+| **SR-CLN-002** | The system shall record documented patient drug allergies and block prescriptions containing contraindicated pharmaceutical classes. | P1 | Automated Test |
+| **SR-CLN-003** | The system shall validate pharmaceutical batch numbers and expiry dates, blocking dispensing or prescription of expired medicine. | P1 | Automated Test |
+| **SR-LAB-001** | The system shall support diagnostic lab test ordering across standardized laboratory categories. | P1 | Automated Test |
+| **SR-LAB-002** | The system shall compare recorded quantitative lab results against biological reference ranges and compute an abnormal flag ($0$ or $1$). | P1 | Automated Test |
