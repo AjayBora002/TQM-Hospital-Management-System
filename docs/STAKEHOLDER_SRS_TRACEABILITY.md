@@ -36,3 +36,50 @@ In strict adherence to **Section 7 and Section 8 of the Base Project Guideline**
 
 ---
 
+## 3. Formal Software Requirements Specification (SRS)
+
+Requirements are partitioned into testable functional domains with standardized identifiers:
+- `SR-PAT-xxx`: Patient Intake & Identity Management
+- `SR-APT-xxx`: Doctor Scheduling & Conflict Prevention
+- `SR-TRG-xxx`: Emergency Acuity & Triage Evaluation
+- `SR-CLN-xxx`: Clinical Documentation & Safe Prescribing
+- `SR-LAB-xxx`: Diagnostic Investigations & Reference Bounds
+- `SR-BIL-xxx`: Billing, Tariffs & Transparent Invoicing
+- `SR-BED-xxx`: Inpatient Ward & Bed Lifecycle Management
+- `SR-QI-xxx`: Quality Engineering, SPC & Compliance Audits
+- `SR-SEC-xxx`: Security, Authentication & Auditability
+
+```mermaid
+graph LR
+    subgraph Core ["P0 — Core Intake & Appointments"]
+        PAT[SR-PAT: Identity & UHID]
+        APT[SR-APT: Conflict-Free Scheduling]
+        SEC[SR-SEC: RBAC & Audit Trails]
+    end
+
+    subgraph Connected ["P1 — Connected Clinical Care"]
+        TRG[SR-TRG: Triage Acuity]
+        CLN[SR-CLN: Safe Prescribing]
+        LAB[SR-LAB: Lab Bounds]
+        BIL[SR-BIL: Invoicing]
+    end
+
+    subgraph Operations ["P2 — Operations & TQM"]
+        BED[SR-BED: Bed Lifecycle]
+        QI[SR-QI: Shewhart SPC & Audits]
+    end
+
+    Core --> Connected
+    Connected --> Operations
+```
+
+### 3.1 Requirements Specification Table
+
+| SRS ID | Requirement Statement | Priority | Verification Method |
+|---|---|:---:|---|
+| **SR-PAT-001** | The system shall generate a permanent, non-reusable Unique Hospital Identifier (`UHID-2026-XXXXX`) for every newly registered patient. | P0 | Automated Test |
+| **SR-PAT-002** | The system shall enforce telephone formatting (`+91-XXXXX-XXXXX`) via real-time keystroke input masking, rejecting non-digit characters and capping at 10 digits. | P0 | Automated Test + GUI |
+| **SR-PAT-003** | The system shall restrict categorical demographic fields (Gender, Blood Group) strictly to standardized medical enumerations. | P0 | Automated Test |
+| **SR-PAT-004** | The system shall provide real-time substring auto-complete search across existing patient records to prevent duplicate patient charts. | P0 | Automated Test + REST |
+| **SR-APT-001** | The system shall allow appointment scheduling only for valid doctor schedules and standard 30-minute time intervals. | P0 | Automated Test |
+| **SR-APT-002** | The system shall execute pre-flight schedule conflict checks and reject overlapping bookings for the same doctor with HTTP 409 Conflict. | P0 | Automated Test |
