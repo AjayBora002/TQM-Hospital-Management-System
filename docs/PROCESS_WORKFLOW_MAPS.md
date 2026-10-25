@@ -56,3 +56,64 @@ flowchart TD
 
 ---
 
+## 3. To-Be Process Workflow: Multi-Role Swimlane Architecture
+
+The To-Be workflow coordinates **six operational roles** across a synchronized, digital state machine:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Patient
+    actor Receptionist
+    actor Nurse
+    actor Doctor
+    actor LabTech
+    actor Cashier
+
+    Note over Patient,Receptionist: Phase 1: Intake & Poka-Yoke Registration
+    Patient->>Receptionist: Arrives at Front Desk (Name / Phone)
+    Receptionist->>Receptionist: Auto-Complete Search (Checks existing UHID)
+    alt Returning Patient
+        Receptionist->>Receptionist: Selects verified chart (Confirms Details)
+    else New Patient
+        Receptionist->>Receptionist: Enters +91 Phone (Input Masked) + Selects Blood Group (Dropdown)
+        Receptionist->>Receptionist: System generates institutional UHID-2026-XXXXX
+    end
+
+    Note over Receptionist,Doctor: Phase 2: Conflict-Free Scheduling
+    Receptionist->>Doctor: Selects Specialty & 30-min Slot
+    Note over Receptionist: System runs has_conflict() check
+    Receptionist-->>Patient: Confirmed Appointment Token
+
+    Note over Patient,Nurse: Phase 3: Triage & Acuity Prioritization
+    Patient->>Nurse: Vital Signs Assessment (BP, Pulse, SpO2, Temp)
+    Nurse->>Nurse: Enters Vitals (System enforces physiological bounds)
+    alt SpO2 < 90% or Systolic > 180 (Code Red)
+        Nurse-->>Doctor: Immediate Emergency Queue Priority Alert!
+    else Normal Vitals
+        Nurse-->>Doctor: Routine OPD Consultation Queue
+    end
+
+    Note over Doctor,Patient: Phase 4: Clinical Consultation & Safe Prescribing
+    Doctor->>Doctor: Opens Patient 360° Longitudinal Timeline
+    Doctor->>Doctor: Enters Consultation Notes & Diagnostic Orders
+    Doctor->>Doctor: Prescribes Medication
+    Note over Doctor: System executes ADR Allergy Check vs config.DRUG_MAP
+    Note over Doctor: System validates Medicine Expiry Date & Batch
+
+    Note over Doctor,LabTech: Phase 5: Diagnostic Investigation
+    Doctor->>LabTech: Lab Order Generated (Status: Ordered)
+    LabTech->>LabTech: Phlebotomy Sample Collected & Analyzed
+    LabTech->>LabTech: Enters Numeric Value (System evaluates ref_min / ref_max)
+    LabTech-->>Doctor: Verified Report (Abnormal Flag computed automatically)
+
+    Note over Patient,Cashier: Phase 6: Transparent Invoicing & Discharge
+    Patient->>Cashier: Proceeds to Discharge / Payment Desk
+    Cashier->>Cashier: System auto-sums: Room + Consult + Meds = Total
+    Cashier->>Patient: Collects Payment (Cash/Card/UPI) & Issues Printable Tax Invoice
+    Cashier->>Cashier: System releases allocated room (Status: Cleaning / Available)
+    Note over Cashier: Transaction atomicity logged to audit_log + checksheet.csv
+```
+
+---
+
