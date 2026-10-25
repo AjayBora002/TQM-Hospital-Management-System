@@ -11,6 +11,9 @@ WINDOW_SIZE = "1150x680"
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH = os.path.join(BASE_DIR, "src", "database", "hms.db")
 
+# ---- Institutional Identity & ABDM Alignment -----------------------------
+UHID_PREFIX = "UHID-2026-"
+
 # ---- Fixed dropdown lists (Q07 Feature: Dropdown Lists) -------------------
 GENDERS = ["Male", "Female", "Other"]
 BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
