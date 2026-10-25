@@ -297,6 +297,7 @@ def get_patient_360_timeline(patient_id: int):
             return None
 
         patient_info = dict(p_row)
+        patient_info["uhid"] = format_uhid(patient_id)
         events = []
 
         # 1. Registration Event
