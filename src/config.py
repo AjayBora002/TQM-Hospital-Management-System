@@ -19,7 +19,8 @@ GENDERS = ["Male", "Female", "Other"]
 BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 DEPARTMENTS = ["Cardiology", "Orthopedics", "Pediatrics", "General Medicine",
                "Neurology", "ENT", "Dermatology", "Gynecology"]
-APPT_STATUS = ["Scheduled", "Completed", "Cancelled"]
+# Aligned with NABH & Base Project Guideline: Requested -> Confirmed -> Checked-in -> Waiting -> In consultation -> Completed / Cancelled / No-show
+APPT_STATUS = ["Scheduled", "Confirmed", "Checked-in", "Waiting", "In consultation", "Completed", "Cancelled", "No-show"]
 ROOM_TYPES = ["General Ward", "Semi-Private", "Private", "ICU", "Operation Theatre"]
 ROOM_STATUS = ["Available", "Occupied", "Under Maintenance", "Cleaning / Sanitizing"]
 STAFF_ROLES = ["Nurse", "Receptionist", "Pharmacist", "Lab Technician",
