@@ -140,3 +140,21 @@ A common flaw observed in undergraduate HMS projects is treating government iden
 
 ---
 
+## 5. Benchmarking Against Existing Hospital Systems
+
+To identify real-world process gaps and justify our architectural decisions, we benchmarked our solution against three established systems and one official national case study:
+
+### 5.1 Comparative Benchmark Matrix
+
+| Feature / Process Dimension | Legacy Paper / Manual Clinics | Enterprise HIS (e.g., Apollo / Max / Epic) | Commercial SaaS (e.g., Practo Ray) | NABH Case Study (Small Hospital EMR) | **Our Proposed TQM-HMS (Ajay Bora)** |
+|---|---|---|---|---|---|
+| **Patient Identification** | Manual register / slip | Centralized UHID + Biometrics | Phone number / Cloud Profile | In-house UHID + Barcode | **Auto-complete UHID (`UHID-2026-XXXXX`) + Keystroke Input Masking** |
+| **Duplicate Prevention** | None (High duplicate rate) | Master Patient Index (MPI) algorithms | Phone lookup | Real-time name/phone search | **Poka-Yoke debounced search (`/api/patients/search`) + Input Masking** |
+| **Doctor Scheduling** | Paper diary / Whiteboard | Advanced slot engines with OR rules | Cloud calendar | Google Calendar / Custom Sync | **Automated conflict engine (`has_conflict`) with HTTP 409 conflict blocking** |
+| **Medication Safety** | Doctor handwriting (High error) | Commercial CDSS (First Databank) | Dropdown selection | In-house formulary checklist | **Poka-Yoke Pre-flight Allergy Contraindication + Batch Expiry Block** |
+| **Emergency Triage** | Subjective nurse assessment | Manchester / ESI Triage systems | None (OPD focus) | Color-coded vital slips | **Bounded vital entry with automated Code Red / Yellow / Green queue** |
+| **Diagnostic Lab Cycle** | Paper requisition slip | Bi-directional HL7 LIS interface | Basic report upload | In-house local LIS | **Biological reference range Poka-Yoke (`abnormal_flag` auto-computation)** |
+| **Audit & Traceability** | None (Registers alterable) | Enterprise database audit trails | Cloud access logs | Local SQLite logs | **Dual-Tier Audit Logging (Atomic SQLite `audit_log` + `TQM/data/audit_logs.csv`)** |
+| **Quality Engineering** | Post-incident complaints | Manual quarterly NABH audits | Basic billing analytics | Excel-based monthly indicators | **Real-time Shewhart SPC c-Chart, Six Sigma DPMO, and Pareto 80/20 engine** |
+| **Architecture / Deployment** | Physical registers | Heavy multi-server client-server | Multi-tenant cloud | Lightweight Python/LAN setup | **Dual-Presentation: Native Tkinter Desktop GUI + Modern Flask Web Portal** |
+
