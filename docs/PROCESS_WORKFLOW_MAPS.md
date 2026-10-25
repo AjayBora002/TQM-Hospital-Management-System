@@ -147,3 +147,29 @@ stateDiagram-v2
 
 ---
 
+### 4.2 Diagnostic Laboratory Test Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Ordered: Doctor Requisition
+    Ordered --> BillingPending: System Checks Insurance / Cash Policy
+    BillingPending --> PaidAuthorised: Cashier Records Payment Receipt
+    PaidAuthorised --> SamplePending: Phlebotomist Queue Assigned
+    SamplePending --> Collected: Specimen Drawn & Barcoded
+    Collected --> Accepted: Lab Accession Desk Validates Sample
+    Accepted --> Processing: Automated Analyzer Run
+    Processing --> Verified: Biological Ref Intervals Evaluated
+    Verified --> Released: Report Signed & Attached to Patient 360°
+    Released --> [*]
+    Ordered --> Cancelled: Clinician Revokes Requisition
+    BillingPending --> Cancelled: Patient Declines Investigation
+    Cancelled --> [*]
+```
+
+- **Transition Rules & Guards:**
+  - `Verified`: System executes mathematical range comparison:
+    $$\text{abnormal\_flag} = \begin{cases} 1 & \text{if } \text{result\_value} < \text{ref\_min} \text{ or } \text{result\_value} > \text{ref\_max} \\ 0 & \text{otherwise} \end{cases}$$
+  - `Released`: Instantly displays abnormal badges (Red Flag) in doctor portal.
+
+---
+
