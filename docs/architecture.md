@@ -68,6 +68,12 @@ flowchart TD
 
 ---
 
+## Institutional Patient Identifier (UHID) & State Machine Integrity
+
+The system adheres strictly to NABH and ABDM guidelines by decoupling internal patient identification from national government identities:
+- **UHID (Unique Hospital Identifier):** Standardized format `UHID-2026-XXXXX` enforced via `src/models/patient.py` and `src/config.py`.
+- **Finite State Machines:** Explicit lifecycles governed by `APPT_STATUS`, `ROOM_STATUS`, and `LAB_ORDER_STATUS`.
+
 ## Q07 Accuracy Control Flow
 
 ```text
