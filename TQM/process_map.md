@@ -73,3 +73,7 @@ Confirmation Modal: "Are you sure?"
     ├── NO  → Operation cancelled, no database change
     └── YES → Database UPDATE/DELETE + Audit Log Record
 ```
+
+
+---
+*Note: For the complete multi-role sequence swimlane diagram and finite state machines, refer to [docs/PROCESS_WORKFLOW_MAPS.md](../docs/PROCESS_WORKFLOW_MAPS.md).*

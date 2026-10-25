@@ -8,6 +8,10 @@ Hospital administration is responsible for patient intake, appointment schedulin
 
 ## Secondary Customers
 
+- Triage & Ward Nurses — require immediate acuity evaluation and vital threshold checks.
+- Laboratory Technicians — require unambiguous reference ranges and specimen tracking.
+- Bed & Ward Managers — require real-time occupancy status and automated clearance.
+
 - Attending Doctors — require accurate patient records and appointment history.
 - Pharmacists — require accurate medicine stock information.
 - Billing Staff — require correct patient and charge data.
