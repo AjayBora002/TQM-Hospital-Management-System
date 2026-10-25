@@ -90,3 +90,17 @@ graph LR
 | **SR-CLN-003** | The system shall validate pharmaceutical batch numbers and expiry dates, blocking dispensing or prescription of expired medicine. | P1 | Automated Test |
 | **SR-LAB-001** | The system shall support diagnostic lab test ordering across standardized laboratory categories. | P1 | Automated Test |
 | **SR-LAB-002** | The system shall compare recorded quantitative lab results against biological reference ranges and compute an abnormal flag ($0$ or $1$). | P1 | Automated Test |
+| **SR-BIL-001** | The system shall automatically compute total bill amounts ($Room + Consult + Meds = Total$) and block negative charge entries. | P0 | Automated Test |
+| **SR-BIL-002** | The system shall generate print-ready, itemized medical tax invoices and discharge financial summaries. | P1 | Automated Test |
+| **SR-BED-001** | The system shall enforce unique room numbers and maintain real-time occupancy state transitions (`Available` $\rightarrow$ `Occupied` $\rightarrow$ `Cleaning`). | P1 | Automated Test |
+| **SR-BED-002** | The system shall automatically clear room assignments and toggle room status back to `Available` upon patient discharge or deletion. | P1 | Automated Test |
+| **SR-QI-001** | The system shall record administrative and operational software defects into a structured checksheet feeding Pareto 80/20 analysis. | P0 | Automated Test |
+| **SR-QI-002** | The system shall compute Shewhart Statistical Process Control (SPC) c-chart limits (CL, UCL, LCL) to verify process stabilization. | P1 | Automated Test |
+| **SR-QI-003** | The system shall compute live Six Sigma Defect Per Million Opportunities (DPMO) and process sigma capability ratings. | P1 | Automated Test |
+| **SR-QI-004** | The system shall provide an NABH & ISO 9001 departmental compliance inspection checklist with percentage scoring. | P2 | Automated Test |
+| **SR-SEC-001** | The system shall enforce Role-Based Access Control (Admin, Doctor, Receptionist) with secure password hashing (SHA-256). | P0 | Automated Test |
+| **SR-SEC-002** | The system shall maintain an immutable, dual-tier audit log capturing every INSERT, UPDATE, and DELETE across SQLite and CSV trails. | P0 | Automated Test |
+| **SR-SEC-003** | The system shall require explicit, two-step confirmation modals before executing any database UPDATE or DELETE mutation. | P0 | GUI / DOM Test |
+
+---
+
