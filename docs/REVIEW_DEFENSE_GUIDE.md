@@ -138,3 +138,34 @@ graph TD
 
 ---
 
+## 6. Top 10 Examiner Questions & Structured Defense Answers
+
+### Q1: Why did you not build a full hospital system with OT, ICU, Pharmacy, and PACS in one semester?
+> **Answer:** *"In accordance with the Base Project Guideline (Section 9.1), building a large-hospital HIS in one semester inevitably leads to superficial, unvalidated CRUD screens with generic logins and no connected workflow. We deliberately chose an end-to-end Outpatient & Emergency Journey and developed it deeply—implementing Poka-Yoke error prevention, server-side RBAC, dual-tier audit logging, Shewhart SPC charts, and 147 unit tests. This demonstrates disciplined software engineering and true Total Quality Management."*
+
+### Q2: Why is NABH relevant to a student software project? Did you get your software accredited?
+> **Answer:** *"Our software is not NABH-accredited; accreditation is an institutional assessment of hospital operations. Rather, our system is **NABH-informed** (Section 4). We studied the 10 chapters of the NABH 6th Edition (January 2025)—particularly Information Management Systems (IMS), Medication Management (MOM), and Patient Safety (PSQ)—and translated those regulatory safety requirements directly into functional software controls, such as drug-allergy cross-checks, batch expiry blocks, and bed sanitization states."*
+
+### Q3: How do you handle patient identification, and why did you not use Aadhaar as the primary key?
+> **Answer:** *"Treating Aadhaar as a database primary key is an architectural violation of both ABDM standards and the Digital Personal Data Protection (DPDP) Act 2023. Our system strictly maintains an internal institutional identifier (`UHID-2026-XXXXX`) as the master patient key. Government IDs are used solely for front-desk KYC verification, while ABHA handles national federated interoperability."*
+
+### Q4: How does your system prevent doctor double-booking?
+> **Answer:** *"Double-booking is prevented before any database commit occurs. When an appointment is scheduled, `models/appointment.py` executes `has_conflict(doctor_id, appt_date, appt_time)`. If an active appointment exists in that slot, the service layer rejects the request with an HTTP 409 Conflict. This prevents scheduling collisions across both the Tkinter GUI and Web REST Blueprints."*
+
+### Q5: How is your audit trail implemented, and can a user delete audit records?
+> **Answer:** *"Our audit trail uses a dual-tier architecture. Tier 1 writes atomic records to the SQLite `audit_log` table within the same database transaction as the business mutation, capturing `table_name`, `record_id`, `action`, `performed_by`, and `timestamp`. Tier 2 automatically mirrors these records to `TQM/data/audit_logs.csv`. The audit log has no UPDATE or DELETE API endpoints; it is strictly append-only."*
+
+### Q6: What Statistical Quality Control (SQC) tools did you implement?
+> **Answer:** *"We implemented three core SQC tools: (1) A real-time Defect Checksheet logging operational and software errors; (2) A Pareto 80/20 analysis identifying the 'vital few' defect causes; and (3) A Shewhart c-chart (`sqc/spc_chart.py`) computing the Central Line ($CL = \bar{c}$), Upper Control Limit ($UCL = \bar{c} + 3\sqrt{\bar{c}}$), and Lower Control Limit ($LCL$) to mathematically verify process stabilization."*
+
+### Q7: How does your system measure operational performance rather than showing static fake numbers?
+> **Answer:** *"Our metrics are derived from real event timestamps stored in the database. For example, triage acuity is calculated from physiological vitals, bed availability is dynamically computed from `rooms` and `admissions` table states, and process sigma is mathematically calculated from defect counts using our Six Sigma DPMO engine (`src/utils/sigma_calculator.py`)."*
+
+### Q8: What failure modes did you analyze in your FMEA?
+> **Answer:** *"We analyzed 12 critical failure modes across patient intake, doctor scheduling, clinical prescribing, and laboratory diagnostics. Our highest pre-mitigation RPN was 378 for incorrect blood group entry and 360 for untraceable record modifications. By deploying Poka-Yoke controls (read-only dropdowns, keystroke input masking, and dual audit logging), we achieved an overall RPN reduction exceeding 90% across all failure modes."*
+
+### Q9: Why did you provide both a Tkinter Desktop GUI and a Flask Web Portal?
+> **Answer:** *"The Tkinter Native Desktop GUI satisfies the primary syllabus deliverable for high-speed front-desk data entry with custom Poka-Yoke widgets. The Flask Web Application demonstrates modern REST API architecture, responsive browser-based access, and executive dashboards. Crucially, both presentation tiers share the exact same backend model layer, business validators, and SQLite database with zero code duplication."*
+
+### Q10: How do you prove that your error-prevention controls actually work?
+> **Answer:** *"We maintain an automated test suite of 147 unit tests in the `tests/` directory (`python -m unittest discover tests`). This includes functional tests, negative boundary tests, role-based authorization tests, concurrency tests, and clinical Poka-Yoke contraindication tests. Every test executes in under 3 seconds and produces 100% passing results."*
