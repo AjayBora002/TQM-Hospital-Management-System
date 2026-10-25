@@ -105,3 +105,15 @@ The demonstration follows a coherent, end-to-end patient journey:
 
 ---
 
+## 4. Minimum Three Negative Test Demonstrations (Error Prevention)
+
+| # | Failure Mode Tested | Negative Test Input / Action | Expected System Poka-Yoke Defense | Actual Software Response | Pass/Fail |
+|:---:|---|---|---|---|:---:|
+| **1** | **Doctor Double-Booking** | Schedule 2 appointments for Dr. Shalini Kapoor at `2026-11-20 10:30`. | Conflict pre-flight check blocks second booking; returns HTTP 409 Conflict. | Booking rejected with modal warning; Zero database mutation. | **PASS** |
+| **2** | **Contraindicated Drug (ADR)** | Prescribe Amoxicillin to patient with documented Penicillin allergy. | Cross-check vs `DRUG_CONTRAINDICATION_MAP` intercepts command. | Pre-flight check halts submission; Alert badge displayed. | **PASS** |
+| **3** | **Expired Drug Dispensing** | Prescribe medicine batch with past expiry date (`2025-12-31`). | Expiry date validator checks against `current_date`. | Prescribing blocked; Low-stock/expiry warning raised. | **PASS** |
+| **4** | **Negative Billing Entry** | Enter `-250.00` for medicine charges. | Non-negative numeric boundary assertion in `validators.py`. | Form rejects submission; Error highlights medicine charges field. | **PASS** |
+| **5** | **Future Date of Birth** | Enter DOB `2035-05-12` during patient registration. | ISO-8601 calendar validator checks `dob <= today`. | Rejection modal: *"Date of birth cannot be in the future"*. | **PASS** |
+
+---
+
