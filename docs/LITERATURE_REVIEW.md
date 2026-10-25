@@ -102,3 +102,41 @@ mindmap
 
 ---
 
+## 4. ABDM and Indian Digital Health Architecture
+
+The Ayushman Bharat Digital Mission (ABDM), spearheaded by the National Health Authority (NHA), establishes an open, interoperable digital health infrastructure for India. A modern Indian HIS cannot be architected as an isolated proprietary silo.
+
+### 4.1 Critical Identifier Disambiguation
+
+A common flaw observed in undergraduate HMS projects is treating government identity cards (such as Aadhaar) as the internal database primary key. Our architecture adheres strictly to ABDM architectural standards:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PATIENT IDENTIFICATION HIERARCHY                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                       │
+     ┌─────────────────────────────────┴─────────────────────────────────┐
+     ▼                                                                   ▼
+[ Internal Institutional Tier ]                         [ National Interoperable Tier ]
+  UHID (Unique Hospital Identifier)                       ABHA (Ayushman Bharat Health Account)
+  Format: UHID-2026-00042                                 Format: 14-Digit / ABHA Address
+  • Primary internal key for records                      • Citizen-controlled health ID
+  • Scope: Single Hospital Entity                         • Scope: Nationwide interoperability
+  • Owned & governed by HMS database                      • Governed by National Health Authority
+                                       │
+     ┌─────────────────────────────────┴─────────────────────────────────┐
+     ▼                                                                   ▼
+[ Financial / Encounter Tier ]                          [ Statutory KYC Tier ]
+  Encounter / Episode ID                                  Aadhaar / Voter ID / Passport
+  Format: ENC-2026-0108                                   • Identity verification only at intake
+  • Distinct visit/stay instance                          • NEVER used as database primary key
+  • Links Vitals, Orders, Bills                           • NEVER persisted in plaintext (DPDP 2023)
+```
+
+1. **UHID (Unique Hospital Identifier):** The internal, permanent record locator generated sequentially by the hospital (e.g., `UHID-2026-00042`). All longitudinal encounters, lab orders, prescriptions, and bills within this hospital bind to this identifier.
+2. **ABHA (Ayushman Bharat Health Account):** A 14-digit national digital health ID and handle (e.g., `ajay.bora@abdm`) enabling citizen-consented health data exchange across clinics nationwide via Health Information Exchanges (HIE-CM).
+3. **Government KYC Document (Aadhaar / Driving License):** Used strictly at reception for physical identity verification. In compliance with the **Digital Personal Data Protection Act (DPDP 2023)**, national identity numbers are never used as relational foreign keys or stored in unencrypted tables.
+4. **Encounter / Episode ID:** Each clinical visit represents a discrete episodic transaction tied to the patient's master UHID, preserving historical integrity across years of care.
+
+---
+
