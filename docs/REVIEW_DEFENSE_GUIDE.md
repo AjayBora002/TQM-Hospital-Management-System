@@ -117,3 +117,24 @@ The demonstration follows a coherent, end-to-end patient journey:
 
 ---
 
+## 5. The TQM Closed-Loop Demonstration Chain
+
+In strict accordance with **Section 25 of the Base Project Guideline**, the project demonstrates the complete continuous improvement feedback loop:
+
+```mermaid
+graph TD
+    A[1. Stakeholder Voice: Patient & Receptionist] --> B[2. Software Requirement: SR-PAT-004 Duplicate Prevention]
+    B --> C[3. Clinical Process: Intake & Auto-Complete Search]
+    C --> D[4. FMEA Risk: Duplicate Charts RPN = 210]
+    D --> E[5. Poka-Yoke Prevention: Debounced Substring Lookup]
+    E --> F[6. Transaction Data: 147 Automated Tests & Audit Logs]
+    F --> G[7. Operational KPI: 0% Duplicate Charts / TAT < 60s]
+    G --> H[8. Abnormality Detection: Shewhart c-Chart Spike]
+    H --> I[9. Root Cause Analysis: Ishikawa Fishbone Diagram]
+    I --> J[10. CAPA Implementation: Enhanced Regex Masking in validators.py]
+    J --> K[11. Verification: RPN Reduced to 14 >93% Reduction]
+    K --> L[12. Continuous Improvement: Standardized in Production Baseline]
+```
+
+---
+
