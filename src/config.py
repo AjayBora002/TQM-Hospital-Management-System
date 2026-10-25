@@ -24,6 +24,7 @@ APPT_STATUS = ["Scheduled", "Confirmed", "Checked-in", "Waiting", "In consultati
 ROOM_TYPES = ["General Ward", "Semi-Private", "Private", "ICU", "Operation Theatre"]
 # Aligned with NABH & Base Project Guideline: Available -> Reserved -> Occupied -> Cleaning -> Maintenance / Blocked
 ROOM_STATUS = ["Available", "Occupied", "Under Maintenance", "Cleaning / Sanitizing", "Reserved", "Blocked"]
+LAB_ORDER_STATUS = ["Ordered", "Billing Pending", "Paid", "Sample Pending", "Collected", "Processing", "Verified", "Released", "Completed", "Cancelled"]
 STAFF_ROLES = ["Nurse", "Receptionist", "Pharmacist", "Lab Technician",
                "Ward Boy", "Administrator"]
 SHIFTS = ["Morning", "Evening", "Night"]
