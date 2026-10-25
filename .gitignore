@@ -6,5 +6,5 @@ tests/*.db
 *.pdf
 page-*.jpg
 backups/*.db
-
-
+tests/*.tmp
+*.log
