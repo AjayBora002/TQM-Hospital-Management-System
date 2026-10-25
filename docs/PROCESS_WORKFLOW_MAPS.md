@@ -117,3 +117,33 @@ sequenceDiagram
 
 ---
 
+## 4. Formal State Transition Machines
+
+Every critical hospital entity is governed by a finite state machine with strict transition guards, role authorizations, and audit timestamps.
+
+### 4.1 Appointment State Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Requested: Patient / Receptionist Books Slot
+    Requested --> Confirmed: Pre-flight Conflict Check PASSED
+    Requested --> Cancelled: Slot Clashes / Patient Cancellation
+    Confirmed --> CheckedIn: Patient Arrives at Hospital Front Desk
+    CheckedIn --> Waiting: Vitals Recorded in Triage
+    Waiting --> InConsultation: Doctor Initiates Encounter
+    InConsultation --> Completed: Consultation Finished & Rx Signed
+    Confirmed --> NoShow: Patient Fails to Appear on Date/Time
+    Waiting --> Cancelled: Patient Leaves Prior to Consultation
+    Completed --> [*]
+    Cancelled --> [*]
+    NoShow --> [*]
+```
+
+- **Transition Rules & Guards:**
+  - `Confirmed`: Requires `has_conflict() == False` across doctor schedule.
+  - `Checked-in`: Generates queue token and records timestamp in `appointments`.
+  - `In consultation`: Updates appointment status and opens Patient 360° chart.
+  - `Completed`: Automatically triggers billing requisition and writes audit entry.
+
+---
+
