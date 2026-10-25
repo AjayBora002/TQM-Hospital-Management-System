@@ -5,8 +5,21 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.db_manager import get_connection, log_audit  # noqa: E402
 
 
+import config
+
+
 def now():
     return datetime.now().isoformat(timespec="seconds")
+
+
+def format_uhid(patient_id) -> str:
+    """Institutional Unique Hospital Identifier (UHID) complying with NABH & ABDM requirements."""
+    if not patient_id:
+        return ""
+    try:
+        return f"{config.UHID_PREFIX}{int(patient_id):05d}"
+    except (ValueError, TypeError):
+        return f"{config.UHID_PREFIX}{patient_id}"
 
 
 def list_all(name_filter=""):
