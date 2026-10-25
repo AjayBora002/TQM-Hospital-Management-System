@@ -158,3 +158,17 @@ To identify real-world process gaps and justify our architectural decisions, we 
 | **Quality Engineering** | Post-incident complaints | Manual quarterly NABH audits | Basic billing analytics | Excel-based monthly indicators | **Real-time Shewhart SPC c-Chart, Six Sigma DPMO, and Pareto 80/20 engine** |
 | **Architecture / Deployment** | Physical registers | Heavy multi-server client-server | Multi-tenant cloud | Lightweight Python/LAN setup | **Dual-Presentation: Native Tkinter Desktop GUI + Modern Flask Web Portal** |
 
+### 5.2 Deep-Dive Benchmark: NABH Case Study (*Small Hospital, Big Leap*)
+
+The official NABH case study, *"Small Hospital, Big Leap: A Clinician-Built Digital Hospital"* (NABH Case Studies, 2024), documents the transformation of an 80-bed Indian community hospital that replaced cumbersome paper documentation with a focused, clinician-designed digital system.
+
+**Key Findings & Parallels with Our System:**
+1. **The Trap of Commercial Complexity:** The hospital initially evaluated commercial enterprise HIS packages but rejected them due to exorbitant licensing costs, excessive screen complexity, and slow user adoption by clinicians.
+2. **Clinician-Centric Workflows:** The successful in-house implementation focused on a tightly connected single patient journey: Demographics → Triage → Consultation → Prescription → Billing → Follow-up.
+3. **Integrated Safety Poka-Yoke:** Real-world patient safety improved by embedding instant checks directly into data entry screens (e.g., blocking expired drug dispensing and warning on known penicillin allergies) rather than relying on retrospective committee audits.
+4. **Data-Driven Governance:** Transforming daily operational event timestamps into automated quality indicators allowed the hospital to achieve full NABH accreditation with zero administrative overhead.
+
+**Our Project's Differentiation:** While the case study utilized basic web scripts, our system introduces rigorous software engineering: formal REST API Blueprints, dual presentation layers (Desktop Tkinter + Web SPA), strict mathematical Statistical Quality Control (Shewhart c-charts and DPMO calculators), and an automated test suite comprising 147 unit tests.
+
+---
+
