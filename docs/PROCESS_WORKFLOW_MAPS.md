@@ -173,3 +173,25 @@ stateDiagram-v2
 
 ---
 
+### 4.3 Inpatient Ward & Bed Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Available: Room Initialized & Sanitized
+    Available --> Reserved: Planned Inpatient Booking
+    Reserved --> Occupied: Patient Admitted to Room
+    Available --> Occupied: Direct Emergency / Urgent Admission
+    Occupied --> CleaningSanitizing: Patient Discharged / Transferred
+    CleaningSanitizing --> Available: Housekeeping Inspection Approved
+    Available --> BlockedMaintenance: Facility Defect / Maintenance
+    BlockedMaintenance --> Available: Engineering Repair Certified
+    Occupied --> BlockedMaintenance: Room Emergency Fault (Patient Moved)
+```
+
+- **Transition Rules & Guards:**
+  - `Occupied`: Patient assigned room foreign key (`patients.room_id`); blocks duplicate allocation via unique constraint.
+  - `Cleaning / Sanitizing`: Automatically triggered upon patient discharge in `patient.discharge()`.
+  - `Available`: Requires housekeeping clearance before re-admission.
+
+---
+
