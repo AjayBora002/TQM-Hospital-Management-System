@@ -178,6 +178,10 @@ HMS_Project/
 │       └── exception_handler.py   # Global exception management & error logging
 │
 ├── docs/
+│   ├── LITERATURE_REVIEW.md       # NABH 6th Ed (10 chapters), ABDM/ABHA & Benchmarking Analysis
+│   ├── STAKEHOLDER_SRS_TRACEABILITY.md # 10-Role Stakeholder Register & 6-Way Traceability Matrix
+│   ├── PROCESS_WORKFLOW_MAPS.md   # As-Is vs To-Be OPD Swimlanes & State Machines (Appt/Lab/Bed)
+│   ├── REVIEW_DEFENSE_GUIDE.md    # Review-1 & Review-2 Defense Dossier, Live Demo Scripts & Viva Q&A
 │   ├── SRS.md                     # Software Requirements Specification
 │   ├── SRS_HMS_AjayBora.docx      # Formal SRS document
 │   ├── architecture.md            # Full layer diagram and file-by-file responsibilities
