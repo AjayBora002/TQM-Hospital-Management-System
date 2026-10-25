@@ -170,6 +170,7 @@ def get_discharge_summary(patient_id):
 
     return {
         "patient_id": patient["patient_id"],
+        "uhid": format_uhid(patient["patient_id"]),
         "full_name": patient["full_name"],
         "gender": patient["gender"],
         "dob": patient["dob"],
