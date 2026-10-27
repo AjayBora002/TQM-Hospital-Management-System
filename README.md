@@ -107,6 +107,19 @@ Quality is enforced through Poka-Yoke mistake-proofing across both Desktop GUI a
 
 ---
 
+## Institutional Guideline Compliance & Traceability
+
+In accordance with the **Base Project Guideline (Sections 1 to 26)**, the system implements end-to-end clinical traceability from stakeholder need down to automated unit tests:
+
+| Document / Dossier | Scope & Statutory Standard Covered | Key Deliverable |
+|---|---|---|
+| [`docs/LITERATURE_REVIEW.md`](docs/LITERATURE_REVIEW.md) | NABH 6th Edition (10 Chapters) & ABDM Interoperability | Benchmarks (Apollo, Practo, e-Hospital, and NABH Case Study *"Small Hospital, Big Leap"*). |
+| [`docs/STAKEHOLDER_SRS_TRACEABILITY.md`](docs/STAKEHOLDER_SRS_TRACEABILITY.md) | 10-Role Stakeholder Register & 24 Testable SRS Items | 6-Way Requirements Traceability Matrix (`SR-PAT-001` through `SR-SEC-003`). |
+| [`docs/PROCESS_WORKFLOW_MAPS.md`](docs/PROCESS_WORKFLOW_MAPS.md) | Lean Waste Analysis (Muda), Multi-Role Swimlanes | Finite State Machines (FSM) for Appointment, Lab Order, and Bed lifecycles. |
+| [`docs/REVIEW_DEFENSE_GUIDE.md`](docs/REVIEW_DEFENSE_GUIDE.md) | Review-1 & Review-2 Defense Dossier | 7-step live demo script, 5 verified negative error-prevention tests, Top 10 viva Q&As. |
+
+---
+
 ## Project Structure
 
 ```
