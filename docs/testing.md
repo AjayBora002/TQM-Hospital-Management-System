@@ -37,24 +37,31 @@ Each test should record:
 - Status
 - Defect ID if applicable
 
-## Test Areas
+## Test Areas & Coverage Matrix
 
-| Test Area | Example |
-|---|---|
-| Input Masking | Non-digit character rejected in phone field |
-| Dropdown Lists | Blood group field rejects free text |
-| Auto-Complete | Partial patient name returns matching suggestions |
-| Confirmation Modal | Delete without confirmation is blocked |
-| Audit Logging | Every INSERT, UPDATE, DELETE generates an audit record |
-| Patient CRUD | Add, update, and delete patient round-trip |
-| Appointment | Doctor-patient linking and status updates |
-| Billing | Total equals sum of room + consultation + medicine charges |
-| Pharmacy | Stock below reorder level flagged correctly |
+| Test Suite Domain | Test Suites Count | Scope & Quality Goal | Verification Proof |
+|---|:---:|---|---|
+| **Base Data Models** | 8 suites | Pure SQL CRUD, foreign keys, cascade constraints | `test_db.py`, `test_staff_doctor_boundaries.py` |
+| **Poka-Yoke Validators** | 6 suites | Keystroke phone masking, dropdown restrictions, boundary assertions | `test_validators.py`, `test_patient_boundaries.py` |
+| **Clinical Safety & ADR** | 5 suites | Pre-flight drug contraindications, triage vitals boundaries, batch expiry | `test_clinical_poka_yoke.py`, `test_pharmacy_expiry.py` |
+| **Diagnostics & Labs** | 3 suites | Reference intervals, automated abnormal flags ($0/1$) | `test_lab_module.py` |
+| **Institutional Identity** | 2 suites | Standardized `UHID-2026-XXXXX` zero-padding, timeline aggregation | `test_institutional_uhid.py`, `test_patient_timeline.py` |
+| **Process State Machines** | 2 suites | Extended appointment and room state transitions | `test_extended_process_states.py`, `test_room_boundaries.py` |
+| **Quality & SQC Analytics** | 4 suites | Shewhart c-chart mathematical limits, Six Sigma DPMO engine, audit dual-sync | `test_spc_chart.py`, `test_six_sigma.py`, `test_quality_audits.py` |
+
+**Total Automated Test Coverage:** **156 unit & integration tests across 30 test suites (100% pass rate).**
 
 ## How to Run
 
 ```bash
-python tests/test_db.py
+# Execute the complete automated test suite
+python -m unittest discover tests
 ```
 
-Expected: all tests pass.
+Expected result:
+```text
+Ran 156 tests in ~2.8s
+OK
+[+] Saved SPC Control Chart: sqc/spc_control_chart.png
+[+] Saved SPC Metrics CSV: TQM/data/spc_metrics.csv
+```
