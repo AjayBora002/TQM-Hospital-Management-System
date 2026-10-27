@@ -120,6 +120,21 @@ In accordance with the **Base Project Guideline (Sections 1 to 26)**, the system
 
 ---
 
+## Process Measurement & KPI Formulations
+
+Operational KPIs are calculated dynamically from transactional event timestamps rather than manually entered numbers:
+
+| Process Indicator | Operational Definition & Formula | Target / Benchmark | Clinical Impact |
+|---|---|:---:|---|
+| **OPD Waiting Time** | $T_{\text{wait}} = t_{\text{consult\_start}} - t_{\text{check\_in}}$ | $< 15\text{ mins}$ | Reduces patient anxiety and clinic crowding |
+| **Registration Duration** | $T_{\text{reg}} = t_{\text{save}} - t_{\text{intake\_open}}$ | $< 60\text{ secs}$ | Front-desk throughput via Poka-Yoke auto-complete |
+| **Doctor Cycle Time** | $T_{\text{cycle}} = t_{\text{rx\_signed}} - t_{\text{consult\_start}}$ | $8\text{--}12\text{ mins}$ | Clinic scheduling capacity optimization |
+| **Diagnostic Lab TAT** | $\text{TAT}_{\text{lab}} = t_{\text{verified}} - t_{\text{sample\_collected}}$ | $< 4\text{ hours}$ | Rapid diagnostic turnaround for critical pathology |
+| **Shewhart Control Limits** | $CL = \bar{c},\; UCL = \bar{c} + 3\sqrt{\bar{c}},\; LCL = \max(0, \bar{c} - 3\sqrt{\bar{c}})$ | In Control | Statistical quality surveillance of daily defects |
+| **Six Sigma DPMO** | $\text{DPMO} = \frac{D}{N \times O} \times 10^6 \implies \text{Sigma} \approx 0.8406 + \sqrt{29.37 - 2.221 \ln(\text{DPMO})}$ | $> 4.0\sigma$ | Mathematical quantification of administrative accuracy |
+
+---
+
 ## Project Structure
 
 ```
