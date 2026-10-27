@@ -135,6 +135,37 @@ Operational KPIs are calculated dynamically from transactional event timestamps 
 
 ---
 
+## Institutional Patient Identifier (UHID) & ABDM Hierarchy
+
+The system strictly adheres to the National Health Authority (NHA) ABDM architectural standards by decoupling internal hospital records from national government identity documents:
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       PATIENT IDENTIFICATION HIERARCHY                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                       │
+     ┌─────────────────────────────────┴─────────────────────────────────┐
+     ▼                                                                   ▼
+[ Internal Institutional Tier ]                         [ National Interoperable Tier ]
+  UHID (Unique Hospital Identifier)                       ABHA (Ayushman Bharat Health Account)
+  Format: UHID-2026-XXXXX                                 Format: 14-Digit / ABHA Address
+  • Primary internal key for patient records              • Citizen-controlled health identity
+  • Generated sequentially per facility                   • Nationwide interoperability layer
+                                       │
+     ┌─────────────────────────────────┴─────────────────────────────────┐
+     ▼                                                                   ▼
+[ Financial / Encounter Tier ]                          [ Statutory KYC Tier ]
+  Encounter / Episode ID                                  Aadhaar / Passport / Voter ID
+  Format: ENC-2026-XXXX                                   • Identity verification at intake only
+  • Discrete outpatient/inpatient visit                   • NEVER used as database primary key
+  • Links Vitals, Prescriptions, Bills                    • NEVER persisted in unencrypted tables
+```
+
+- **Format Enforcement:** `UHID-2026-XXXXX` zero-padded sequential formatting ([`format_uhid()`](src/models/patient.py)).
+- **Patient 360° Binding:** Every historical encounter, triage vital sign, prescription, lab test, and invoice links directly to the permanent UHID.
+
+---
+
 ## Project Structure
 
 ```
