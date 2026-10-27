@@ -166,6 +166,20 @@ The system strictly adheres to the National Health Authority (NHA) ABDM architec
 
 ---
 
+## 5 Verified Negative Error-Prevention Demonstrations
+
+In compliance with Review-2 criteria, the system demonstrates active mistake-proofing (Poka-Yoke) across five core failure modes:
+
+| # | Failure Mode Tested | Negative Test Action | Expected Poka-Yoke Defense | System Response |
+|:---:|---|---|---|:---:|
+| **1** | **Doctor Double-Booking** | Book 2 appointments for Dr. Shalini Kapoor at `2026-11-20 10:30`. | Pre-flight slot conflict engine intercepts duplicate booking. | HTTP 409 Conflict; Booking rejected; Zero DB mutation |
+| **2** | **Contraindicated Drug (ADR)** | Prescribe Amoxicillin to patient with documented Penicillin allergy. | Cross-check vs `DRUG_CONTRAINDICATION_MAP` intercepts order. | Submission blocked; Pop-up allergy warning displayed |
+| **3** | **Expired Drug Dispensing** | Prescribe medicine batch with past expiry date (`2025-12-31`). | Batch expiry validator checks against current calendar date. | Prescription blocked; Low-stock/expiry alert raised |
+| **4** | **Negative Billing Entry** | Enter `-250.00` for medicine charges. | Non-negative numeric boundary assertion in `validators.py`. | Form rejects submission; Error highlights charge field |
+| **5** | **Future Date of Birth** | Enter DOB `2035-05-12` during patient registration. | ISO-8601 calendar validator checks `dob <= today`. | Rejection modal: *"Date of birth cannot be in future"* |
+
+---
+
 ## Project Structure
 
 ```
