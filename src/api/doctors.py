@@ -1,20 +1,31 @@
 """
-doctors.py -- Doctor management REST API endpoints
+doctors.py -- Doctor management and credentials REST API endpoints
 """
 from flask import Blueprint, request, jsonify
 import models.doctor as doctor_model
+import models.doctor_profile as doc_profile_model
 from .helpers import rows_to_list
 
 doctors_bp = Blueprint("doctors", __name__)
+
 
 @doctors_bp.route("/doctors", methods=["GET"])
 def get_doctors():
     return jsonify(rows_to_list(doctor_model.list_all()))
 
+
+@doctors_bp.route("/doctors/specialized", methods=["GET"])
+def get_specialized_doctors():
+    department = request.args.get("department")
+    docs = doc_profile_model.list_specialized_doctors(department=department)
+    return jsonify(docs), 200
+
+
 @doctors_bp.route("/doctors/choices", methods=["GET"])
 def get_doctor_choices():
     cmap = doctor_model.choices_map()
     return jsonify([{"id": v, "label": k} for k, v in cmap.items()])
+
 
 @doctors_bp.route("/doctors", methods=["POST"])
 def create_doctor():
@@ -24,7 +35,19 @@ def create_doctor():
         department=data.get("department"),
         phone=data.get("phone")
     )
+    # Save specialized profile if provided
+    if data.get("specialization"):
+        doc_profile_model.save_profile(
+            doctor_id=new_id,
+            specialization=data.get("specialization"),
+            qualifications=data.get("qualifications", "MBBS, MD"),
+            experience_years=int(data.get("experience_years", 5)),
+            consultation_fee=float(data.get("consultation_fee", 500.0)),
+            room_number=data.get("room_number", "OPD-101"),
+            max_daily_patients=int(data.get("max_daily_patients", 30))
+        )
     return jsonify({"doctor_id": new_id, "status": "created"}), 201
+
 
 @doctors_bp.route("/doctors/<int:doctor_id>", methods=["PUT"])
 def update_doctor(doctor_id):
@@ -35,7 +58,18 @@ def update_doctor(doctor_id):
         department=data.get("department"),
         phone=data.get("phone")
     )
+    if data.get("specialization"):
+        doc_profile_model.save_profile(
+            doctor_id=doctor_id,
+            specialization=data.get("specialization"),
+            qualifications=data.get("qualifications", "MBBS, MD"),
+            experience_years=int(data.get("experience_years", 5)),
+            consultation_fee=float(data.get("consultation_fee", 500.0)),
+            room_number=data.get("room_number", "OPD-101"),
+            max_daily_patients=int(data.get("max_daily_patients", 30))
+        )
     return jsonify({"status": "updated"})
+
 
 @doctors_bp.route("/doctors/<int:doctor_id>", methods=["DELETE"])
 def delete_doctor(doctor_id):

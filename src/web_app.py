@@ -4,13 +4,9 @@ BBAT104 Course Project | Quality Goal: Q07 - Improve Data Accuracy
 Student: Ajay Bora | Branch: CSE | Section: B
 
 Serves an interactive modern web UI on http://127.0.0.1:5000 with:
-- All 10 System Modules (Dashboard, Patients, Doctors, Appointments, Rooms, Staff, Pharmacy, Billing, Audit Log, Defect Checksheet)
-- All 5 Q07 TQM Features:
-    1. Input Masking (Phone +91-XXXXX-XXXXX)
-    2. Dropdown Lists (Enforced fixed sets)
-    3. Auto-Complete (Instant suggestions)
-    4. Confirmation Modals (Interactive safeguards)
-    5. Audit Logs (Immutable action history)
+- All System Modules (Dashboard, Departments, Doctors, Patients, Appointments, OPD Queue, Nursing Station, Doctor-Nurse Comms, Bed Board, Admissions, Prescriptions, Staff, Pharmacy, Billing, Audit Log, Defect Checksheet)
+- All 10 Role Profiles (Admin, Doctor, Receptionist, Nurse, Ward Manager, Lab Tech, Pharmacist, Cashier, Hospital Manager, Patient)
+- Real-time Doctor <-> Nurse Communication & Clinical Order Execution
 """
 import os
 import sys
@@ -24,7 +20,9 @@ from config import (
     ROOM_TYPES, ROOM_STATUS, STAFF_ROLES, SHIFTS, PAYMENT_METHODS,
     PAYMENT_STATUS, MEDICINE_CATEGORIES, DEFECT_CATEGORIES,
     DEFECT_SEVERITY, DEFECT_STATUS, ALLERGIES, STANDARD_APPOINTMENT_SLOTS,
-    USER_ROLES, DOSAGE_FREQUENCIES, ADMISSION_STATUS
+    USER_ROLES, DOSAGE_FREQUENCIES, ADMISSION_STATUS,
+    DOCTOR_SPECIALIZATIONS, ORDER_TYPES, ORDER_URGENCIES,
+    ORDER_STATUSES, TOKEN_STATUSES, MESSAGE_URGENCIES
 )
 from database.db_manager import init_db
 from api import register_api
@@ -56,6 +54,7 @@ def index():
         genders=GENDERS,
         blood_groups=BLOOD_GROUPS,
         departments=DEPARTMENTS,
+        doctor_specializations=DOCTOR_SPECIALIZATIONS,
         appt_statuses=APPT_STATUS,
         room_types=ROOM_TYPES,
         room_statuses=ROOM_STATUS,
@@ -71,7 +70,12 @@ def index():
         standard_slots=STANDARD_APPOINTMENT_SLOTS,
         user_roles=USER_ROLES,
         dosage_frequencies=DOSAGE_FREQUENCIES,
-        admission_statuses=ADMISSION_STATUS
+        admission_statuses=ADMISSION_STATUS,
+        order_types=ORDER_TYPES,
+        order_urgencies=ORDER_URGENCIES,
+        order_statuses=ORDER_STATUSES,
+        token_statuses=TOKEN_STATUSES,
+        message_urgencies=MESSAGE_URGENCIES
     )
 
 

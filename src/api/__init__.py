@@ -20,6 +20,17 @@ from .triage import triage_bp
 from .purchase_orders import purchase_orders_bp
 from .quality_audit import quality_audit_bp
 
+# Extended Hospital Features Blueprints
+from .departments import departments_bp
+from .wards import wards_bp
+from .clinical_orders import clinical_orders_bp
+from .communication import communication_bp
+from .opd_queue import opd_queue_bp
+from .shift_handover import shift_handover_bp
+from .encounters import encounters_bp
+from .nursing_api import nursing_bp
+
+
 def register_api(app):
     """
     Registers all modular API blueprints onto the Flask application
@@ -44,6 +55,16 @@ def register_api(app):
     app.register_blueprint(purchase_orders_bp, url_prefix="/api")
     app.register_blueprint(quality_audit_bp, url_prefix="/api")
 
+    # Extended hospital workflows
+    app.register_blueprint(departments_bp, url_prefix="/api")
+    app.register_blueprint(wards_bp, url_prefix="/api")
+    app.register_blueprint(clinical_orders_bp, url_prefix="/api")
+    app.register_blueprint(communication_bp, url_prefix="/api")
+    app.register_blueprint(opd_queue_bp, url_prefix="/api")
+    app.register_blueprint(shift_handover_bp, url_prefix="/api")
+    app.register_blueprint(encounters_bp, url_prefix="/api")
+    app.register_blueprint(nursing_bp, url_prefix="/api")
+
     # Global Poka-Yoke error handler: serialize domain validation errors cleanly to HTTP 400
     from utils.exception_handler import ValidationError
     from flask import jsonify
@@ -56,7 +77,3 @@ def register_api(app):
             "field": getattr(err, "field", None),
             "status_code": 400
         }), 400
-
-
-
-

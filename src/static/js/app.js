@@ -55,6 +55,11 @@ function switchTab(tabId) {
 
     // Lazy data refreshes
     if (tabId === 'dashboard') { loadDashboardData(); loadBackupStatus(); }
+    if (tabId === 'departments') { loadDepartments(); loadSpecializedDoctors(); }
+    if (tabId === 'queue') { loadOpdQueue(); loadDoctorsForToken(); setupTokenPatientAutocomplete(); }
+    if (tabId === 'nursing') { loadNursingData(); }
+    if (tabId === 'comms') { loadCommsData(); }
+    if (tabId === 'bedboard') { loadBedBoard(); loadWardsForFilter(); }
     if (tabId === 'patients') { loadPatients(); loadRoomChoices(); }
     if (tabId === 'doctors') loadDoctors();
     if (tabId === 'appointments') { loadAppointments(); loadDoctorChoices(); }
@@ -69,20 +74,59 @@ function switchTab(tabId) {
 }
 
 // Q07 Feature: Input Masking for Phone (+91-XXXXX-XXXXX)
+function formatPhoneValue(value) {
+    let val = value || '';
+    if (val.startsWith('+91-')) {
+        val = val.substring(4);
+    } else if (val.startsWith('+91')) {
+        val = val.substring(3);
+    } else if (val.startsWith('91') && val.replace(/\D/g, '').length > 10) {
+        val = val.substring(2);
+    }
+    const digits = val.replace(/\D/g, '').substring(0, 10);
+    if (digits.length === 0) return '';
+    if (digits.length <= 5) return `+91-${digits}`;
+    return `+91-${digits.substring(0, 5)}-${digits.substring(5)}`;
+}
+
 function setupPhoneMasking() {
     document.querySelectorAll('.phone-mask').forEach(input => {
-        input.addEventListener('input', (e) => {
-            let digits = e.target.value.replace(/\\D/g, '');
-            if (digits.startsWith('91')) {
-                digits = digits.substring(2);
+        // Poka-Yoke: Silently reject non-digit characters
+        input.addEventListener('keypress', (e) => {
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
+            if (!/\d/.test(e.key)) {
+                e.preventDefault();
             }
-            digits = digits.substring(0, 10);
-            if (digits.length === 0) {
-                e.target.value = '';
-            } else if (digits.length <= 5) {
-                e.target.value = `+91-${digits}`;
-            } else {
-                e.target.value = `+91-${digits.substring(0, 5)}-${digits.substring(5)}`;
+        });
+
+        // Smart Backspace handling across hyphens and country code prefix
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                const val = input.value;
+                const selStart = input.selectionStart;
+                const selEnd = input.selectionEnd;
+                // If cursor is at or before the end of the '+91-' prefix, clear completely
+                if (selStart === selEnd && selStart <= 4 && val.startsWith('+91-')) {
+                    e.preventDefault();
+                    input.value = '';
+                    input.dispatchEvent(new Event('input'));
+                    return;
+                }
+                // If cursor is right after a hyphen (e.g. after +91-12345-), delete preceding digit
+                if (selStart === selEnd && selStart > 4 && val[selStart - 1] === '-') {
+                    e.preventDefault();
+                    input.value = val.substring(0, selStart - 2) + val.substring(selStart);
+                    input.dispatchEvent(new Event('input'));
+                    return;
+                }
+            }
+        });
+
+        // Format digits cleanly on input (typing, pasting, autofill)
+        input.addEventListener('input', () => {
+            const formatted = formatPhoneValue(input.value);
+            if (input.value !== formatted) {
+                input.value = formatted;
             }
         });
     });
@@ -983,6 +1027,7 @@ async function loadCurrentUser() {
                     nameDisplay.innerText = data.user.full_name;
                 }
                 applyRolePermissions(activeUserRole);
+                renderRoleWorkspace(data.user);
             }
         }
     } catch (e) {
@@ -992,23 +1037,27 @@ async function loadCurrentUser() {
 
 function applyRolePermissions(role) {
     const allTabs = document.querySelectorAll('.nav-tab');
+    const roleTabMap = {
+        'Admin': ['dashboard', 'departments', 'queue', 'nursing', 'comms', 'bedboard', 'patients', 'doctors', 'appointments', 'admissions', 'prescriptions', 'rooms', 'staff', 'pharmacy', 'billing', 'audit', 'defects'],
+        'Hospital Manager': ['dashboard', 'departments', 'bedboard', 'queue', 'doctors', 'admissions', 'billing', 'staff', 'audit'],
+        'Doctor': ['dashboard', 'queue', 'nursing', 'comms', 'patients', 'prescriptions', 'admissions', 'departments'],
+        'Nurse': ['dashboard', 'nursing', 'comms', 'bedboard', 'patients', 'admissions', 'queue'],
+        'Ward Manager': ['dashboard', 'bedboard', 'nursing', 'comms', 'rooms', 'admissions', 'staff'],
+        'Receptionist': ['dashboard', 'queue', 'patients', 'appointments', 'departments', 'doctors', 'billing', 'admissions'],
+        'Lab Technician': ['dashboard', 'nursing', 'comms', 'patients'],
+        'Pharmacist': ['dashboard', 'pharmacy', 'prescriptions', 'billing', 'comms'],
+        'Cashier': ['dashboard', 'billing', 'patients', 'appointments', 'queue'],
+        'Patient': ['dashboard', 'appointments', 'queue', 'prescriptions', 'billing']
+    };
+    const allowed = roleTabMap[role] || roleTabMap['Admin'];
+
     allTabs.forEach(tab => {
         const tName = tab.getAttribute('data-tab');
         if (!tName) return;
-        if (role === 'Doctor') {
-            if (['staff', 'pharmacy', 'billing', 'audit', 'defects', 'rooms'].includes(tName)) {
-                tab.style.display = 'none';
-            } else {
-                tab.style.display = 'inline-flex';
-            }
-        } else if (role === 'Receptionist') {
-            if (['doctors', 'prescriptions', 'staff', 'pharmacy', 'audit', 'defects'].includes(tName)) {
-                tab.style.display = 'none';
-            } else {
-                tab.style.display = 'inline-flex';
-            }
-        } else {
+        if (allowed.includes(tName)) {
             tab.style.display = 'inline-flex';
+        } else {
+            tab.style.display = 'none';
         }
     });
 }

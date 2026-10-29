@@ -4,6 +4,7 @@ Supports roles: Admin, Doctor, Receptionist.
 """
 import hashlib
 from datetime import datetime
+import config
 from database.db_manager import get_connection, log_audit
 from utils.exception_handler import ValidationError
 
@@ -71,7 +72,7 @@ def list_users():
 
 
 def create_user(username, password, role, full_name, email=None, performed_by="admin"):
-    valid_roles = ["Admin", "Doctor", "Receptionist"]
+    valid_roles = config.USER_ROLES
     if role not in valid_roles:
         raise ValidationError(f"Role must be one of {valid_roles}", field="role")
     if not username or len(username.strip()) < 3:

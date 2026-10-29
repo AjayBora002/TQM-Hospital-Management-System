@@ -42,7 +42,7 @@ python run.py
 python run.py --web
 # Opens http://127.0.0.1:5000 in your browser
 
-# 4. Run automated test suite (156 automated tests across 30 test suites covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, Admissions, PO Replenishment, UHID, and Quality Audits)
+# 4. Run automated test suite (172 automated tests across 31 test suites covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, Admissions, PO Replenishment, UHID, and Quality Audits)
 python -m unittest discover tests
 
 # 5. Regenerate SQC Pareto & Fishbone charts

@@ -17,16 +17,30 @@ UHID_PREFIX = "UHID-2026-"
 # ---- Fixed dropdown lists (Q07 Feature: Dropdown Lists) -------------------
 GENDERS = ["Male", "Female", "Other"]
 BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-DEPARTMENTS = ["Cardiology", "Orthopedics", "Pediatrics", "General Medicine",
-               "Neurology", "ENT", "Dermatology", "Gynecology"]
+DEPARTMENTS = [
+    "Cardiology", "Orthopedics", "Pediatrics", "General Medicine",
+    "Neurology", "ENT", "Dermatology", "Gynecology",
+    "Emergency & Trauma", "Intensive Care Unit (ICU)", "Operation Theatre",
+    "Laboratory", "Radiology", "Pharmacy"
+]
+DOCTOR_SPECIALIZATIONS = [
+    "Cardiologist", "Interventional Cardiologist", "Orthopedic Surgeon",
+    "Joint Replacement Specialist", "Pediatrician", "Neonatologist",
+    "General Physician", "Consultant Physician", "Neurologist", "Neurosurgeon",
+    "ENT Specialist", "Head & Neck Surgeon", "Dermatologist",
+    "Gynecologist", "Emergency Medicine Specialist",
+    "Intensivist / Critical Care", "General Surgeon", "Pathologist", "Radiologist"
+]
 # Aligned with NABH & Base Project Guideline: Requested -> Confirmed -> Checked-in -> Waiting -> In consultation -> Completed / Cancelled / No-show
 APPT_STATUS = ["Scheduled", "Confirmed", "Checked-in", "Waiting", "In consultation", "Completed", "Cancelled", "No-show"]
-ROOM_TYPES = ["General Ward", "Semi-Private", "Private", "ICU", "Operation Theatre"]
+ROOM_TYPES = ["General Ward", "Semi-Private", "Private", "ICU", "Operation Theatre", "Emergency Observation"]
 # Aligned with NABH & Base Project Guideline: Available -> Reserved -> Occupied -> Cleaning -> Maintenance / Blocked
 ROOM_STATUS = ["Available", "Occupied", "Under Maintenance", "Cleaning / Sanitizing", "Reserved", "Blocked"]
 LAB_ORDER_STATUS = ["Ordered", "Billing Pending", "Paid", "Sample Pending", "Collected", "Processing", "Verified", "Released", "Completed", "Cancelled"]
-STAFF_ROLES = ["Nurse", "Receptionist", "Pharmacist", "Lab Technician",
-               "Ward Boy", "Administrator"]
+STAFF_ROLES = [
+    "Nurse", "Head Nurse", "Ward Manager", "Receptionist", "Pharmacist",
+    "Lab Technician", "Radiology Technician", "Cashier", "Ward Boy", "Administrator"
+]
 SHIFTS = ["Morning", "Evening", "Night"]
 PAYMENT_METHODS = ["Cash", "Card", "UPI", "Insurance"]
 PAYMENT_STATUS = ["Paid", "Pending", "Partially Paid"]
@@ -34,6 +48,16 @@ MEDICINE_CATEGORIES = ["Tablet", "Syrup", "Injection", "Ointment", "Surgical Ite
 DEFECT_CATEGORIES = ["Data Entry", "UI", "Validation", "Performance", "Other"]
 DEFECT_SEVERITY = ["Low", "Medium", "High", "Critical"]
 DEFECT_STATUS = ["Open", "Fixed"]
+
+# ---- Clinical Orders & Doctor-Nurse Communication -------------------------
+ORDER_TYPES = [
+    "Medication", "Lab Test", "Nursing Care", "Vital Sign Monitoring",
+    "Diet / Nutrition", "Physiotherapy", "Wound Care", "Discharge Clearance"
+]
+ORDER_URGENCIES = ["Routine", "Urgent", "STAT (Immediate)"]
+ORDER_STATUSES = ["Ordered", "Acknowledged", "In Progress", "Completed", "Discontinued"]
+TOKEN_STATUSES = ["Waiting", "Called", "In Consultation", "Completed", "Skipped"]
+MESSAGE_URGENCIES = ["Normal", "Urgent", "Code Red"]
 
 # ---- Clinical Poka-Yoke & Patient Safety Controls --------------------------
 ALLERGIES = [
@@ -69,7 +93,10 @@ VITALS_RANGES = {
 }
 
 # ---- Authentication & Role Management --------------------------------------
-USER_ROLES = ["Admin", "Doctor", "Receptionist"]
+USER_ROLES = [
+    "Admin", "Doctor", "Receptionist", "Nurse", "Ward Manager",
+    "Lab Technician", "Pharmacist", "Cashier", "Hospital Manager", "Patient"
+]
 
 # ---- Inpatient Admission & Stays -------------------------------------------
 ADMISSION_STATUS = ["Admitted", "Discharged"]
@@ -98,5 +125,3 @@ LAB_TEST_TEMPLATES = {
     "Serum Bilirubin": {"category": "Biochemistry", "unit": "mg/dL", "ref_min": 0.2, "ref_max": 1.2},
     "WBC Count": {"category": "Hematology", "unit": "/mcL", "ref_min": 4000.0, "ref_max": 11000.0},
 }
-
-

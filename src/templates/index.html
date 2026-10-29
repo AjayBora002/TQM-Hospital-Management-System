@@ -31,12 +31,17 @@
     <!-- Navigation Tabs -->
     <nav id="navBar">
         <button class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
+        <button class="nav-tab" data-tab="departments" onclick="switchTab('departments')">🏥 Departments & Doctors</button>
+        <button class="nav-tab" data-tab="queue" onclick="switchTab('queue')">🎫 OPD Queue & Tokens</button>
+        <button class="nav-tab" data-tab="nursing" onclick="switchTab('nursing')">👩‍⚕️ Nursing Station & Tasks</button>
+        <button class="nav-tab" data-tab="comms" onclick="switchTab('comms')">💬 Doctor-Nurse Comms</button>
+        <button class="nav-tab" data-tab="bedboard" onclick="switchTab('bedboard')">🛏️ Bed Board Matrix</button>
         <button class="nav-tab" data-tab="patients" onclick="switchTab('patients')">👤 Patients</button>
         <button class="nav-tab" data-tab="doctors" onclick="switchTab('doctors')">👨‍⚕️ Doctors</button>
         <button class="nav-tab" data-tab="appointments" onclick="switchTab('appointments')">📅 Appointments</button>
-        <button class="nav-tab" data-tab="rooms" onclick="switchTab('rooms')">🏥 Rooms / Wards</button>
         <button class="nav-tab" data-tab="admissions" onclick="switchTab('admissions')">🛏️ Admissions & Stays</button>
         <button class="nav-tab" data-tab="prescriptions" onclick="switchTab('prescriptions')">📝 Prescriptions</button>
+        <button class="nav-tab" data-tab="rooms" onclick="switchTab('rooms')">🚪 Rooms</button>
         <button class="nav-tab" data-tab="staff" onclick="switchTab('staff')">👥 Staff</button>
         <button class="nav-tab" data-tab="pharmacy" onclick="switchTab('pharmacy')">💊 Pharmacy</button>
         <button class="nav-tab" data-tab="billing" onclick="switchTab('billing')">💳 Billing</button>
@@ -49,6 +54,8 @@
 
         <!-- ================= DASHBOARD TAB ================= -->
         <section id="tab-dashboard" class="tab-panel active">
+            <!-- Dynamic Role-Tailored Workspace Banner -->
+            <div id="roleWorkspaceContainer"></div>
             <div class="grid-dashboard">
                 <div class="stat-card">
                     <span class="stat-label">Total Patients</span>
@@ -876,6 +883,485 @@
             </div>
         </section>
 
+    
+        <!-- ================= DEPARTMENTS & SPECIALISTS TAB ================= -->
+        <section id="tab-departments" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Hospital Departments & Medical Specialties</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Multi-Specialty Clinical Roster, Outpatient Clinics & Inpatient Units</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadDepartments(); loadSpecializedDoctors();">Refresh Directory</button>
+                </div>
+            </div>
+
+            <!-- Dept Quick Stats -->
+            <div class="grid-dashboard" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+                <div class="stat-card">
+                    <span class="stat-label">Total Departments</span>
+                    <span class="stat-value" id="dept-stat-total">14</span>
+                </div>
+                <div class="stat-card teal">
+                    <span class="stat-label">Active OPD Clinics</span>
+                    <span class="stat-value" id="dept-stat-opd">9</span>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-label">Inpatient Units</span>
+                    <span class="stat-value" id="dept-stat-ipd">7</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Consultant Specialists</span>
+                    <span class="stat-value" id="dept-stat-doctors">9</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 24px;">
+                <!-- Add Department Form -->
+                <div class="form-card">
+                    <h3>Add Hospital Department</h3>
+                    <form id="departmentForm" onsubmit="handleDepartmentSubmit(event)">
+                        <div class="form-group">
+                            <label>Department Name *</label>
+                            <input type="text" id="dept-name" class="form-control" required placeholder="e.g. Oncology, Nephrology">
+                        </div>
+                        <div class="form-group">
+                            <label>Department Code (Unique) *</label>
+                            <input type="text" id="dept-code" class="form-control" required placeholder="e.g. ONCO, NEPH" style="text-transform:uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label>Physical Location / Floor</label>
+                            <input type="text" id="dept-location" class="form-control" placeholder="e.g. Wing B - 4th Floor">
+                        </div>
+                        <div class="form-group">
+                            <label>Direct Contact Phone</label>
+                            <input type="text" id="dept-phone" class="form-control phone-mask" placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Service Scope</label>
+                            <div style="display:flex; gap:16px; margin-top:6px;">
+                                <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:normal;">
+                                    <input type="checkbox" id="dept-has-opd" checked> Outpatient (OPD)
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:normal;">
+                                    <input type="checkbox" id="dept-has-ipd" checked> Inpatient (IPD)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Description</label>
+                            <textarea id="dept-desc" class="form-control" rows="2" placeholder="Clinical specialties, special clinics..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Create Department</button>
+                    </form>
+                </div>
+
+                <!-- Departments Directory Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Hospital Clinical Departments</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Department</th>
+                                    <th>Location</th>
+                                    <th>Doctors</th>
+                                    <th>Scope</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departments-table-body">
+                                <tr><td colspan="6" style="text-align:center;">Loading departments...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialized Doctors Roster -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3>Specialized Medical Consultants & Doctors Roster</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Clinical specialties, qualifications, consultation fees & OPD rooms</p>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <label style="font-size:0.82rem; font-weight:600;">Filter Dept:</label>
+                        <select id="doc-dept-filter" class="form-control" style="width:auto; font-size:0.84rem;" onchange="loadSpecializedDoctors(this.value)">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}">{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Doctor ID</th>
+                                <th>Doctor Name</th>
+                                <th>Department</th>
+                                <th>Specialization</th>
+                                <th>Qualifications</th>
+                                <th>Experience</th>
+                                <th>OPD Room</th>
+                                <th>Fee</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="specialized-doctors-table-body">
+                            <tr><td colspan="9" style="text-align:center;">Loading specialist roster...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= OPD QUEUE & TOKENS TAB ================= -->
+        <section id="tab-queue" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">OPD Token Queue Desk & Waiting Room</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Real-time outpatient queuing, token allocation & consultation dispatch</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadOpdQueue()">🔄 Refresh Live Queue</button>
+                </div>
+            </div>
+
+            <!-- Now Serving Digital Board Display -->
+            <div style="background:#0f172a; color:#fff; border-radius:12px; padding:16px 20px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.2rem;">📺</span>
+                        <strong style="font-size:1.05rem; letter-spacing:0.5px;">OPD WAITING ROOM DISPLAY • NOW SERVING</strong>
+                    </div>
+                    <span class="badge-live"><span class="live-dot"></span> Real-Time Digital Queue</span>
+                </div>
+                <div id="now-serving-container" class="token-display-board">
+                    <div class="token-card">
+                        <div style="font-size:0.75rem; color:#94a3b8;">ROOM OPD-101</div>
+                        <div class="token-number-large" id="now-serving-token">#01</div>
+                        <div style="font-size:0.82rem; font-weight:600;">Dr. Rajesh Sharma</div>
+                        <div style="font-size:0.72rem; color:#38bdf8;">Cardiology</div>
+                    </div>
+                    <div class="token-card">
+                        <div style="font-size:0.75rem; color:#94a3b8;">ROOM OPD-105</div>
+                        <div class="token-number-large">#02</div>
+                        <div style="font-size:0.82rem; font-weight:600;">Dr. Amit Mehra</div>
+                        <div style="font-size:0.72rem; color:#38bdf8;">General Medicine</div>
+                    </div>
+                    <div class="token-card">
+                        <div style="font-size:0.75rem; color:#94a3b8;">ROOM ER-01</div>
+                        <div class="token-number-large" style="color:#ef4444;">EM-01</div>
+                        <div style="font-size:0.82rem; font-weight:600;">Dr. Sameer Khan</div>
+                        <div style="font-size:0.72rem; color:#ef4444;">Emergency Triage</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                <!-- Issue Token Form -->
+                <div class="form-card">
+                    <h3>🎫 Issue New OPD Token</h3>
+                    <form id="tokenIssueForm" onsubmit="handleTokenIssueSubmit(event)">
+                        <div class="form-group">
+                            <label>Patient *</label>
+                            <input type="text" id="token-patient-search" class="form-control" required placeholder="Type patient name to select..." autocomplete="off">
+                            <input type="hidden" id="token-patient-id">
+                            <div id="token-patient-suggestions" class="autocomplete-suggestions"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Attending Consultant Doctor *</label>
+                            <select id="token-doctor-select" class="form-control" required>
+                                <option value="">Select Doctor...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Priority Tier *</label>
+                            <select id="token-priority-select" class="form-control">
+                                <option value="Normal">Normal Queue</option>
+                                <option value="Urgent">Urgent (Senior Citizen / Pediatric / Acute)</option>
+                                <option value="Emergency">Emergency (Code Red / Severe)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">✓ Allocate Token & Check-in</button>
+                    </form>
+                </div>
+
+                <!-- Today's Live Queue Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Today's Patient Queue</h3>
+                        <span id="queue-count-badge" class="badge badge-info">0 Waiting</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Token #</th>
+                                    <th>Patient Name</th>
+                                    <th>Doctor</th>
+                                    <th>OPD Room</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opd-queue-table-body">
+                                <tr><td colspan="7" style="text-align:center;">Loading today's queue...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= NURSING STATION & TASKS TAB ================= -->
+        <section id="tab-nursing" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Nursing Station & Inpatient Ward Care</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Inpatient roster, vital signs monitoring, medication administration & task execution</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadNursingData()">🔄 Refresh Station</button>
+                </div>
+            </div>
+
+            <!-- Inpatient Care & Bed Allocation Overview -->
+            <div class="table-card" style="margin-bottom: 20px;">
+                <div class="table-header">
+                    <div>
+                        <h3>Ward Inpatients Under Active Nursing Care</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Admitted patients, assigned beds, primary diagnoses & clinical alerts</p>
+                    </div>
+                    <span id="nursing-patient-count" class="badge badge-info">0 Inpatients</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bed #</th>
+                                <th>Ward</th>
+                                <th>Patient Name</th>
+                                <th>Gender / Age</th>
+                                <th>Blood Group</th>
+                                <th>Allergies</th>
+                                <th>Admission Date</th>
+                                <th>Diagnosis</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nursing-inpatients-table-body">
+                            <tr><td colspan="9" style="text-align:center;">Loading ward inpatients...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <!-- Record Patient Vitals Form -->
+                <div class="form-card">
+                    <h3>🩺 Record Inpatient Vitals (Nursing Station)</h3>
+                    <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:12px;">Physiological checks with automated Code Red alert threshold</p>
+                    <form id="nursingVitalsForm" onsubmit="handleNursingVitalsSubmit(event)">
+                        <div class="form-group">
+                            <label>Inpatient Bed *</label>
+                            <select id="nv-patient-select" class="form-control" required>
+                                <option value="">Select Inpatient Bed...</option>
+                            </select>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Systolic BP (mmHg)</label>
+                                <input type="number" id="nv-systolic" class="form-control" placeholder="120" min="60" max="260">
+                            </div>
+                            <div class="form-group">
+                                <label>Diastolic BP (mmHg)</label>
+                                <input type="number" id="nv-diastolic" class="form-control" placeholder="80" min="40" max="150">
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Pulse Rate (bpm)</label>
+                                <input type="number" id="nv-pulse" class="form-control" placeholder="72" min="30" max="220">
+                            </div>
+                            <div class="form-group">
+                                <label>Temperature (°F)</label>
+                                <input type="number" step="0.1" id="nv-temp" class="form-control" placeholder="98.6" min="94" max="108">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Oxygen Saturation SpO2 (%) *</label>
+                            <input type="number" id="nv-spo2" class="form-control" placeholder="98" min="50" max="100" required>
+                            <div class="form-hint">Values &lt; 90% automatically trigger emergency broadcast to attending physician.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">✓ Record Vitals & Check Safety</button>
+                    </form>
+                </div>
+
+                <!-- Doctor's Orders Acknowledgment & Administration Board -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Pending Doctor Clinical Orders</h3>
+                        <span id="nursing-orders-count" class="badge badge-warning">0 Pending</span>
+                    </div>
+                    <div style="max-height: 380px; overflow-y: auto; padding-right: 4px;" id="nursing-orders-container">
+                        <p style="text-align:center; color:var(--text-muted); padding:20px;">Loading clinical orders...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DOCTOR-NURSE COMMS TAB ================= -->
+        <section id="tab-comms" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Inter-Professional Clinical Communication & Alerts</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Doctor <-> Nurse messaging, Code Red emergency alerts & shift handovers</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-danger btn-sm" onclick="triggerBroadcastCodeRedModal()">🚨 Broadcast Code Red Alert</button>
+                    <button class="btn btn-secondary btn-sm" onclick="loadCommsData()">🔄 Refresh Feed</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 24px;">
+                <!-- Send Message Card -->
+                <div class="form-card">
+                    <h3>✉️ Send Inter-Professional Message</h3>
+                    <form id="commsMessageForm" onsubmit="handleCommsMessageSubmit(event)">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Recipient Group *</label>
+                                <select id="comm-recipient-role" class="form-control" required>
+                                    <option value="All">All Clinical Staff</option>
+                                    <option value="Doctor">Doctors / Attending Specialists</option>
+                                    <option value="Nurse">Nursing Station</option>
+                                    <option value="Ward Manager">Ward Management</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Clinical Urgency *</label>
+                                <select id="comm-urgency" class="form-control" required>
+                                    <option value="Normal">Normal</option>
+                                    <option value="Urgent">Urgent Attention</option>
+                                    <option value="Code Red">Code Red (Immediate Emergency)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Context (Optional)</label>
+                            <select id="comm-patient-select" class="form-control">
+                                <option value="">Select Inpatient / Case...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject / Topic *</label>
+                            <input type="text" id="comm-subject" class="form-control" required placeholder="e.g. SpO2 Deterioration, Medication clarification...">
+                        </div>
+                        <div class="form-group">
+                            <label>Message Content *</label>
+                            <textarea id="comm-body" class="form-control" rows="3" required placeholder="Detailed clinical observations or instructions..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Dispatch Clinical Message</button>
+                    </form>
+                </div>
+
+                <!-- Messages & Alerts Live Feed -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Clinical Alerts & Messages Feed</h3>
+                        <span class="badge badge-info" id="comms-msg-count">Live</span>
+                    </div>
+                    <div class="chat-container" id="comms-messages-feed">
+                        <p style="text-align:center; color:var(--text-muted); padding:20px;">Loading messages...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NABH Nursing Shift Handover Station -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3>NABH Nursing Shift Handover Record</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Structured handover between outgoing and incoming duty nurses</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openHandoverModal()">+ Log Shift Handover</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Handover ID</th>
+                                <th>Date</th>
+                                <th>Ward / Dept</th>
+                                <th>Shift Change</th>
+                                <th>Outgoing Nurse</th>
+                                <th>Incoming Nurse</th>
+                                <th>Critical Patients</th>
+                                <th>Pending Orders</th>
+                                <th>General Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shift-handover-table-body">
+                            <tr><td colspan="9" style="text-align:center;">Loading shift handovers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BED BOARD MATRIX TAB ================= -->
+        <section id="tab-bedboard" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Inpatient Ward Bed Board & Matrix</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Real-time bed occupancy, cleaning turnover & bed maintenance status</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <select id="bedboard-ward-filter" class="form-control" style="width:auto; font-size:0.84rem;" onchange="loadBedBoard(this.value)">
+                        <option value="">All Wards</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" onclick="loadBedBoard()">🔄 Refresh Board</button>
+                </div>
+            </div>
+
+            <!-- Occupancy Counters -->
+            <div class="grid-dashboard" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;">
+                <div class="stat-card">
+                    <span class="stat-label">Total Beds</span>
+                    <span class="stat-value" id="bb-stat-total">0</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Available Beds</span>
+                    <span class="stat-value" id="bb-stat-available">0</span>
+                </div>
+                <div class="stat-card" style="border-top: 4px solid #ef4444;">
+                    <span class="stat-label">Occupied Beds</span>
+                    <span class="stat-value" id="bb-stat-occupied" style="color:#ef4444;">0</span>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-label">Cleaning / Sanitizing</span>
+                    <span class="stat-value" id="bb-stat-cleaning">0</span>
+                </div>
+                <div class="stat-card teal">
+                    <span class="stat-label">Occupancy Rate</span>
+                    <span class="stat-value" id="bb-stat-rate">0%</span>
+                </div>
+            </div>
+
+            <!-- Interactive Bed Cards Grid -->
+            <div id="bed-matrix-container" class="bed-matrix-grid">
+                <p style="text-align:center; color:var(--text-muted); padding:30px; grid-column: 1 / -1;">Loading bed matrix...</p>
+            </div>
+        </section>
+
     </main>
 
     <!-- Confirmation Modal (Q07 Safeguard) -->
@@ -972,19 +1458,47 @@
             </div>
             <div class="modal-body" style="margin-bottom: 1rem;">
                 <div style="margin-bottom: 14px;">
-                    <div style="font-size:0.82rem; font-weight:600; color:var(--text-dark); margin-bottom:8px;">Fast-Switch Demo Profile:</div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div style="font-size:0.82rem; font-weight:600; color:var(--text-dark); margin-bottom:8px;">Fast-Switch Role Profile (All 10 Stakeholder Roles):</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
                         <button type="button" class="btn btn-secondary" onclick="quickLogin('admin', 'admin123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
-                            <div style="font-weight:700; color:#2563eb;">👑 Admin</div>
-                            <div style="font-size:0.72rem; color:var(--text-muted);">Full Access</div>
+                            <div style="font-weight:700; color:#2563eb;">👑 1. Admin</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Dr. Ajay Bora (System Admin)</div>
                         </button>
-                        <button type="button" class="btn btn-secondary" onclick="quickLogin('doctor', 'doctor123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
-                            <div style="font-weight:700; color:#059669;">👨‍⚕️ Doctor</div>
-                            <div style="font-size:0.72rem; color:var(--text-muted);">Clinical & Rx</div>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('hospital_manager', 'hosp123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#6366f1;">🏥 2. Hospital Manager</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Dr. Sunita Rao (Medical Director)</div>
                         </button>
                         <button type="button" class="btn btn-secondary" onclick="quickLogin('receptionist', 'recep123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
-                            <div style="font-weight:700; color:#d97706;">📋 Reception</div>
-                            <div style="font-size:0.72rem; color:var(--text-muted);">Intake & Billing</div>
+                            <div style="font-weight:700; color:#d97706;">📋 3. Receptionist</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Priya Verma (Front Desk Lead)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('doctor', 'doctor123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#059669;">👨‍⚕️ 4. Doctor</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Dr. Rajesh Sharma (Lead Cardiologist)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('nurse', 'nurse123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#8b5cf6;">👩‍⚕️ 5. Nurse</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Sister Sunita Patel (Cardiac Ward)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('ward_manager', 'ward123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#ec4899;">🛏️ 6. Ward Manager</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Vikram Joshi (Bed Management)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('lab_tech', 'lab123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#06b6d4;">🧪 7. Lab Tech</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Anil Kumar (Medical Diagnostics)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('pharmacist', 'pharma123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#14b8a6;">💊 8. Pharmacist</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Meena Iyer (Dispensary Lead)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('cashier', 'cash123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#f97316;">💳 9. Cashier</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Ramesh Gupta (Billing Officer)</div>
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="quickLogin('patient', 'patient123')" style="text-align:left; padding:8px 10px; cursor:pointer;">
+                            <div style="font-weight:700; color:#64748b;">👤 10. Patient</div>
+                            <div style="font-size:0.72rem; color:var(--text-muted);">Rohan Sharma (Patient Portal)</div>
                         </button>
                     </div>
                 </div>
@@ -1002,6 +1516,117 @@
             <div class="modal-actions">
                 <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
                 <button type="button" class="btn btn-primary" onclick="submitCustomLogin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- New Doctor Clinical Order Modal -->
+    <div id="doctorOrderModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-icon-success" style="background:#e0f2fe; color:var(--primary); font-size:1.3rem;">📋</div>
+                <div>
+                    <div class="modal-title">Write Doctor Clinical Order to Nurse</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Medication administration, vital checks, nursing care & STAT orders</div>
+                </div>
+            </div>
+            <div class="modal-body" style="margin-bottom: 1rem;">
+                <form id="doctorOrderForm" onsubmit="handleDoctorOrderSubmit(event)">
+                    <div class="form-group">
+                        <label>Patient *</label>
+                        <select id="do-patient-select" class="form-control" required>
+                            <option value="">Select Inpatient / Case...</option>
+                        </select>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="form-group">
+                            <label>Order Type *</label>
+                            <select id="do-order-type" class="form-control" required>
+                                {% for ot in order_types %}
+                                <option value="{{ ot }}">{{ ot }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Urgency *</label>
+                            <select id="do-urgency" class="form-control" required>
+                                <option value="Routine">Routine</option>
+                                <option value="Urgent">Urgent</option>
+                                <option value="STAT (Immediate)">STAT (Immediate)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Clinical Instruction / Order Text *</label>
+                        <textarea id="do-order-text" class="form-control" rows="3" required placeholder="e.g. Administer IV Paracetamol 1g STAT. Monitor BP every 2h."></textarea>
+                    </div>
+                    <div class="modal-actions" style="padding-top:10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeDoctorOrderModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">✓ Dispatch Order to Nurse</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shift Handover Modal -->
+    <div id="shiftHandoverModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-icon-success" style="background:#f3e8ff; color:#8b5cf6; font-size:1.3rem;">🔄</div>
+                <div>
+                    <div class="modal-title">Log Nursing Shift Handover (NABH)</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Transfer of patient care between duty shifts</div>
+                </div>
+            </div>
+            <div class="modal-body" style="margin-bottom: 1rem;">
+                <form id="shiftHandoverForm" onsubmit="handleShiftHandoverSubmit(event)">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div class="form-group">
+                            <label>Department / Ward *</label>
+                            <select id="sh-ward-select" class="form-control" required>
+                                <option value="1">Cardiology (CCW)</option>
+                                <option value="2">Orthopedics (OTW)</option>
+                                <option value="3">General Medicine (GMW)</option>
+                                <option value="6">Intensive Care Unit (ICU)</option>
+                                <option value="7">Emergency Observation (ER)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Shift Transition *</label>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <select id="sh-from" class="form-control" required>
+                                    <option value="Morning">Morning</option>
+                                    <option value="Evening">Evening</option>
+                                    <option value="Night">Night</option>
+                                </select>
+                                <span>→</span>
+                                <select id="sh-to" class="form-control" required>
+                                    <option value="Evening">Evening</option>
+                                    <option value="Night">Night</option>
+                                    <option value="Morning">Morning</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Incoming Relief Nurse Name *</label>
+                        <input type="text" id="sh-incoming-nurse" class="form-control" required placeholder="e.g. Nurse Rekha Sharma">
+                    </div>
+                    <div class="form-group">
+                        <label>Critical Patients & Alerts *</label>
+                        <textarea id="sh-critical" class="form-control" rows="2" required placeholder="Watchlist, oxygen dependency, unstable vitals..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Pending Clinical Tasks / Orders *</label>
+                        <textarea id="sh-pending" class="form-control" rows="2" required placeholder="Pending repeat labs, post-op checks..."></textarea>
+                    </div>
+                    <div class="modal-actions" style="padding-top:10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeHandoverModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" style="background:#8b5cf6;">✓ Complete & Sign Handover</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
