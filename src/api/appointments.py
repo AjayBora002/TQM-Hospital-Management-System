@@ -1,8 +1,10 @@
 """
 appointments.py -- Appointment scheduling REST API endpoints with Clinical Poka-Yoke conflict prevention
+and server-side RBAC enforcement.
 """
 from flask import Blueprint, request, jsonify
 import models.appointment as appointment_model
+from auth.permissions import require_permission
 from utils.validators import validate_appointment_payload
 from .helpers import rows_to_list
 
@@ -10,11 +12,13 @@ appointments_bp = Blueprint("appointments", __name__)
 
 
 @appointments_bp.route("/appointments", methods=["GET"])
+@require_permission("front_office", "view")
 def get_appointments():
     return jsonify(rows_to_list(appointment_model.list_all()))
 
 
 @appointments_bp.route("/appointments", methods=["POST"])
+@require_permission("front_office", "create")
 def create_appointment():
     data = request.json or {}
     validate_appointment_payload(data)
@@ -54,6 +58,7 @@ def create_appointment():
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>", methods=["PUT"])
+@require_permission("front_office", "edit")
 def update_appointment(appointment_id):
     data = request.json or {}
     validate_appointment_payload(data)
@@ -86,12 +91,14 @@ def update_appointment(appointment_id):
 
 
 @appointments_bp.route("/appointments/<int:appointment_id>", methods=["DELETE"])
+@require_permission("front_office", "delete")
 def delete_appointment(appointment_id):
     appointment_model.delete(appointment_id)
     return jsonify({"status": "deleted"})
 
 
 @appointments_bp.route("/doctors/<int:doctor_id>/slots", methods=["GET"])
+@require_permission("front_office", "view")
 def get_doctor_slots(doctor_id):
     """Retrieve slot availability for a doctor on a given date to guide conflict-free booking."""
     date_str = request.args.get("date")
@@ -110,6 +117,7 @@ def get_doctor_slots(doctor_id):
 
 
 @appointments_bp.route("/appointments/check-conflict", methods=["POST"])
+@require_permission("front_office", "view")
 def check_appointment_conflict():
     """Real-time pre-flight conflict checker before submitting form."""
     data = request.json or {}
@@ -140,4 +148,3 @@ def check_appointment_conflict():
             })
 
     return jsonify({"has_conflict": False, "message": "Slot is available."})
-

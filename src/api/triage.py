@@ -1,13 +1,15 @@
 """
-triage.py -- REST API Blueprint for Emergency Priority Triage Queue.
+triage.py -- REST API Blueprint for Emergency Priority Triage Queue with RBAC.
 """
 from flask import Blueprint, request, jsonify
 from models import triage as triage_model
+from auth.permissions import require_permission
 
 triage_bp = Blueprint("triage", __name__)
 
 
 @triage_bp.route("/triage/queue", methods=["GET"])
+@require_permission("clinical", "view")
 def get_triage_queue():
     queue = triage_model.get_emergency_queue()
     summary = {
@@ -23,6 +25,7 @@ def get_triage_queue():
 
 
 @triage_bp.route("/triage/evaluate", methods=["POST"])
+@require_permission("clinical", "view")
 def evaluate_vitals():
     data = request.get_json() or {}
     res = triage_model.evaluate_triage_tier(

@@ -1,13 +1,15 @@
 """
-communication.py -- REST API Blueprint for Inter-Professional Doctor <-> Nurse Messaging & Alerts.
+communication.py -- REST API Blueprint for Inter-Professional Doctor <-> Nurse Messaging & Alerts with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import communication as comm_model
+from auth.permissions import require_permission
 
 communication_bp = Blueprint("communication_api", __name__)
 
 
 @communication_bp.route("/communication/messages", methods=["GET"])
+@require_permission("clinical", "view")
 def get_messages():
     role = session.get("role")
     dept = request.args.get("department")
@@ -16,6 +18,7 @@ def get_messages():
 
 
 @communication_bp.route("/communication/messages", methods=["POST"])
+@require_permission("clinical", "create")
 def post_message():
     data = request.get_json() or {}
     sender_name = session.get("full_name", data.get("sender_name", "Staff Member"))
@@ -38,12 +41,14 @@ def post_message():
 
 
 @communication_bp.route("/communication/messages/<int:message_id>/read", methods=["POST"])
+@require_permission("clinical", "view")
 def mark_read(message_id):
     comm_model.mark_as_read(message_id)
     return jsonify({"message": "Message marked as read"}), 200
 
 
 @communication_bp.route("/communication/broadcast-vitals-alert", methods=["POST"])
+@require_permission("clinical", "create")
 def broadcast_alert():
     data = request.get_json() or {}
     pat_id = data.get("patient_id")
@@ -58,4 +63,3 @@ def broadcast_alert():
         sender_role=sender_role
     )
     return jsonify({"message": "Code Red Alert broadcasted to Attending Medical Team", "message_id": msg_id}), 201
-

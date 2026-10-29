@@ -1,19 +1,22 @@
 """
-wards.py -- REST API Blueprint for Inpatient Wards, Bed Board & Occupancy.
+wards.py -- REST API Blueprint for Inpatient Wards, Bed Board & Occupancy with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import ward_bed as ward_model
+from auth.permissions import require_permission
 
 wards_bp = Blueprint("wards_api", __name__)
 
 
 @wards_bp.route("/wards", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_wards():
     wards = ward_model.list_wards()
     return jsonify(wards), 200
 
 
 @wards_bp.route("/wards/bed-board", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_bed_board():
     ward_id = request.args.get("ward_id")
     ward_id = int(ward_id) if ward_id else None
@@ -22,6 +25,7 @@ def get_bed_board():
 
 
 @wards_bp.route("/wards/beds/<int:room_id>/status", methods=["PUT"])
+@require_permission("inpatient", "edit")
 def set_bed_status(room_id):
     data = request.get_json() or {}
     new_status = data.get("status")
@@ -31,7 +35,7 @@ def set_bed_status(room_id):
 
 
 @wards_bp.route("/wards/occupancy", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_occupancy():
     stats = ward_model.get_ward_occupancy_stats()
     return jsonify(stats), 200
-

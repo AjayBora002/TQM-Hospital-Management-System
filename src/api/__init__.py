@@ -30,6 +30,18 @@ from .shift_handover import shift_handover_bp
 from .encounters import encounters_bp
 from .nursing_api import nursing_bp
 
+# Complete Modern Hospital Specialized Blueprints
+from .emergency_api import emergency_bp
+from .ot_api import ot_bp
+from .radiology_api import radiology_bp
+from .blood_bank_api import blood_bank_bp
+from .support_api import support_bp
+from .inventory_api import inventory_bp
+from .finance_ext_api import finance_ext_bp
+from .people_api import people_bp
+from .governance_api import governance_bp
+from .patient_portal_api import patient_portal_bp
+
 
 def register_api(app):
     """
@@ -64,6 +76,18 @@ def register_api(app):
     app.register_blueprint(shift_handover_bp, url_prefix="/api")
     app.register_blueprint(encounters_bp, url_prefix="/api")
     app.register_blueprint(nursing_bp, url_prefix="/api")
+
+    # Specialized modules
+    app.register_blueprint(emergency_bp, url_prefix="/api")
+    app.register_blueprint(ot_bp, url_prefix="/api")
+    app.register_blueprint(radiology_bp, url_prefix="/api")
+    app.register_blueprint(blood_bank_bp, url_prefix="/api")
+    app.register_blueprint(support_bp, url_prefix="/api")
+    app.register_blueprint(inventory_bp, url_prefix="/api")
+    app.register_blueprint(finance_ext_bp, url_prefix="/api")
+    app.register_blueprint(people_bp, url_prefix="/api")
+    app.register_blueprint(governance_bp, url_prefix="/api")
+    app.register_blueprint(patient_portal_bp, url_prefix="/api")
 
     # Global Poka-Yoke error handler: serialize domain validation errors cleanly to HTTP 400
     from utils.exception_handler import ValidationError

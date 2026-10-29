@@ -1,12 +1,12 @@
 """
-export.py -- REST API Blueprint for Data Exporting (CSV format).
-Supports exporting Patients, Bills, Appointments, and Medicines.
+export.py -- REST API Blueprint for Data Exporting (CSV format) with RBAC.
 """
 import csv
 import io
 from datetime import datetime
 from flask import Blueprint, Response
 from database.db_manager import get_connection
+from auth.permissions import require_permission
 
 export_bp = Blueprint("export", __name__)
 
@@ -21,6 +21,7 @@ def _generate_csv(rows, fieldnames):
 
 
 @export_bp.route("/export/patients", methods=["GET"])
+@require_permission("front_office", "view")
 def export_patients():
     conn = get_connection()
     try:
@@ -43,6 +44,7 @@ def export_patients():
 
 
 @export_bp.route("/export/bills", methods=["GET"])
+@require_permission("finance", "view")
 def export_bills():
     conn = get_connection()
     try:
@@ -66,20 +68,39 @@ def export_bills():
 
 
 @export_bp.route("/export/appointments", methods=["GET"])
+@require_permission("front_office", "view")
 def export_appointments():
     conn = get_connection()
     try:
         rows = conn.execute(
             "SELECT a.appointment_id, p.full_name as patient_name, d.full_name as doctor_name, "
-            "d.department, a.appt_date, a.appt_time, a.status, a.notes, a.created_at "
+            "d.department, a.appt_date, a.appt_time, a.status "
             "FROM appointments a "
             "JOIN patients p ON a.patient_id = p.patient_id "
             "JOIN doctors d ON a.doctor_id = d.doctor_id "
-            "ORDER BY a.appointment_id DESC"
+            "ORDER BY a.appt_date DESC"
         ).fetchall()
-        fieldnames = ["appointment_id", "patient_name", "doctor_name", "department", "appt_date", "appt_time", "status", "notes", "created_at"]
+        fieldnames = ["appointment_id", "patient_name", "doctor_name", "department", "appt_date", "appt_time", "status"]
         csv_data = _generate_csv(rows, fieldnames)
         filename = f"hms_appointments_{datetime.now().strftime('%Y%m%d')}.csv"
+        return Response(
+            csv_data,
+            mimetype="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    finally:
+        conn.close()
+
+
+@export_bp.route("/export/medicines", methods=["GET"])
+@require_permission("pharmacy", "view")
+def export_medicines():
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT * FROM medicines ORDER BY name").fetchall()
+        fieldnames = ["medicine_id", "name", "category", "stock_qty", "unit_price", "reorder_level", "batch_no", "expiry_date"]
+        csv_data = _generate_csv(rows, fieldnames)
+        filename = f"hms_inventory_{datetime.now().strftime('%Y%m%d')}.csv"
         return Response(
             csv_data,
             mimetype="text/csv",

@@ -1,220 +1,244 @@
-# Hospital Management System — User & Operations Manual
+# Hospital Management System (HMS) — Comprehensive User & Operations Manual
 
 **Course:** BBAT104 — Fundamentals of Total Quality Management  
 **Academic Session:** 2026–27  
 **Student:** Ajay Bora (Roll No: 2410302008 — Branch: CSE — Section B)  
-**Baseline System:** Hospital Management System (Digit 2)  
 **Assigned Quality Goal:** Q07 — Improve Data Accuracy  
 **Repository Identifier:** `BBAT104_TQM_2410302008` (GitHub: `TQM-Hospital-Management-System`)  
+**Platform Version:** Modern Enterprise Clinical Edition (21 Roles, 11 Domains, Zero-Trust Server-Side RBAC)
 
 ---
 
-## 1. Executive Summary & Purpose
+## 1. System Overview & Architecture
 
-This User and Operations Manual provides comprehensive instructions for operating, configuring, verifying, and testing the **Hospital Management System (HMS)**. Developed in strict accordance with the **BBAT104 Course Project Guidelines**, the system integrates modern hospital administration workflows with rigorous **Total Quality Management (TQM)** error-prevention principles.
+The Hospital Management System is an enterprise-grade clinical and administrative software platform designed in compliance with **NABH Hospital Standards**, **ABDM (Ayushman Bharat Digital Mission)** digital health guidelines, and **Total Quality Management (TQM)** principles under **Quality Goal Q07 (Improve Data Accuracy)**.
 
-The central quality paradigm is **Poka-Yoke (Mistake-Proofing)** under **Quality Goal Q07 (Improve Data Accuracy)**: preventing flawed inputs at the user interface and data-access layers before they can corrupt clinical or administrative records.
-
----
-
-## 2. System Architecture & Requirements
-
-### 2.1 Technology Stack & Prerequisites
-- **Operating System:** Windows, macOS, or Linux.
-- **Runtime Environment:** Python 3.10 or higher.
-- **Desktop UI Framework:** Standard `tkinter` / `ttk` (bundled with official Python).
-- **Web Portal Framework:** Lightweight Flask-based web application with HTML5/CSS3/Vanilla JS.
-- **Data Persistence:** Relational SQLite 3 (`src/database/hms.db`), zero external server configuration required.
-- **Statistical Quality Control (SQC) Tools:** `matplotlib` for Pareto charts and Ishikawa (Fishbone) diagrams.
-- **Risk Audit Engine:** `openpyxl` for formula-driven FMEA Risk Priority Number (RPN) calculations.
-
-### 2.2 Dependencies Installation
-From the project root directory, install all required packages:
-```bash
-pip install -r requirements.txt
-```
+### Architectural Highlights:
+- **Zero-Trust Server-Side RBAC**: Every REST API route is protected by the `@require_permission(module, action)` decorator in `src/auth/permissions.py`. Unauthorized calls return `401 Unauthorized` or `403 Forbidden` and write to the immutable security audit trail.
+- **Enterprise Authentication**: Werkzeug PBKDF2-HMAC password hashing, secure session management, **15-minute idle timeout** with 2-minute proactive warning, and **5-attempt account lockout** protection.
+- **Modular Frontend Architecture**: Collapsible sidebar navigation with 11 domain groupings and SVG icons, sticky persistent patient context banner, topbar with breadcrumbs, branch selector, and instant global search (`/` keyboard shortcut).
+- **Dedicated Print Views**: Clean `@media print` layouts for Prescriptions, Lab Reports, Discharge Summaries, and Invoices.
+- **21 Stakeholder Roles**: Complete separation of duty across administrative, medical, nursing, diagnostic, allied healthcare, and patient roles.
+- **Automated Verification**: Comprehensive test suite with 176 automated tests passing in under 5 seconds.
 
 ---
 
-## 3. Quick Start & Execution Modes
+## 2. Launching the Application
 
-The HMS platform provides two distinct, fully synchronized user interfaces:
-
-### Option A: Native Desktop GUI (Tkinter) — Primary Syllabus Deliverable
-```bash
-python run.py
-```
-- Automatically initializes the database schema and default records on first launch.
-- Launches the **multi-tab native Tkinter desktop application** (10 module tabs).
-- Implements all 5 Q07 widget-level controls: Input Masking, Dropdown Lists, Auto-Complete, Confirmation Modals, and Audit Logs.
-- Prescribed by **BBAT104 Section 6.1**: *"Tkinter/CustomTkinter (GUI interfaces)"*
-
-### Option B: Web Application Portal (Optional Demo)
+### 2.1 Web Platform (Modern Clinical SaaS)
+Launch the web interface locally:
 ```bash
 python run.py --web
 ```
-- Launches the local HTTP server at `http://127.0.0.1:5000`.
-- Provides an interactive browser-based dashboard with REST API endpoints and the same 5 Q07 features implemented in JavaScript + Flask.
+Access the application in any modern browser:
+- **URL**: `http://127.0.0.1:5000` (or `http://127.0.0.1:5000/login`)
+- When unauthenticated, the application automatically redirects to the clinical sign-in page.
 
-### Option C: Automated Quality Verification (Unit Test Suite)
+### 2.2 Native Desktop GUI (Tkinter)
+Launch the legacy Tkinter desktop interface:
+```bash
+python run.py
+```
+
+### 2.3 Executing the Automated Quality Test Suite
+Execute all 176 unit and integration tests:
 ```bash
 python -m unittest discover tests
 ```
-- Executes 28 automated tests covering CRUD operations, boundary validation, and TQM audit trails with zero failures.
 
 ---
 
-## 4. Q07 Data Accuracy Feature Walkthrough (Poka-Yoke)
+## 3. Authentication & Account Security
 
-In compliance with **Q07: Improve Data Accuracy**, five reusable mistake-proofing controls have been implemented across all data-entry workflows:
+### 3.1 Sign In Procedure
+1. Navigate to `http://127.0.0.1:5000/login`.
+2. Enter your authorized username and password.
+3. In demonstration mode (`HMS_DEMO=1`), click any persona card in the **Demo Accounts Panel** on the right side of the screen to automatically prefill standard credentials.
+4. Click **Sign In to System**. Upon successful verification, you are routed directly to the dashboard tailored to your role.
 
-| Feature # | Feature Name | Implementation File | Operational Impact |
-|:---:|:---|:---|:---|
-| **1** | **Input Masking** | `src/widgets/phone_mask_entry.py` | Automatically formats phone numbers to `+91-XXXXX-XXXXX`. Dynamically filters keystrokes with regex to strip non-digits, enforcing exact 10-digit telephone standards. |
-| **2** | **Dropdown Lists** | `src/config.py` + `ttk.Combobox(state="readonly")` | Replaces vulnerable free-text inputs with standardized, immutable choice sets for Gender, Blood Group, Medical Department, Appointment Status, Room Type/Status, Staff Role/Shift, and Payment Status. |
-| **3** | **Auto-Complete Search** | `src/widgets/autocomplete_entry.py` | Real-time substring query engine querying registered patient names as characters are entered. Surfaces matching records instantly, preventing duplicate chart creation. |
-| **4** | **Confirmation Modals** | `src/widgets/confirm_dialog.py` | Wraps critical operations in explicit two-step confirmation prompts before allowing `UPDATE` or `DELETE` executions, preventing accidental record loss. |
-| **5** | **Audit Trail Logging** | `src/database/db_manager.py` (`log_audit`) | Atomic transactional logger recording every `INSERT`, `UPDATE`, and `DELETE` with table name, record ID, modification summary, and exact timestamp. Viewable via the dedicated Audit Log tab. |
+### 3.2 Demo Accounts (21 Personas)
+All demo accounts are pre-seeded in SQLite with default credentials:
+- **Admin**: `admin` / `admin123`
+- **Hospital Manager**: `manager` / `mgr123`
+- **Doctor (Lead Cardiologist)**: `doctor` / `doc123`
+- **Nurse (Cardiac Ward)**: `nurse` / `nurse123`
+- **Ward Manager**: `ward_mgr` / `ward123`
+- **Receptionist**: `receptionist` / `rec123`
+- **Lab Technician**: `labtech` / `lab123`
+- **Pharmacist**: `pharmacist` / `pharm123`
+- **Cashier**: `cashier` / `cash123`
+- **Patient**: `patient` / `pat123`
+- **Quality Manager**: `quality_mgr` / `qual123`
+- **Radiologist**: `radiologist` / `rad123`
+- **OT Manager**: `ot_mgr` / `ot123`
+- **Blood Bank Tech**: `bloodbank_tech` / `bb123`
+- **Housekeeping Supervisor**: `housekeeper` / `hk123`
+- **Biomedical Engineer**: `biomed_eng` / `bio123`
+- **HR Manager**: `hr_mgr` / `hr123`
+- **Store Manager**: `store_mgr` / `store123`
+- **Insurance / TPA Desk**: `insurance_desk` / `ins123`
+- **Ambulance Dispatcher**: `ambulance_disp` / `amb123`
+- **Dietitian**: `dietitian` / `diet123`
 
----
+### 3.3 Session Idle Timeout Policy
+- The system enforces a strict **15-minute inactivity timeout**.
+- If no mouse, keyboard, or touch events occur for **13 minutes**, a prominent toast alert notifies the user:
+  `⚠️ Idle Session Warning: Inactivity timeout in 2 minutes. Any unsaved data will be secured.`
+- At 15 minutes, the session is invalidated server-side, and the browser redirects to `/login`.
 
-## 5. Module-by-Module Operational Guide
+### 3.4 Brute-Force Lockout
+- After 5 consecutive failed login attempts for any account, that account is automatically locked for **15 minutes**.
+- All lockout events are recorded in `login_attempts` with client IP and timestamps.
 
-The system features 10 integrated modules:
-
-### 5.1 Dashboard
-- **Location:** Tab 1 / Web Home View.
-- **Functionality:** Aggregates real-time metrics across all hospital departments: Total Patients, Active Doctors, Scheduled Appointments, Available Beds, Pending Invoices, Logged Quality Defects, and Historical Audit Events.
-- **Operation:** Displays live counters and updates automatically whenever records are created, modified, or discharged.
-
-### 5.2 Patients Registration & Records
-- **Institutional UHID Generation:** Every newly registered patient is automatically assigned an immutable institutional Unique Hospital Identifier (e.g., `UHID-2026-00042`), adhering strictly to NABH and ABDM national guidelines.
-- **Adding a Patient:**
-  1. Navigate to the **Patients** tab.
-  2. Enter Patient Full Name.
-  3. Select **Gender** and **Blood Group** from the restricted dropdown menus.
-  4. Input Date of Birth in standard format (`YYYY-MM-DD`).
-  5. Enter a 10-digit mobile number in the **Phone** field — notice the automatic prefixing of `+91-` and hyphenation.
-  6. Document known drug allergies (e.g., `Penicillin`, `Sulfa Drugs`) to activate downstream clinical Poka-Yoke prescribing safeguards.
-  7. Optionally assign an available hospital room.
-  8. Click **Add Patient**.
-- **Updating / Deleting:** Select a patient from the record table. The form auto-populates. Edit fields and click **Update** or **Delete**. A confirmation modal will appear requiring explicit verification.
-- **Search:** Enter search terms into the patient query box to locate records by name, telephone number, or UHID.
-
-### 5.3 Doctors Roster
-- Manage attending physicians and specialists.
-- Register doctors by selecting their department from the pre-configured medical specialties list (`Cardiology`, `Neurology`, `Orthopedics`, `Pediatrics`, `General Medicine`, `Dermatology`, `ENT`, `Oncology`).
-- Enforces phone number input masking for professional contact records.
-
-### 5.4 Appointments Scheduling
-- Schedule consultations between registered patients and available doctors.
-- **Auto-Complete Integration:** Type the patient name — the system auto-completes from registered records, eliminating typos and scheduling conflicts.
-- **Pre-Flight Conflict Prevention:** Real-time conflict engine (`has_conflict`) intercepts overlapping doctor slots with HTTP 409 conflict blocking.
-- **Standardized Process States:** Supports the complete NABH outpatient lifecycle: `Scheduled`, `Confirmed`, `Checked-in`, `Waiting`, `In consultation`, `Completed`, `Cancelled`, `No-show`.
-
-### 5.5 Ward & Bed Management
-- Oversee room inventory across five categories: `General Ward`, `Semi-Private`, `Private`, `ICU`, and `Operation Theatre`.
-- Monitor standardized bed states: `Available`, `Occupied`, `Under Maintenance`, `Cleaning / Sanitizing`, `Reserved`, `Blocked`.
-- Pre-configured standard daily tariffs are maintained for automatic integration with patient billing.
-- **Automated Bed Clearance:** Discharging a patient automatically transitions room status to `Cleaning / Sanitizing` or `Available`.
-
-### 5.6 Staff Administration
-- Manage hospital nursing, administrative, and paramedical staff.
-- Restrict staff assignments to designated roles (`Nurse`, `Receptionist`, `Pharmacist`, `Lab Technician`, `Ward Boy`) and shifts (`Morning`, `Evening`, `Night`, `Rotational`).
-
-### 5.7 Pharmacy & Inventory
-- Maintain medicine inventories, unit prices, dosage forms, and stock quantities.
-- **Automated Reorder Safeguard:** When inventory levels drop to or below the configured `reorder_level`, items are automatically tagged with a low-stock alert to prevent pharmaceutical stockouts.
-
-### 5.8 Billing & Invoicing
-- Generate patient invoices combining room tariffs, physician consultation fees, and prescribed medicine charges.
-- **Poka-Yoke Automatic Calculation:** The system programmatically computes `total_amount = room_charges + consultation_fee + medicine_charges`, completely eliminating arithmetic errors.
-- Track invoice payment statuses (`Unpaid`, `Partial`, `Paid`).
-
-### 5.9 Audit Log Explorer (Read-Only)
-- Accessible by administrators and compliance auditors.
-- Displays an immutable log of all database transactions with timestamp, table name, affected primary key, action type, and descriptive details.
-
-### 5.10 Defect Checksheet (SQC Data Capture)
-- Standardized data-capture matrix for logging quality defects encountered during system audits.
-- Records defect category (`Data Entry`, `Validation`, `UI`, `Database`, `Business Logic`), description, and severity (`Low`, `Medium`, `High`, `Critical`).
-- Provides the empirical dataset feeding the Pareto analysis and Ishikawa diagrams.
-
-### 5.11 Pharmacy Batch & Expiry Date Poka-Yoke Safeguard
-- **Location:** Pharmacy tab & REST API `/api/medicines/expired`.
-- **Functionality:** Every medicine tracks `batch_no` and `expiry_date`.
-- **Clinical Poka-Yoke:** The system **automatically blocks** prescribing or dispensing any expired pharmaceutical batch with an immediate `CLINICAL SAFETY ALERT`.
-
-### 5.12 Diagnostic Laboratory Testing & Reference Intervals
-- **Location:** Lab Diagnostics module & REST API `/api/lab-tests`.
-- **Functionality:** Orders pathology and radiology tests. Pre-populated biological reference ranges (e.g., Hemoglobin $12.0 - 17.5$ g/dL, Fasting Sugar $70 - 99$ mg/dL).
-- **Poka-Yoke Flagging:** Results outside standard reference boundaries automatically flag `abnormal_flag = 1` in bold red for immediate physician attention.
-
-### 5.13 Printable Medical Invoices & Discharge Summaries
-- **Location:** Billing & Admissions routes (`/api/bills/<id>/receipt`, `/api/admissions/<id>/discharge-summary`).
-- **Functionality:** Instant print-ready HTML documents with `@media print` styling, itemized financial breakdowns, and NABH-compliant discharge summaries.
-
-### 5.14 Emergency Priority Triage Queue
-- **Location:** Dashboard & `/api/triage/queue`.
-- **Functionality:** Automated Manchester/ESI triage engine ranking emergency arrivals into **Code Red (Resuscitation)**, **Code Yellow (Urgent)**, and **Code Green (Stable)** based on real-time vitals ($SpO_2$, BP, pulse, temperature).
-
-### 5.15 Patient 360° Comprehensive Medical Journey
-- **Location:** Patient Chart & `/api/patients/<id>/timeline`.
-- **Functionality:** Aggregates a complete, single-screen chronological timeline of all patient interactions: registration, vitals history, consultations, admissions, lab orders, prescriptions, and payments.
-
-### 5.16 Automated Pharmacy Purchase Orders (PO)
-- **Location:** Pharmacy & `/api/purchase-orders`.
-- **Functionality:** Automatically scans for inventory at or below reorder levels and generates standardized supplier orders. Receiving an order automatically restocks inventory.
-
-### 5.17 NABH & ISO 9001 Hospital Quality Inspection Checklist
-- **Location:** Quality Audit & `/api/quality-audits`.
-- **Functionality:** Formal compliance inspection tool across departments (Patient Safety, Pharmacy, Infection Control, Invoicing) computing compliance percentages.
-
-### 5.18 Desktop Startup Login Dialog & Role Switcher
-- **Location:** Desktop Tkinter startup window (`src/views/login_dialog.py`).
-- **Functionality:** Secure credentials entry with 1-click Quick Login buttons for Admin (`admin123`), Doctor (`doctor123`), and Receptionist (`recep123`), or Guest Demo Bypass.
+### 3.5 Changing Password
+1. Click the profile avatar in the top-right corner of the topbar.
+2. Select **Change Password** from the dropdown menu.
+3. Enter your current password and your new password (minimum 6 characters).
+4. Click **Update Password**.
 
 ---
 
-## 6. Statistical Quality Control (SQC) Tools Execution
+## 4. Navigation & Workspace Controls
 
-### 6.1 Pareto Analysis (80/20 Rule)
-Execute the Pareto chart script to isolate the vital few root causes of data errors:
-```bash
-python sqc/pareto_chart.py
-```
-- **Output:** Saves high-resolution chart to `sqc/pareto_chart.png`.
-- **Finding:** Confirms that `Data Entry` (45.5%) and `Validation` (36.4%) constitute **81.8%** of total defects, mathematically justifying the implementation of Q07 controls.
+### 4.1 Collapsible Sidebar
+- Click the hamburger toggle button in the sidebar header to collapse the sidebar into icon-only mode.
+- Hovering over any icon in collapsed mode surfaces an instant tooltip.
+- Navigation items are organized into 11 distinct clinical and administrative domains:
+  1. **Dashboard**
+  2. **Front Office**
+  3. **Clinical Care**
+  4. **Diagnostics**
+  5. **Inpatient (IPD)**
+  6. **Pharmacy & Supply**
+  7. **Finance & TPA**
+  8. **Support Services**
+  9. **People & HR**
+  10. **Quality & TQM**
+  11. **Administration**
+  12. **Patient Portal**
 
-### 6.2 Ishikawa (Fishbone) Diagram
-Generate the root cause diagram categorized across People, Process, Software Code, and Infrastructure:
-```bash
-python sqc/fishbone_diagram.py
-```
-- **Output:** Saves root-cause visualization to `sqc/fishbone_diagram.png`.
+### 4.2 Top Bar Features
+- **Hospital Branch Selector**: Multi-facility selector for Apex Central Hospital (Main Campus) and City Care Clinic.
+- **Global Search Button**: Clicking or pressing the `/` key anywhere in the application opens the global patient search dialog.
+- **Notification Bell**: Live system alert counter for critical clinical orders and turnaround time warnings.
+- **User Profile Menu**: Displays user initials avatar, full name, role badge, session status, password management, and one-click Sign Out.
 
-### 6.3 Shewhart Statistical Process Control (SPC c-Chart)
-Generate the analytical Shewhart control chart to verify process stabilization:
-```bash
-python sqc/spc_chart.py
-```
-- **Output:** Saves control chart to `sqc/spc_control_chart.png` and CSV parameters to `TQM/data/spc_metrics.csv`.
-- **Finding:** Demonstrates process capability shift from initial high error rates (pre-intervention) to zero 3-sigma violations under active Poka-Yoke controls.
+### 4.3 Persistent Patient Context Banner
+Whenever a patient is selected from a table, appointment queue, bed board, or search result, the **Patient Context Banner** docks immediately below the topbar:
+- Displays: UHID (e.g., `UHID-2026-0001`), Full Name, Age / Gender, Blood Group, Location (e.g., `Bed 101` or `Outpatient`), and Allergies (red warning pill if documented).
+- **Quick Action Buttons**:
+  - `+ SOAP Note`: Instantly opens clinical consultation encounter.
+  - `💊 Prescribe`: Navigates to e-Prescription with patient pre-selected.
+  - `🧪 Order Lab`: Navigates to LIS orders with patient pre-selected.
+  - `🛏️ Admit`: Navigates to Inpatient Admissions with patient pre-selected.
+  - `💳 Bill`: Navigates to Invoices with patient pre-selected.
+  - `360° EMR`: Opens the complete chronological clinical timeline.
+  - `✕ Clear`: Dismisses active patient context.
 
-### 6.4 FMEA Risk Matrix Generation
-Regenerate the automated Excel workbook containing formula-driven RPN risk scores:
-```bash
-python docs/build_fmea.py
-```
-- **Output:** Updates `docs/FMEA_RiskAudit.xlsx` with dynamic Excel formulas for Risk Priority Numbers (`RPN = Severity * Occurrence * Detection`).
+### 4.4 Global Quick Search (`/`)
+- Press `/` from anywhere in the application to summon the search modal.
+- Type full or partial patient name, phone number, or UHID.
+- Click any result row to immediately lock that patient into the persistent banner.
 
 ---
 
-## 7. Troubleshooting & FAQ
+## 5. Domain-by-Domain Operational Workflows
 
-| Problem | Likely Cause | Solution |
-|---|---|---|
-| `ModuleNotFoundError: No module named 'matplotlib'` | Dependencies not yet installed | Run `pip install -r requirements.txt` |
-| Tkinter window fails to open in headless server | Headless Linux environment without X11 | Run the web portal using `python run.py` instead |
-| Need clean demo dataset | Pre-existing local test data | Delete `src/database/hms.db` and launch `python run.py` or `python src/main.py` to auto-seed fresh records |
-| How to verify test coverage? | Automated test execution | Run `python -m unittest discover tests` |
+### 5.1 Front Office
+- **Patient Registration & Duplicate Check**: Registers new patients with input masking (`+91-XXXXX-XXXXX`), mandatory blood group dropdown, and automated duplication check by phone number. Assigns standard institutional UHID (`UHID-YYYY-XXXX`).
+- **Appointments & Doctor Schedules**: Books appointments against standard 15-minute slot intervals, validating against double-booking.
+- **OPD Queue & Digital Tokens**: Generates OPD tokens for doctor consultations, tracks queue status (`Waiting`, `In Consultation`, `Completed`).
+- **Visitor Passes**: Issues hospital visitor badges with relation to inpatient, contact phone, and room assignment. Tracks check-in and check-out times.
+
+### 5.2 Clinical Care
+- **Triage & Acuity Scoring**: Performs standardized Emergency Severity Index (ESI) Level 1 through 5 scoring, vital signs (BP, Pulse, SpO2, Temperature), and presenting complaints.
+- **360° EMR & SOAP Consultations**: Records Subjective, Objective, Assessment, and Plan (SOAP) clinical encounter notes with attending physician attribution.
+- **e-Prescriptions with Poka-Yoke Allergy Checks**: Selects medicine from active formulary, sets dosage, frequency, and duration. Warns immediately if the patient has a documented allergy matching the prescribed drug.
+- **Doctor Clinical Orders**: Physicians dispatch STAT, Urgent, or Routine medication administration and vital monitoring orders directly to the nursing station.
+- **Emergency / Trauma Board**: Real-time casualty board tracking incoming trauma cases, GCS scores, resuscitation bays, and attending trauma surgeons.
+- **ICU Vital Flowsheet**: Hourly intensive care telemetry recording invasive arterial blood pressure, SpO2, ventilator mode, inotrope titrations, and hourly urine output.
+- **Operation Theatre (OT) & WHO Checklist**: Schedules surgical procedures, assigns theatre rooms, lead surgeons, and anaesthetists. Enforces the WHO Surgical Safety Checklist (Sign In, Time Out, Sign Out).
+- **Radiology & Medical Imaging**: Orders X-Ray, CT, MRI, and Ultrasound scans. Radiologists review imaging series and file digitally signed diagnostic findings.
+
+### 5.3 Diagnostics
+- **Laboratory Information System (LIS)**: Tracks diagnostic investigations through Sample Collection &rarr; Accessioning &rarr; Processing &rarr; Pathologist Verification &rarr; Report Release. Flags critical values outside biological reference intervals.
+- **Blood Bank & Transfusion Safety**: Manages voluntary donor registration, serology screening, blood component inventory (Packed Red Blood Cells, Fresh Frozen Plasma, Platelets), and clinical cross-match requests.
+
+### 5.4 Inpatient (IPD)
+- **Admissions & Bed Board**: Bed matrix visualizing room availability, current occupancy, and sanitization status across wards (Cardiology, Orthopedics, General, ICU).
+- **Bed Transfers**: Moves inpatients between beds or wards with clinical justification and nursing handover.
+- **Nursing Station & MAR**: Medication Administration Record tracking dose schedules, vital recordings, and nursing shift handovers.
+- **Shift Handover (SBAR)**: Standardized Situation-Background-Assessment-Recommendation transition of patient care between duty shifts.
+- **Discharge Summaries**: Formulates clinical course summaries, discharge medications, follow-up advice, and bed turnover clearance.
+
+### 5.5 Pharmacy & Supply
+- **Prescription Dispensing**: Dispenses medications directly against active doctor prescriptions, auto-deducts inventory from the relevant batch, and posts charges to billing.
+- **Stock, Batches & Expiry Alerts**: Tracks inventory batch numbers and expiration dates. Highlights low-stock medicines below reorder thresholds.
+- **Purchase Orders**: Generates supplier procurement purchase orders with delivery date tracking and authorized approval workflows.
+- **Central Stores & Consumables**: Manages non-drug hospital supplies (gloves, syringes, surgical drapes, catheters) and issues stock requisitions to hospital wards.
+
+### 5.6 Finance & Accounts
+- **Invoicing & Billing**: Consolidates consultation fees, room rent, pharmacy items, and lab investigations into itemized patient bills with GST breakdowns.
+- **IPD Advance Deposits**: Collects advance payments for inpatient stays, updates the ledger, and prints advance receipts.
+- **Insurance / TPA Claims**: Manages Third-Party Administrator insurance claims, pre-authorization submissions, approved coverage amounts, and cashless settlements.
+
+### 5.7 Support Services
+- **Housekeeping & Bed Turnaround**: Coordinates room sanitization tasks (Terminal Clean, Routine, Biohazard) to return discharged beds to `Available` status.
+- **Dietetics & Patient Nutrition**: Prescribes customized clinical diets (Diabetic, Renal, High-Protein, Liquid, NPO) and tracks meal preparation and ward delivery.
+- **Ambulance Fleet Dispatch**: Logs emergency ambulance dispatches, vehicle types (ALS/BLS), driver assignments, and destination GPS coordinates.
+- **Biomedical Assets**: Maintains hospital medical equipment registers (ventilators, defibrillators, dialysis machines) with preventive maintenance and calibration tracking.
+- **Facility Maintenance Tickets**: Logs engineering tickets for HVAC, medical gas pipelines, electrical systems, and plumbing.
+
+### 5.8 People & Staff
+- **Staff Directory**: Registry of healthcare workers, doctors, nurses, technicians, and administrative staff.
+- **Shift Rosters**: Manages morning, evening, and night duty rosters across departments.
+- **Leave Requests**: Staff leave submission and supervisor approval workflows.
+
+### 5.9 Quality & Governance
+- **Quality Incidents & CAPA**: Root Cause Analysis (RCA) and Corrective & Preventive Action cycles for clinical sentinel events, medication errors, and near misses.
+- **Quality Audits**: Structured checklists evaluating hospital infection control, record completeness, and pharmacy expiry audits.
+- **Defect Checksheet & Pareto Analysis**: Classifies data-entry defects (missing phone, wrong blood group, unmapped room) and plots defect distributions.
+- **Statistical Process Control (SPC)**: 3-Sigma control charts tracking OPD waiting times, medication error rates, and laboratory turnaround times.
+
+### 5.10 System Administration
+- **User Management & RBAC**: Administers accounts for all 21 stakeholder roles, locks/unlocks users, and triggers administrative password resets.
+- **Database Backup & Hot Recovery**: Creates atomic online SQLite database snapshots with sha256 checksums and automated verification.
+- **Security Audit Trail**: Immutable query trail of every database mutation and unauthorized access attempt.
+
+### 5.11 Patient Self-Service Portal
+- When logged in with a `Patient` role, accesses personal health records:
+  - Upcoming and past doctor appointments.
+  - Active e-Prescriptions with dosage instructions.
+  - Released diagnostic lab reports.
+  - Billing invoices and payment receipts.
+
+---
+
+## 6. Dedicated Clinical Print Views
+
+The system includes standardized print templates that automatically strip away application navigation, sidebars, and buttons during printing (`@media print`):
+
+1. **e-Prescription Slip**:
+   - Hospital letterhead with address, contact info, and NABH accreditation tag.
+   - Patient demographics strip (UHID, Name, Age/Sex, Blood Group, Allergy alert).
+   - Structured Rx medication table (Drug name, dosage, frequency, duration, special instructions).
+   - Doctor's digital signature block and medical registration number.
+   - ABDM QR code placeholder.
+2. **Laboratory Diagnostic Report**:
+   - Patient and ordering physician details.
+   - Test parameter, observed value, unit, biological reference interval.
+   - Highlighted flags for abnormal high/low values.
+   - Dual sign-off: Medical Lab Technician and Consultant Pathologist.
+3. **Discharge Summary**:
+   - Admission and discharge dates with total length of stay.
+   - Primary and secondary diagnoses.
+   - Clinical course during hospitalization, procedures performed.
+   - Discharge medications and dietary/wound care advice.
+   - Emergency contact numbers and scheduled follow-up clinic date.
+4. **Tax Invoice & Bill**:
+   - Invoice number, date, and hospital GSTIN.
+   - Itemized charge ledger categorized by department (Consultation, Pharmacy, Diagnostics, Bed charges).
+   - Subtotal, GST, advance deposits applied, and net balance due.
+   - Cashier signature and payment QR code.
+
+To print any document, open its preview in the application and click the **Print Document** button or press `Ctrl + P`.

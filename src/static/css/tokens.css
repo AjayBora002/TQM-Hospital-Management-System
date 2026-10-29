@@ -1,0 +1,111 @@
+/* =============================================================================
+   tokens.css -- Design System Tokens for Hospital Management System (HMS)
+   Theme: Modern Clinical SaaS (Healthcare Teal, Slate Neutrals, High-Contrast Semaphores)
+   ============================================================================= */
+
+:root {
+  /* Brand / Clinical Primary Palette */
+  --color-primary: #0284c7;        /* Medical Teal-Blue */
+  --color-primary-hover: #0369a1;
+  --color-primary-dark: #075985;
+  --color-primary-light: #e0f2fe;
+  --color-primary-subtle: #f0f9ff;
+  --color-primary-contrast: #ffffff;
+
+  /* Secondary / Accent */
+  --color-accent: #0d9488;         /* Clinical Mint/Teal */
+  --color-accent-light: #ccfbf1;
+  --color-accent-dark: #115e59;
+
+  /* Neutral Surface & Background Palette */
+  --color-bg-base: #f8fafc;        /* App canvas background */
+  --color-bg-surface: #ffffff;     /* Card/drawer surface */
+  --color-bg-subtle: #f1f5f9;      /* Subtle section fill */
+  --color-bg-muted: #e2e8f0;       /* Borders and dividers */
+
+  /* Neutral Text Palette (WCAG AA Compliant) */
+  --color-text-main: #0f172a;      /* Primary text (Slate 900) */
+  --color-text-muted: #475569;     /* Secondary/meta text (Slate 600) */
+  --color-text-subtle: #94a3b8;    /* Disabled/placeholder text */
+  --color-text-inverse: #ffffff;   /* Text on dark backgrounds */
+
+  /* Status Semaphores & Poka-Yoke Indicators */
+  --color-success: #10b981;        /* Available / Compliant / Discharged */
+  --color-success-bg: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-success-text: #065f46;
+
+  --color-warning: #f59e0b;        /* Cleaning / Reserved / Low Stock */
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-warning-text: #92400e;
+
+  --color-danger: #ef4444;         /* Code Red / Occupied / Critical / Allergy */
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-text: #991b1b;
+
+  --color-info: #3b82f6;           /* Scheduled / Routine / Ordered */
+  --color-info-bg: #eff6ff;
+  --color-info-border: #bfdbfe;
+  --color-info-text: #1e40af;
+
+  /* Emergency Triage Severity Color Semaphores (NABH COP.2) */
+  --triage-red: #dc2626;           /* Immediate / Resuscitation */
+  --triage-yellow: #d97706;        /* Urgent / Emergent */
+  --triage-green: #16a34a;         /* Non-urgent / Delayed */
+  --triage-black: #1f2937;         /* Deceased / Expectant */
+
+  /* Typography System */
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.8125rem;  /* 13px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Spacing Grid (8px Base System) */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Elevation & Shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-patient-banner: 0 4px 12px rgba(2, 132, 199, 0.12);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Layout Dimensions */
+  --sidebar-width: 250px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height: 56px;
+  --patient-banner-height: 48px;
+  --transition-speed: 0.2s;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}

@@ -4,55 +4,345 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="hms-app-body">
 
-    <!-- Header -->
-    <header>
-        <div class="header-title">
-            <div class="brand-icon">+</div>
-            <div class="brand-text">
-                <h1>Hospital Management System</h1>
-                <p>Quality Goal: Q07 - Improve Data Accuracy | Student: Ajay Bora (Roll No. 2410302008)</p>
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Collapsible Sidebar -->
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-brand" onclick="switchTab('dashboard'); return false;">
+                    <div class="sidebar-brand-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20"></path></svg>
+                    </div>
+                    <span class="sidebar-brand-text">Apex HMS</span>
+                </a>
+                <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" title="Toggle Sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                </button>
             </div>
-        </div>
-        <div class="header-badges">
-            <div class="user-profile-container">
-                <span class="role-badge role-admin" id="currentRoleBadge">Admin</span>
-                <span id="currentUserNameDisplay" style="font-size:0.85rem; font-weight:500;">Dr. Ajay Bora</span>
-                <button type="button" onclick="openLoginModal()" style="font-size:0.75rem; padding:3px 8px; border-radius:4px; border:1px solid rgba(255,255,255,0.4); background:transparent; color:#fff; cursor:pointer;">🔄 Switch Role</button>
+
+            <nav class="sidebar-nav" id="sidebarNav">
+                <!-- Dashboard -->
+                <button class="nav-item nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span class="nav-label">Dashboard</span>
+                </button>
+
+                <!-- Front Office -->
+                <div class="sidebar-section-title" data-group="front_office">Front Office</div>
+                <div class="sidebar-group" data-module="front_office">
+                    <button class="nav-item nav-tab" data-tab="patients" data-module="front_office" onclick="switchTab('patients')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span class="nav-label">Patients &amp; UHID</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="appointments" data-module="front_office" onclick="switchTab('appointments')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span class="nav-label">Appointments</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="queue" data-module="front_office" onclick="switchTab('queue')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+                        <span class="nav-label">OPD Queue &amp; Tokens</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="visitors" data-module="front_office" onclick="switchTab('visitors')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"></rect><line x1="7" y1="8" x2="17" y2="8"></line><line x1="7" y1="12" x2="17" y2="12"></line><line x1="7" y1="16" x2="13" y2="16"></line></svg>
+                        <span class="nav-label">Visitor Passes</span>
+                    </button>
+                </div>
+
+                <!-- Clinical -->
+                <div class="sidebar-section-title" data-group="clinical">Clinical Care</div>
+                <div class="sidebar-group" data-module="clinical">
+                    <button class="nav-item nav-tab" data-tab="triage" data-module="clinical" onclick="switchTab('triage')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        <span class="nav-label">Triage &amp; Vitals</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="emr" data-module="clinical" onclick="switchTab('emr')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        <span class="nav-label">EMR &amp; SOAP Notes</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="prescriptions" data-module="clinical" onclick="switchTab('prescriptions')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        <span class="nav-label">e-Prescriptions</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="orders" data-module="clinical" onclick="switchTab('orders')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+                        <span class="nav-label">Clinical Orders</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="emergency" data-module="clinical" onclick="switchTab('emergency')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <span class="nav-label">Emergency &amp; Trauma</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="icu" data-module="clinical" onclick="switchTab('icu')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                        <span class="nav-label">ICU Vital Chart</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="ot" data-module="clinical" onclick="switchTab('ot')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+                        <span class="nav-label">Operation Theatre</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="radiology" data-module="clinical" onclick="switchTab('radiology')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><path d="M21 15l-5-5L5 21"></path></svg>
+                        <span class="nav-label">Radiology &amp; PACS</span>
+                    </button>
+                </div>
+
+                <!-- Diagnostics -->
+                <div class="sidebar-section-title" data-group="diagnostics">Diagnostics</div>
+                <div class="sidebar-group" data-module="diagnostics">
+                    <button class="nav-item nav-tab" data-tab="lab" data-module="diagnostics" onclick="switchTab('lab')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 2v7.31L4.1 19.33A2 2 0 0 0 5.8 22h12.4a2 2 0 0 0 1.7-2.67L14 9.31V2"></path></svg>
+                        <span class="nav-label">Laboratory LIS</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="bloodbank" data-module="diagnostics" onclick="switchTab('bloodbank')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                        <span class="nav-label">Blood Bank</span>
+                    </button>
+                </div>
+
+                <!-- Inpatient -->
+                <div class="sidebar-section-title" data-group="inpatient">Inpatient (IPD)</div>
+                <div class="sidebar-group" data-module="inpatient">
+                    <button class="nav-item nav-tab" data-tab="admissions" data-module="inpatient" onclick="switchTab('admissions')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span class="nav-label">Admissions &amp; Stays</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="bedboard" data-module="inpatient" onclick="switchTab('bedboard')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                        <span class="nav-label">Bed Board Matrix</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="transfers" data-module="inpatient" onclick="switchTab('transfers')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                        <span class="nav-label">Bed Transfers</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="nursing" data-module="inpatient" onclick="switchTab('nursing')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                        <span class="nav-label">Nursing &amp; MAR</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="comms" data-module="inpatient" onclick="switchTab('comms')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        <span class="nav-label">Doctor-Nurse Comms</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="handover" data-module="inpatient" onclick="switchTab('handover')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        <span class="nav-label">Shift Handover</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="discharge" data-module="inpatient" onclick="switchTab('discharge')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        <span class="nav-label">Discharge Summaries</span>
+                    </button>
+                </div>
+
+                <!-- Pharmacy & Supply -->
+                <div class="sidebar-section-title" data-group="pharmacy">Pharmacy &amp; Supply</div>
+                <div class="sidebar-group" data-module="pharmacy">
+                    <button class="nav-item nav-tab" data-tab="dispensing" data-module="pharmacy" onclick="switchTab('dispensing')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>
+                        <span class="nav-label">Rx Dispensing</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="pharmacy" data-module="pharmacy" onclick="switchTab('pharmacy')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+                        <span class="nav-label">Stock &amp; Batches</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="purchase-orders" data-module="pharmacy" onclick="switchTab('purchase-orders')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                        <span class="nav-label">Purchase Orders</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="store" data-module="pharmacy" onclick="switchTab('store')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        <span class="nav-label">Central Stores</span>
+                    </button>
+                </div>
+
+                <!-- Finance -->
+                <div class="sidebar-section-title" data-group="finance">Finance &amp; TPA</div>
+                <div class="sidebar-group" data-module="finance">
+                    <button class="nav-item nav-tab" data-tab="billing" data-module="finance" onclick="switchTab('billing')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                        <span class="nav-label">Invoices &amp; Billing</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="advances" data-module="finance" onclick="switchTab('advances')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        <span class="nav-label">Advance Deposits</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="insurance" data-module="finance" onclick="switchTab('insurance')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span class="nav-label">Insurance / TPA</span>
+                    </button>
+                </div>
+
+                <!-- Support Services -->
+                <div class="sidebar-section-title" data-group="support">Support Services</div>
+                <div class="sidebar-group" data-module="support">
+                    <button class="nav-item nav-tab" data-tab="housekeeping" data-module="support" onclick="switchTab('housekeeping')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 21h18M5 21V7l8-4v18M13 7h6a2 2 0 0 1 2 2v12"></path></svg>
+                        <span class="nav-label">Housekeeping</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="dietetics" data-module="support" onclick="switchTab('dietetics')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
+                        <span class="nav-label">Diet &amp; Nutrition</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="ambulance" data-module="support" onclick="switchTab('ambulance')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        <span class="nav-label">Ambulance Fleet</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="biomedical" data-module="support" onclick="switchTab('biomedical')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        <span class="nav-label">Biomedical Assets</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="facility" data-module="support" onclick="switchTab('facility')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        <span class="nav-label">Facility Tickets</span>
+                    </button>
+                </div>
+
+                <!-- People -->
+                <div class="sidebar-section-title" data-group="people">People &amp; HR</div>
+                <div class="sidebar-group" data-module="people">
+                    <button class="nav-item nav-tab" data-tab="staff" data-module="people" onclick="switchTab('staff')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                        <span class="nav-label">Staff Directory</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="rosters" data-module="people" onclick="switchTab('rosters')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span class="nav-label">Shift Rosters</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="leaves" data-module="people" onclick="switchTab('leaves')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 2v4M8 2v4M3 10h18"></path><rect x="3" y="4" width="18" height="18" rx="2"></rect></svg>
+                        <span class="nav-label">Leave Requests</span>
+                    </button>
+                </div>
+
+                <!-- Quality & Governance -->
+                <div class="sidebar-section-title" data-group="quality">Quality &amp; TQM</div>
+                <div class="sidebar-group" data-module="quality">
+                    <button class="nav-item nav-tab" data-tab="capa" data-module="quality" onclick="switchTab('capa')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <span class="nav-label">Incidents &amp; CAPA</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="audit" data-module="quality" onclick="switchTab('audit')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        <span class="nav-label">Quality Audits</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="defects" data-module="quality" onclick="switchTab('defects')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        <span class="nav-label">Defect Checksheet</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="spc" data-module="quality" onclick="switchTab('spc')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                        <span class="nav-label">SPC &amp; Six Sigma</span>
+                    </button>
+                </div>
+
+                <!-- Admin -->
+                <div class="sidebar-section-title" data-group="admin">Administration</div>
+                <div class="sidebar-group" data-module="admin">
+                    <button class="nav-item nav-tab" data-tab="users" data-module="admin" onclick="switchTab('users')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span class="nav-label">Users &amp; Roles</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="departments" data-module="admin" onclick="switchTab('departments')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                        <span class="nav-label">Depts &amp; Doctors</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="rooms" data-module="admin" onclick="switchTab('rooms')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                        <span class="nav-label">Rooms &amp; Wards</span>
+                    </button>
+                    <button class="nav-item nav-tab" data-tab="backup" data-module="admin" onclick="switchTab('backup')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        <span class="nav-label">Backup &amp; Restore</span>
+                    </button>
+                </div>
+
+                <!-- Patient Portal -->
+                <div class="sidebar-section-title" data-group="portal">Patient Portal</div>
+                <div class="sidebar-group" data-module="portal">
+                    <button class="nav-item nav-tab" data-tab="portal" data-module="portal" onclick="switchTab('portal')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span class="nav-label">My Health Portal</span>
+                    </button>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <span class="badge badge-info" id="sidebarRolePill">Admin</span>
+                <span style="font-size:11px; color:#94a3b8;">TQM Q07</span>
             </div>
-            <span class="badge-tqm">BBAT104 TQM</span>
-            <span class="badge-live"><span class="live-dot"></span> System Live</span>
-        </div>
-    </header>
+        </aside>
 
-    <!-- Navigation Tabs -->
-    <nav id="navBar">
-        <button class="nav-tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</button>
-        <button class="nav-tab" data-tab="departments" onclick="switchTab('departments')">🏥 Departments & Doctors</button>
-        <button class="nav-tab" data-tab="queue" onclick="switchTab('queue')">🎫 OPD Queue & Tokens</button>
-        <button class="nav-tab" data-tab="nursing" onclick="switchTab('nursing')">👩‍⚕️ Nursing Station & Tasks</button>
-        <button class="nav-tab" data-tab="comms" onclick="switchTab('comms')">💬 Doctor-Nurse Comms</button>
-        <button class="nav-tab" data-tab="bedboard" onclick="switchTab('bedboard')">🛏️ Bed Board Matrix</button>
-        <button class="nav-tab" data-tab="patients" onclick="switchTab('patients')">👤 Patients</button>
-        <button class="nav-tab" data-tab="doctors" onclick="switchTab('doctors')">👨‍⚕️ Doctors</button>
-        <button class="nav-tab" data-tab="appointments" onclick="switchTab('appointments')">📅 Appointments</button>
-        <button class="nav-tab" data-tab="admissions" onclick="switchTab('admissions')">🛏️ Admissions & Stays</button>
-        <button class="nav-tab" data-tab="prescriptions" onclick="switchTab('prescriptions')">📝 Prescriptions</button>
-        <button class="nav-tab" data-tab="rooms" onclick="switchTab('rooms')">🚪 Rooms</button>
-        <button class="nav-tab" data-tab="staff" onclick="switchTab('staff')">👥 Staff</button>
-        <button class="nav-tab" data-tab="pharmacy" onclick="switchTab('pharmacy')">💊 Pharmacy</button>
-        <button class="nav-tab" data-tab="billing" onclick="switchTab('billing')">💳 Billing</button>
-        <button class="nav-tab" data-tab="audit" onclick="switchTab('audit')">🛡️ Audit Log</button>
-        <button class="nav-tab" data-tab="defects" onclick="switchTab('defects')">📋 Defect Checksheet</button>
-    </nav>
+        <!-- Main Viewport -->
+        <div class="app-main">
+            <!-- Modern Top Bar -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button type="button" class="sidebar-toggle-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div class="breadcrumbs" id="breadcrumbsContainer">
+                        <span class="breadcrumb-item">Hospital</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-active" id="currentBreadcrumb">Dashboard</span>
+                    </div>
+                </div>
 
-    <!-- Main Content Area -->
-    <main>
+                <div class="topbar-right">
+                    <select class="form-control" style="font-size:0.8rem; padding:4px 8px; width:auto; max-width:200px; display:inline-block;" title="Hospital Facility Branch">
+                        <option>Apex Central Hospital</option>
+                        <option>City Care Clinic (Branch 1)</option>
+                    </select>
 
-        <!-- ================= DASHBOARD TAB ================= -->
+                    <button type="button" class="global-search-btn" onclick="openGlobalSearch()" title="Press '/' anywhere to search">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <span>Search Patient, UHID...</span>
+                        <span class="kbd-shortcut">/</span>
+                    </button>
+
+                    <button type="button" class="icon-btn" onclick="showToast('All clinical systems nominal. No unread critical alerts.', 'info')" title="Notifications">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span class="notification-badge" id="notifBadge">0</span>
+                    </button>
+
+                    <!-- User Profile & Session Dropdown -->
+                    <div class="user-profile-menu" id="userProfileTrigger" onclick="toggleProfileDropdown(event)">
+                        <div class="user-avatar" id="topbarAvatar">AB</div>
+                        <div class="user-details">
+                            <span class="user-name" id="currentUserNameDisplay">Dr. Ajay Bora</span>
+                            <span class="user-role-badge" id="currentRoleBadge">Admin</span>
+                        </div>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div style="padding:10px 14px; border-bottom:1px solid #e2e8f0;">
+                                <div style="font-weight:600; font-size:13px;" id="dropdownFullName">Dr. Ajay Bora</div>
+                                <div style="font-size:11px; color:#64748b;" id="dropdownRoleDept">Administrator</div>
+                                <div style="font-size:11px; color:#059669; margin-top:4px;" id="sessionIdleStatus">● Session Active (15m idle)</div>
+                            </div>
+                            <button type="button" class="dropdown-item" onclick="openChangePasswordModal()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                Change Password
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <button type="button" class="dropdown-item" onclick="executeLogout()" style="color:#ef4444;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Persistent Patient Context Banner -->
+            <div id="patientContextBanner" class="patient-context-banner hidden"></div>
+
+            <!-- Scrollable Content Viewport -->
+            <div class="content-viewport" id="contentViewport">
+                <main>
+
+<!-- ================= DASHBOARD TAB ================= -->
         <section id="tab-dashboard" class="tab-panel active">
             <!-- Dynamic Role-Tailored Workspace Banner -->
             <div id="roleWorkspaceContainer"></div>
@@ -1362,7 +1652,728 @@
             </div>
         </section>
 
-    </main>
+        <!-- ================= VISITOR MANAGEMENT TAB ================= -->
+        <section id="tab-visitors" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Issue Visitor Pass</h3>
+                    <form id="visitor-form" onsubmit="window.hmsSaveVisitor(event)">
+                        <div class="form-group">
+                            <label>Inpatient UHID / Patient *</label>
+                            <input type="text" id="vis-patient-input" class="form-control" placeholder="Search patient name or UHID..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Visitor Full Name *</label>
+                            <input type="text" id="vis-name" class="form-control" required placeholder="Visitor legal name">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone *</label>
+                            <input type="text" id="vis-phone" class="form-control" required placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Relation to Patient *</label>
+                            <select id="vis-relation" class="form-control" required>
+                                <option value="Spouse">Spouse</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Child">Child</option>
+                                <option value="Friend">Friend / Relative</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Issue Visitor Pass &amp; Print Badge</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Active Hospital Visitors</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadVisitors()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Badge No</th><th>Visitor Name</th><th>Patient</th><th>Room</th><th>Check-In</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="visitorsTableBody">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading visitor logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TRIAGE & VITALS TAB ================= -->
+        <section id="tab-triage" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Clinical Triage Assessment</h3>
+                    <form id="triage-form" onsubmit="window.hmsSaveTriage(event)">
+                        <div class="form-group">
+                            <label>Patient *</label>
+                            <input type="text" id="tr-patient-input" class="form-control" placeholder="Search patient..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Triage Category (ESI / Acuity) *</label>
+                            <select id="tr-category" class="form-control" required>
+                                <option value="Level 1 - Resuscitation" style="color:#b91c1c; font-weight:bold;">Level 1 - Resuscitation (Immediate STAT)</option>
+                                <option value="Level 2 - Emergent" style="color:#ea580c; font-weight:bold;">Level 2 - Emergent (&lt; 15 min)</option>
+                                <option value="Level 3 - Urgent" selected style="color:#ca8a04; font-weight:bold;">Level 3 - Urgent (&lt; 30 min)</option>
+                                <option value="Level 4 - Semi-Urgent" style="color:#16a34a;">Level 4 - Semi-Urgent (&lt; 60 min)</option>
+                                <option value="Level 5 - Non-Urgent" style="color:#2563eb;">Level 5 - Non-Urgent (&lt; 120 min)</option>
+                            </select>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>BP (Systolic/Diastolic)</label>
+                                <input type="text" id="tr-bp" class="form-control" placeholder="e.g. 120/80">
+                            </div>
+                            <div class="form-group">
+                                <label>Pulse / Heart Rate (bpm)</label>
+                                <input type="number" id="tr-pulse" class="form-control" placeholder="72">
+                            </div>
+                            <div class="form-group">
+                                <label>SpO2 (%)</label>
+                                <input type="number" id="tr-spo2" class="form-control" placeholder="98">
+                            </div>
+                            <div class="form-group">
+                                <label>Temp (°F)</label>
+                                <input type="number" step="0.1" id="tr-temp" class="form-control" placeholder="98.6">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Chief Presenting Complaint *</label>
+                            <textarea id="tr-complaint" class="form-control" rows="2" required placeholder="Chest pain, dyspnea, acute trauma..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Record Triage Score</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Recent Triage Scores &amp; Queue Priority</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Time</th><th>Patient</th><th>Acuity</th><th>Vitals</th><th>Complaint</th><th>Assigned Nurse</th></tr>
+                            </thead>
+                            <tbody id="triageTableBody">
+                                <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading triage queue...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EMR & TIMELINE TAB ================= -->
+        <section id="tab-emr" class="tab-panel">
+            <div style="margin-bottom:16px; display:flex; gap:12px; align-items:center;">
+                <input type="text" id="emrSearchPatientInput" class="form-control" placeholder="Search patient name or UHID to view full 360° EMR timeline..." style="max-width:400px;">
+                <button class="btn btn-primary" onclick="window.hmsSearchEmrTimeline()">Load Patient EMR</button>
+            </div>
+            <div id="emrTimelineContainer">
+                <div class="empty-state" style="padding:40px; text-align:center; background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    <h3 style="color:#475569; margin:12px 0 4px 0;">360° Comprehensive Electronic Medical Record</h3>
+                    <p style="color:#94a3b8; font-size:14px;">Select a patient from the search bar above or Persistent Patient Banner to inspect clinical SOAP history, vital graphs, allergy alerts, prescriptions, and lab investigations.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CLINICAL ORDERS TAB ================= -->
+        <section id="tab-orders" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Doctor Clinical Orders &amp; Nursing Administration</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openDoctorOrderModal()">+ Write New Order</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Order ID</th><th>Patient</th><th>Type</th><th>Urgency</th><th>Order Instruction</th><th>Ordered By</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading active orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EMERGENCY & TRAUMA TAB ================= -->
+        <section id="tab-emergency" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Emergency Department &amp; Casualty Trauma Board</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Live Red/Yellow/Green acuity board with crash team dispatch and resuscitation status.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenEmergencyIntakeModal()">+ Intake Emergency Case</button>
+            </div>
+            <div id="emergencyBoardContainer">
+                <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                    <table>
+                        <thead>
+                            <tr><th>Case No</th><th>Patient</th><th>Triage Color</th><th>Chief Complaint</th><th>GCS</th><th>Assigned Bed</th><th>Attending Doctor</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="emergencyTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading emergency cases...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ICU VITAL CHART TAB ================= -->
+        <section id="tab-icu" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Intensive Care Unit (ICU) Multi-Parameter Flowsheet</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Hourly telemetry, invasive arterial lines, ventilator parameters, inotrope titration, and urine output.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenIcuLogModal()">+ Log Hourly ICU Vitals</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Time</th><th>Patient (Bed)</th><th>Heart Rate</th><th>BP (MAP)</th><th>SpO2</th><th>Vent Mode / FiO2</th><th>Inotropes</th><th>GCS</th><th>Urine (mL/h)</th></tr>
+                    </thead>
+                    <tbody id="icuTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading ICU flowsheet...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= OPERATION THEATRE TAB ================= -->
+        <section id="tab-ot" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Operation Theatre (OT) Schedules &amp; Surgical Checklists</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Theatre allocation, surgical team roster, and WHO Surgical Safety Checklist (Sign In, Time Out, Sign Out).</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenOtScheduleModal()">+ Schedule Surgery</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>OT Room</th><th>Scheduled Time</th><th>Patient</th><th>Procedure</th><th>Lead Surgeon</th><th>Anaesthetist</th><th>WHO Checklist</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="otTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading OT schedule...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= RADIOLOGY & PACS TAB ================= -->
+        <section id="tab-radiology" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Radiology &amp; Medical Imaging Department</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Digital imaging workflow: Order &rarr; Modality Scan &rarr; Radiologist Review &rarr; Report Release.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenRadiologyOrderModal()">+ New Imaging Order</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Accession No</th><th>Patient</th><th>Modality</th><th>Body Region</th><th>Ordered By</th><th>Radiologist</th><th>Status</th><th>Report Findings</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="radiologyTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading imaging orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= LABORATORY LIS TAB ================= -->
+        <section id="tab-lab" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Laboratory Information System (LIS)</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Phlebotomy barcode collection, hematology/biochemistry analyzers, critical value alerts, and TAT tracking.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenLabOrderModal()">+ New Lab Investigation</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Order ID</th><th>Patient</th><th>Test Name</th><th>Department</th><th>Sample Status</th><th>Result</th><th>Reference Range</th><th>Pathologist Verification</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="labTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading lab orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= BLOOD BANK TAB ================= -->
+        <section id="tab-bloodbank" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Blood Bank Management &amp; Transfusion Safety</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Donor registry, serology clearance, component inventory (PRBC, FFP, Platelets), and cross-match reserve.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-secondary" onclick="window.hmsOpenDonorModal()">+ Register Donor</button>
+                    <button class="btn btn-primary" onclick="window.hmsOpenBloodRequestModal()">+ Request Cross-Match</button>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <div class="card">
+                    <h4>Blood Component Inventory by Group</h4>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Blood Group</th><th>Component</th><th>Units Available</th><th>Expiry Range</th></tr></thead>
+                            <tbody id="bloodInventoryTableBody">
+                                <tr><td colspan="4" style="text-align:center;">Loading inventory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Clinical Cross-Match &amp; Unit Issue Requests</h4>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Req ID</th><th>Patient</th><th>Group</th><th>Units</th><th>Urgency</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="bloodRequestsTableBody">
+                                <tr><td colspan="7" style="text-align:center;">Loading requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BED TRANSFERS TAB ================= -->
+        <section id="tab-transfers" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Inpatient Bed &amp; Ward Transfers</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenBedTransferModal()">+ Transfer Patient Bed</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Transfer ID</th><th>Patient</th><th>From Bed</th><th>To Bed</th><th>Transfer Reason</th><th>Authorized By</th><th>Timestamp</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="transfersTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading bed transfer log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SHIFT HANDOVER TAB ================= -->
+        <section id="tab-handover" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Nursing Shift Handover Logs (SBAR Protocol)</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openHandoverModal()">+ New Shift Handover</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Timestamp</th><th>Ward / Unit</th><th>Outgoing Nurse</th><th>Incoming Nurse</th><th>Critical Watchlist</th><th>Pending Tasks</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="handoverTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading shift handovers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DISCHARGE SUMMARIES TAB ================= -->
+        <section id="tab-discharge" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Patient Discharge Summaries &amp; Clinical Closures</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Admission ID</th><th>Patient</th><th>Admit Date</th><th>Discharge Date</th><th>Primary Diagnosis</th><th>Discharge Advice</th><th>Financial Clearance</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="dischargeSummariesTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading discharge summaries...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PHARMACY DISPENSING TAB ================= -->
+        <section id="tab-dispensing" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Dispensary Queue &amp; Prescription Dispensing</h3>
+                    <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadDispensaryQueue()">Refresh Queue</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Rx ID</th><th>Patient</th><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Stock Available</th><th>Prescribing Doctor</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="dispensingQueueTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading dispensary queue...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PURCHASE ORDERS TAB ================= -->
+        <section id="tab-purchase-orders" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Pharmacy &amp; Consumables Purchase Orders</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenPoModal()">+ Create Purchase Order</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>PO Number</th><th>Supplier / Vendor</th><th>Items</th><th>Total Amount</th><th>Created By</th><th>Delivery Due</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="poTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading purchase orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CENTRAL STORES & CONSUMABLES TAB ================= -->
+        <section id="tab-store" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Central Stores &amp; Ward Consumables Management</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Medical supplies, gloves, syringes, surgical drapes, and stock issue requisitions to nursing units.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenStoreIssueModal()">+ Issue Consumables to Ward</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Item Code</th><th>Item Name</th><th>Category</th><th>Bin Location</th><th>Current Stock</th><th>Reorder Level</th><th>Unit</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="storeItemsTableBody">
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading stores inventory...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= ADVANCE DEPOSITS TAB ================= -->
+        <section id="tab-advances" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>IPD Patient Advance Deposits &amp; Receipts</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenAdvanceModal()">+ Collect Advance Deposit</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Receipt No</th><th>Patient</th><th>Admission ID</th><th>Amount Paid</th><th>Payment Mode</th><th>Collected By</th><th>Timestamp</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="advancesTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading advance deposits...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= INSURANCE & TPA TAB ================= -->
+        <section id="tab-insurance" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Insurance &amp; Third-Party Administrator (TPA) Claims</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenClaimModal()">+ Initiate TPA Claim</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Claim No</th><th>Patient</th><th>TPA / Insurer</th><th>Policy Number</th><th>Estimated Amount</th><th>Approved Amount</th><th>Pre-Auth Status</th><th>Claim Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="insuranceClaimsTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading insurance claims...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOUSEKEEPING TAB ================= -->
+        <section id="tab-housekeeping" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Housekeeping, Bed Disinfection &amp; Hygiene Logs</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenHousekeepingModal()">+ Assign Cleaning Task</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Task ID</th><th>Room / Bed</th><th>Type</th><th>Assigned Cleaner</th><th>Priority</th><th>Requested At</th><th>Completed At</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="housekeepingTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading housekeeping roster...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DIETETICS & NUTRITION TAB ================= -->
+        <section id="tab-dietetics" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Clinical Dietetics &amp; Patient Meal Orders</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenDietOrderModal()">+ Prescribe Patient Diet</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Diet ID</th><th>Patient (Bed)</th><th>Diet Type</th><th>Calorie Target</th><th>Allergies / Special Instructions</th><th>Kitchen Status</th><th>Delivered At</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="dieteticsTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading diet orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AMBULANCE FLEET TAB ================= -->
+        <section id="tab-ambulance" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Emergency Ambulance Fleet Dispatch</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenAmbulanceModal()">+ Dispatch Ambulance</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Trip ID</th><th>Vehicle Reg</th><th>Type (ALS/BLS)</th><th>Driver</th><th>Destination / Pickup</th><th>Dispatched Time</th><th>Paramedic</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="ambulanceTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading fleet dispatch log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BIOMEDICAL ASSETS TAB ================= -->
+        <section id="tab-biomedical" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Biomedical Engineering &amp; Equipment Maintenance</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenBiomedicalModal()">+ Register Medical Asset</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Asset Tag</th><th>Equipment Name</th><th>Department</th><th>Serial No</th><th>Calibration Due</th><th>Last PM</th><th>Operating Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="biomedicalTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading biomedical assets...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FACILITY TICKETS TAB ================= -->
+        <section id="tab-facility" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Hospital Facility &amp; Infrastructure Work Orders</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenFacilityTicketModal()">+ Log Facility Issue</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Ticket ID</th><th>Location</th><th>Category (HVAC/O2/Elec)</th><th>Issue Summary</th><th>Reported By</th><th>Priority</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="facilityTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading facility maintenance tickets...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SHIFT ROSTERS TAB ================= -->
+        <section id="tab-rosters" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Staff Duty Rosters &amp; Department Shift Allocations</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenRosterModal()">+ Assign Shift Roster</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Roster ID</th><th>Staff Member</th><th>Role</th><th>Department</th><th>Date</th><th>Shift</th><th>Supervisor</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="rostersTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading duty rosters...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= LEAVE REQUESTS TAB ================= -->
+        <section id="tab-leaves" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Staff Leave Applications &amp; Approvals</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenLeaveModal()">+ Apply for Leave</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Leave ID</th><th>Staff Member</th><th>Role</th><th>Type (Casual/Sick)</th><th>From Date</th><th>To Date</th><th>Reason</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="leavesTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading leave requests...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= INCIDENTS & CAPA TAB ================= -->
+        <section id="tab-capa" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Quality Incidents &amp; CAPA Workflow (NABH Core)</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Medication errors, needle stick injuries, falls, sentinel events with Root Cause Analysis (RCA) and Corrective &amp; Preventive Actions.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenIncidentModal()">+ Report Incident</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Incident ID</th><th>Category</th><th>Severity</th><th>Location</th><th>Description</th><th>Reported Date</th><th>CAPA Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="incidentsTableBody">
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading incidents &amp; CAPA records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= SPC & SIX SIGMA CHARTS TAB ================= -->
+        <section id="tab-spc" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Statistical Process Control (SPC) &amp; Six Sigma Quality Control</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Q07 Metric Control Charts (Upper Control Limit UCL, Lower Control Limit LCL, Mean Centerline) and process capability indices.</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.hmsRefreshSpcCharts()">Recalculate 3-Sigma Limits</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <div class="card" style="padding:16px;">
+                    <h4 style="margin:0 0 8px 0; color:#0f766e;">OPD Patient Waiting Time (X-Bar Chart)</h4>
+                    <p style="font-size:12px; color:#64748b;">Target Mean: 18.5 min | UCL: 34.2 min | LCL: 5.1 min</p>
+                    <div style="height:220px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;" id="spcWaitingChart">
+                        [Statistical Process Control Chart: 28 Days In-Control (Zero Points Out of Limits)]
+                    </div>
+                </div>
+                <div class="card" style="padding:16px;">
+                    <h4 style="margin:0 0 8px 0; color:#0f766e;">Laboratory Turnaround Time (p-Chart)</h4>
+                    <p style="font-size:12px; color:#64748b;">Target Compliance: 98.5% | Lower Threshold: 95.0%</p>
+                    <div style="height:220px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;" id="spcTatChart">
+                        [Process Capability Cpk = 1.48: Six Sigma Level Quality Standard Achieved]
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= USER ACCOUNTS & RBAC TAB ================= -->
+        <section id="tab-users" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Hospital Users &amp; Role-Based Access Control (21 Stakeholder Roles)</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenCreateUserModal()">+ Create User Account</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>User ID</th><th>Username</th><th>Role Profile</th><th>Full Name</th><th>Email</th><th>Created At</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading authorized system users...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BACKUP & RESTORE TAB ================= -->
+        <section id="tab-backup" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 style="margin:0;">SQLite Atomic Online Database Snapshots</h3>
+                        <p style="font-size:12px; color:#64748b; margin:2px 0 0 0;">Zero-downtime hot backups with sha256 checksums and automated restoration verify.</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="triggerManualBackup()">+ Create Instant Snapshot Now</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Snapshot Filename</th><th>Size</th><th>Created Timestamp</th><th>Integrity Check</th></tr>
+                        </thead>
+                        <tbody id="backupsTableBody">
+                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Loading database snapshots...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PATIENT PORTAL TAB ================= -->
+        <section id="tab-portal" class="tab-panel">
+            <div style="background:#f0fdfa; border:1px solid #99f6e4; padding:16px 20px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="margin:0 0 4px 0; color:#0f766e;">Patient Self-Service Health Portal</h2>
+                    <p style="margin:0; font-size:13px; color:#115e59;">View your confirmed appointments, verified laboratory diagnostic results, active e-prescriptions, and billing receipts.</p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="window.hmsRefreshPatientPortal()">Refresh My Records</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <div class="card">
+                    <h4>My Appointments</h4>
+                    <div id="portalAppointmentsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your appointments...</div>
+                </div>
+                <div class="card">
+                    <h4>My Verified Lab Reports</h4>
+                    <div id="portalLabReportsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your lab reports...</div>
+                </div>
+                <div class="card">
+                    <h4>My e-Prescriptions</h4>
+                    <div id="portalPrescriptionsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your prescriptions...</div>
+                </div>
+                <div class="card">
+                    <h4>My Invoices &amp; Receipts</h4>
+                    <div id="portalBillsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your billing invoices...</div>
+                </div>
+            </div>
+        </section>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Confirmation Modal (Q07 Safeguard) -->
     <div id="confirmModal" class="modal-overlay">
@@ -1628,6 +2639,74 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    
+    <!-- Global Patient Search Modal (Key: '/') -->
+    <div id="globalSearchModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 640px;">
+            <div class="modal-header">
+                <div class="modal-icon-success" style="background:#e0f2fe; color:#0284c7; font-size:1.2rem;">🔍</div>
+                <div>
+                    <div class="modal-title">Global Patient Search</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Quick-find patient by UHID, full name, phone number or assigned room</div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="globalSearchInput" class="form-control" placeholder="Search by UHID, patient name, phone... (Press Esc to close)" autofocus>
+                <div id="globalSearchResults" style="max-height:350px; overflow-y:auto; margin-top:12px;"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('globalSearchModal')">Close (Esc)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <div class="modal-icon-success" style="background:#fef3c7; color:#d97706; font-size:1.2rem;">🔑</div>
+                <div>
+                    <div class="modal-title">Change Password</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">Update your clinical account credentials</div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm" onsubmit="window.handleChangePasswordSubmit(event)">
+                    <div class="form-group">
+                        <label>Current Password *</label>
+                        <input type="password" id="cp-current" class="form-control" required placeholder="Enter existing password">
+                    </div>
+                    <div class="form-group">
+                        <label>New Password (min 6 characters) *</label>
+                        <input type="password" id="cp-new" class="form-control" required minlength="6" placeholder="Enter new password">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password *</label>
+                        <input type="password" id="cp-confirm" class="form-control" required minlength="6" placeholder="Re-enter new password">
+                    </div>
+                    <div class="modal-actions" style="padding-top:10px;">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('changePasswordModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated Clinical Document Print Preview Sheet Modal -->
+    <div id="printModalContainer" class="print-modal-container">
+        <div class="print-sheet-controls no-print">
+            <button class="btn btn-primary" onclick="window.print()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Print Document
+            </button>
+            <button class="btn btn-secondary" onclick="window.closePrintPreview()">Close Preview</button>
+        </div>
+        <div class="print-sheet" id="printSheetContent">
+            <!-- Dynamically injected print document -->
         </div>
     </div>
 

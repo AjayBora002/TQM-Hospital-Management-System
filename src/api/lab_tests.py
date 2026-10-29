@@ -1,14 +1,16 @@
 """
-lab_tests.py -- REST API Blueprint for Diagnostic Laboratory & Radiology Testing.
+lab_tests.py -- REST API Blueprint for Diagnostic Laboratory & Pathology Testing with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 import models.lab_test as lab_model
+from auth.permissions import require_permission
 import config
 
 lab_tests_bp = Blueprint("lab_tests", __name__)
 
 
 @lab_tests_bp.route("/lab-tests", methods=["GET"])
+@require_permission("diagnostics", "view")
 def get_lab_tests():
     patient_id = request.args.get("patient_id")
     abnormal_only = request.args.get("abnormal", "0") == "1"
@@ -28,6 +30,7 @@ def get_lab_tests():
 
 
 @lab_tests_bp.route("/lab-tests/<int:test_id>", methods=["GET"])
+@require_permission("diagnostics", "view")
 def get_lab_test(test_id):
     test = lab_model.get_by_id(test_id)
     if not test:
@@ -36,6 +39,7 @@ def get_lab_test(test_id):
 
 
 @lab_tests_bp.route("/lab-tests", methods=["POST"])
+@require_permission("diagnostics", "create")
 def order_lab_test():
     data = request.get_json() or {}
     user = session.get("username", "doctor")
@@ -55,6 +59,7 @@ def order_lab_test():
 
 
 @lab_tests_bp.route("/lab-tests/<int:test_id>/result", methods=["POST"])
+@require_permission("diagnostics", "edit")
 def record_test_result(test_id):
     data = request.get_json() or {}
     user = session.get("username", "lab_technician")
@@ -75,6 +80,7 @@ def record_test_result(test_id):
 
 
 @lab_tests_bp.route("/lab-tests/templates", methods=["GET"])
+@require_permission("diagnostics", "view")
 def get_templates():
     return jsonify({
         "templates": config.LAB_TEST_TEMPLATES,

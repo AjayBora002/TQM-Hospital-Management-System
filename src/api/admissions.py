@@ -1,14 +1,16 @@
 """
-admissions.py -- REST API Blueprint for Inpatient Admission and Stay Tracking.
+admissions.py -- REST API Blueprint for Inpatient Admission, Bed Allocation, and Discharge.
 """
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, Response
 from models import admission as admission_model
+from auth.permissions import require_permission
 from utils.exception_handler import ValidationError
 
 admissions_bp = Blueprint("admissions", __name__)
 
 
 @admissions_bp.route("/admissions", methods=["GET"])
+@require_permission("inpatient", "view")
 def list_admissions():
     active_only = request.args.get("active_only") in ["1", "true", "True"]
     admissions = admission_model.list_admissions(active_only=active_only)
@@ -16,6 +18,7 @@ def list_admissions():
 
 
 @admissions_bp.route("/admissions", methods=["POST"])
+@require_permission("inpatient", "create")
 def admit_patient():
     data = request.get_json() or {}
     user = session.get("username", "front_desk_user")
@@ -35,6 +38,7 @@ def admit_patient():
 
 
 @admissions_bp.route("/admissions/<int:admission_id>/discharge", methods=["POST"])
+@require_permission("inpatient", "edit")
 def discharge_patient(admission_id):
     data = request.get_json() or {}
     user = session.get("username", "front_desk_user")
@@ -52,6 +56,7 @@ def discharge_patient(admission_id):
 
 
 @admissions_bp.route("/admissions/patient/<int:patient_id>", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_patient_admissions(patient_id):
     stays = admission_model.get_patient_admissions(patient_id)
     active = admission_model.get_active_admission(patient_id)
@@ -59,12 +64,11 @@ def get_patient_admissions(patient_id):
 
 
 @admissions_bp.route("/admissions/<int:admission_id>/discharge-summary", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_discharge_summary(admission_id):
     from utils.report_generator import generate_discharge_summary_html
-    from flask import Response
     try:
         html = generate_discharge_summary_html(admission_id)
         return Response(html, mimetype="text/html")
     except Exception as e:
         return jsonify({"error": str(e)}), 404
-

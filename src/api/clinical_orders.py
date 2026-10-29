@@ -1,13 +1,15 @@
 """
-clinical_orders.py -- REST API Blueprint for Doctor Clinical Orders to Nursing Station.
+clinical_orders.py -- REST API Blueprint for Doctor Clinical Orders to Nursing Station with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import clinical_order as order_model
+from auth.permissions import require_permission
 
 clinical_orders_bp = Blueprint("clinical_orders_api", __name__)
 
 
 @clinical_orders_bp.route("/clinical-orders", methods=["GET"])
+@require_permission("clinical", "view")
 def get_orders():
     patient_id = request.args.get("patient_id")
     ward_id = request.args.get("ward_id")
@@ -24,6 +26,7 @@ def get_orders():
 
 
 @clinical_orders_bp.route("/clinical-orders", methods=["POST"])
+@require_permission("clinical", "create")
 def place_order():
     data = request.get_json() or {}
     doctor_name = session.get("full_name", data.get("doctor_name", "Dr. Rajesh Sharma"))
@@ -50,6 +53,7 @@ def place_order():
 
 
 @clinical_orders_bp.route("/clinical-orders/<int:order_id>/acknowledge", methods=["POST"])
+@require_permission("clinical", "edit")
 def acknowledge_order(order_id):
     nurse_name = session.get("full_name", "Sister Sunita Patel")
     order_model.acknowledge_order(order_id, nurse_name=nurse_name)
@@ -57,10 +61,10 @@ def acknowledge_order(order_id):
 
 
 @clinical_orders_bp.route("/clinical-orders/<int:order_id>/complete", methods=["POST"])
+@require_permission("clinical", "edit")
 def complete_order(order_id):
     data = request.get_json() or {}
-    nurse_name = session.get("full_name", data.get("nurse_name", "Sister Sunita Patel"))
-    notes = data.get("notes", "Executed as instructed")
+    nurse_name = session.get("full_name", "Sister Sunita Patel")
+    notes = data.get("execution_notes", "")
     order_model.complete_order(order_id, nurse_name=nurse_name, execution_notes=notes)
-    return jsonify({"message": "Order confirmed and completed"}), 200
-
+    return jsonify({"message": "Clinical order executed and documented"}), 200

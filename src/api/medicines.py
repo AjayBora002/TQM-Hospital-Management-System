@@ -1,13 +1,16 @@
 """
-medicines.py -- Pharmacy inventory and medicine management REST API endpoints
+medicines.py -- Pharmacy inventory and medicine management REST API endpoints with RBAC.
 """
 from flask import Blueprint, request, jsonify
 import models.medicine as medicine_model
+from auth.permissions import require_permission
 from .helpers import rows_to_list
 
 medicines_bp = Blueprint("medicines", __name__)
 
+
 @medicines_bp.route("/medicines", methods=["GET"])
+@require_permission("pharmacy", "view")
 def get_medicines():
     low_stock = request.args.get("low_stock", "0") == "1"
     expired = request.args.get("expired", "0") == "1"
@@ -19,12 +22,16 @@ def get_medicines():
         rows = medicine_model.list_all()
     return jsonify(rows_to_list(rows))
 
+
 @medicines_bp.route("/medicines/expired", methods=["GET"])
+@require_permission("pharmacy", "view")
 def get_expired_medicines():
     rows = medicine_model.expired_medicines()
     return jsonify(rows_to_list(rows))
 
+
 @medicines_bp.route("/medicines", methods=["POST"])
+@require_permission("pharmacy", "create")
 def create_medicine():
     data = request.json or {}
     new_id = medicine_model.add(
@@ -38,7 +45,9 @@ def create_medicine():
     )
     return jsonify({"medicine_id": new_id, "status": "created"}), 201
 
+
 @medicines_bp.route("/medicines/<int:medicine_id>", methods=["PUT"])
+@require_permission("pharmacy", "edit")
 def update_medicine(medicine_id):
     data = request.json or {}
     medicine_model.update(
@@ -53,8 +62,9 @@ def update_medicine(medicine_id):
     )
     return jsonify({"status": "updated"})
 
+
 @medicines_bp.route("/medicines/<int:medicine_id>", methods=["DELETE"])
+@require_permission("pharmacy", "delete")
 def delete_medicine(medicine_id):
     medicine_model.delete(medicine_id)
     return jsonify({"status": "deleted"})
-

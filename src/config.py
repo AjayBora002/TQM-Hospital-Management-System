@@ -94,8 +94,27 @@ VITALS_RANGES = {
 
 # ---- Authentication & Role Management --------------------------------------
 USER_ROLES = [
-    "Admin", "Doctor", "Receptionist", "Nurse", "Ward Manager",
-    "Lab Technician", "Pharmacist", "Cashier", "Hospital Manager", "Patient"
+    "Admin",
+    "Hospital Manager",
+    "Doctor",
+    "Nurse",
+    "Ward Manager",
+    "Receptionist",
+    "Lab Technician",
+    "Pharmacist",
+    "Cashier",
+    "Patient",
+    "Quality Manager",
+    "Radiologist",
+    "OT Manager",
+    "Blood Bank Technician",
+    "Housekeeping Supervisor",
+    "Biomedical Engineer",
+    "HR Manager",
+    "Store/Inventory Manager",
+    "Insurance/TPA Desk",
+    "Ambulance Dispatcher",
+    "Dietitian"
 ]
 
 # ---- Inpatient Admission & Stays -------------------------------------------

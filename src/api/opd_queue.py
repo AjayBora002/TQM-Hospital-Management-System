@@ -1,13 +1,15 @@
 """
-opd_queue.py -- REST API Blueprint for OPD Token Queue & Consultation Desk.
+opd_queue.py -- REST API Blueprint for OPD Token Queue & Consultation Desk with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import opd_queue as queue_model
+from auth.permissions import require_permission
 
 opd_queue_bp = Blueprint("opd_queue_api", __name__)
 
 
 @opd_queue_bp.route("/opd-queue/today", methods=["GET"])
+@require_permission("front_office", "view")
 def get_today_queue():
     doctor_id = request.args.get("doctor_id")
     doctor_id = int(doctor_id) if doctor_id else None
@@ -16,6 +18,7 @@ def get_today_queue():
 
 
 @opd_queue_bp.route("/opd-queue/token", methods=["POST"])
+@require_permission("front_office", "create")
 def issue_token():
     data = request.get_json() or {}
     pat_id = int(data.get("patient_id"))
@@ -35,6 +38,7 @@ def issue_token():
 
 
 @opd_queue_bp.route("/opd-queue/<int:queue_id>/call", methods=["POST"])
+@require_permission("clinical", "edit")
 def call_token(queue_id):
     user = session.get("username", "doctor")
     queue_model.call_patient(queue_id, performed_by=user)
@@ -42,8 +46,8 @@ def call_token(queue_id):
 
 
 @opd_queue_bp.route("/opd-queue/<int:queue_id>/complete", methods=["POST"])
+@require_permission("clinical", "edit")
 def complete_token(queue_id):
     user = session.get("username", "doctor")
     queue_model.complete_consultation(queue_id, performed_by=user)
     return jsonify({"message": "Consultation completed"}), 200
-

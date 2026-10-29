@@ -46,6 +46,18 @@ init_db()
 register_api(app)
 
 
+@app.route("/login")
+def login_page():
+    from api.auth import DEMO_PERSONAS
+    demo_enabled = os.environ.get("HMS_DEMO", "1") == "1"
+    return render_template(
+        "login.html",
+        title=APP_TITLE,
+        demo_enabled=demo_enabled,
+        demo_personas=DEMO_PERSONAS
+    )
+
+
 @app.route("/")
 def index():
     return render_template(

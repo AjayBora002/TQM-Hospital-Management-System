@@ -1,13 +1,15 @@
 """
-shift_handover.py -- REST API Blueprint for Nursing & Clinical Shift Handovers.
+shift_handover.py -- REST API Blueprint for Nursing & Clinical Shift Handovers with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import shift_handover as handover_model
+from auth.permissions import require_permission
 
 shift_handover_bp = Blueprint("shift_handover_api", __name__)
 
 
 @shift_handover_bp.route("/shift-handover", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_handovers():
     ward_id = request.args.get("ward_id")
     dept = request.args.get("department")
@@ -19,6 +21,7 @@ def get_handovers():
 
 
 @shift_handover_bp.route("/shift-handover", methods=["POST"])
+@require_permission("inpatient", "create")
 def post_handover():
     data = request.get_json() or {}
     outgoing = session.get("full_name", data.get("outgoing_nurse_name", "Sister Sunita Patel"))
@@ -43,4 +46,3 @@ def post_handover():
         ward_id=int(ward_id) if ward_id else None
     )
     return jsonify({"message": "Shift handover logged successfully", "handover_id": h_id}), 201
-

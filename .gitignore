@@ -6,3 +6,5 @@ backups/*.db
 .vscode/
 *.pdf
 page-*.jpg
+
+scratch/

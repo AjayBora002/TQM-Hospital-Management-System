@@ -1,14 +1,16 @@
 """
-quality_audit.py -- REST API Blueprint for NABH & ISO 9001 Hospital Quality Inspection Checklists.
+quality_audit.py -- REST API Blueprint for NABH & ISO 9001 Hospital Quality Inspection Checklists with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import quality_audit as audit_model
+from auth.permissions import require_permission
 from utils.exception_handler import ValidationError
 
 quality_audit_bp = Blueprint("quality_audit", __name__)
 
 
 @quality_audit_bp.route("/quality-audits", methods=["GET"])
+@require_permission("quality", "view")
 def get_quality_audits():
     dept = request.args.get("department")
     if dept:
@@ -19,12 +21,14 @@ def get_quality_audits():
 
 
 @quality_audit_bp.route("/quality-audits/summary", methods=["GET"])
+@require_permission("quality", "view")
 def get_compliance_summary():
     summary = audit_model.get_compliance_summary()
     return jsonify(summary), 200
 
 
 @quality_audit_bp.route("/quality-audits", methods=["POST"])
+@require_permission("quality", "create")
 def add_quality_audit():
     data = request.get_json() or {}
     user = session.get("username", "tqm_lead")

@@ -42,7 +42,7 @@ python run.py
 python run.py --web
 # Opens http://127.0.0.1:5000 in your browser
 
-# 4. Run automated test suite (172 automated tests across 31 test suites covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, Admissions, PO Replenishment, UHID, and Quality Audits)
+# 4. Run automated test suite (176 automated tests across 31 test suites covering CRUD, Validators, TQM logging, Web API, Clinical Poka-Yoke, Lab, SPC, Admissions, PO Replenishment, UHID, and Quality Audits)
 python -m unittest discover tests
 
 # 5. Regenerate SQC Pareto & Fishbone charts
@@ -58,24 +58,49 @@ python docs/build_fmea.py
 
 ---
 
-## System Modules
+## System Modules (11 Domains & Complete Hospital Coverage)
 
-| Tab / Route | Model | Core Purpose |
+| Tab / Route | Model / Blueprint | Core Purpose |
 |---|---|---|
-| Dashboard | All tables | Live counts — patients, doctors, appointments, available rooms, unpaid bills, defects, DPMO, and Sigma level |
-| Patients | `models/patient.py` | Register / update / delete patients with allergy documentation, vitals, and Patient 360° timeline |
-| Doctors | `models/doctor.py` | Doctor roster grouped by clinical specialty department |
+| Dashboard | `api/dashboard.py` | Live counts — patients, doctors, appointments, available rooms, unpaid bills, defects, DPMO, and Sigma level |
+| Patients & UHID | `models/patient.py` | Register / update / delete patients with allergy documentation, vitals, and Patient 360° timeline |
 | Appointments | `models/appointment.py` | Schedule appointments with automated slot conflict prevention & free slot lookup |
-| Rooms / Wards | `models/room.py` | Room inventory — type, occupancy status, daily rate, bed clearance |
-| Staff | `models/staff.py` | Nursing and support staff by role and shift |
-| Pharmacy | `models/medicine.py` | Medicine stock with automated low-stock threshold flagging, batch tracking, and expiry Poka-Yoke |
-| Billing | `models/bill.py` | Itemized bills with auto-calculated charges, payment tracking, and printable HTML receipts |
-| Audit Log | `models/audit.py` | Immutable trail of every INSERT, UPDATE, DELETE across all tables |
+| OPD Queue & Tokens | `api/opd_queue.py` | Real-time digital token queue with consultation triage states |
+| Visitor Passes | `api/support_api.py` | Inpatient visitor logging, pass issuance, and badge check-in/out |
+| Triage & Vitals | `models/triage.py` | Standardized Emergency Severity Index (ESI Levels 1-5) & vital sign assessments |
+| EMR & Timeline | `api/encounters.py` | 360° Electronic Medical Record with SOAP consultation encounters |
+| e-Prescriptions | `models/medicine.py` | Prescriptions with Poka-Yoke drug allergy contraindication checks |
+| Clinical Orders | `api/clinical_orders.py` | STAT, Urgent, and Routine orders from doctors to nursing units |
+| Emergency / Trauma | `api/emergency_api.py` | Casualty trauma board auto-prioritizing Code Red, Yellow, Green cases |
+| ICU Vital Flowsheet | `api/emergency_api.py` | Hourly intensive care telemetry, arterial line, ventilator & GCS tracking |
+| Operation Theatre | `api/ot_api.py` | Theatre schedules & WHO Surgical Safety Checklist (Sign In, Time Out, Sign Out) |
+| Radiology & Imaging | `api/radiology_api.py` | Modality scan orders (X-ray, CT, MRI, USG) & radiologist diagnostic reports |
+| Laboratory LIS | `models/lab_test.py` | Phlebotomy accessioning, critical value flags, and pathologist report release |
+| Blood Bank | `api/blood_bank_api.py` | Donor registry, component inventory (PRBC, FFP, Platelets) & cross-matching |
+| Admissions & Stays | `models/room.py` | Inpatient stays, ward assignments, and bed turnover clearance |
+| Bed Board Matrix | `api/rooms.py` | Real-time hospital ward occupancy matrix across clinical departments |
+| Bed Transfers | `api/admissions.py` | Patient bed movements with clinical handover reasons |
+| Nursing Station & MAR | `api/nursing_api.py` | Medication Administration Records and vital monitoring flowsheets |
+| Shift Handover (SBAR)| `api/shift_handover.py` | Standardized nursing shift handover logs with critical watchlists |
+| Discharge Summaries | `api/admissions.py` | Hospital course summaries, discharge medications, and follow-up advice |
+| Pharmacy Dispensing | `api/medicines.py` | Dispensing against doctor prescriptions with automatic batch deduction |
+| Purchase Orders | `models/purchase_order.py` | Supplier procurement workflows with inventory auto-replenishment |
+| Central Stores | `api/inventory_api.py` | Ward consumables catalog, bin locations, and stock issue requisitions |
+| Invoicing & Billing | `models/bill.py` | Itemized patient bills, GST calculations, and payment tracking |
+| Advance Deposits | `api/finance_ext_api.py` | IPD deposit collection, balance ledger, and receipt generation |
+| Insurance / TPA | `api/finance_ext_api.py` | Cashless insurance pre-authorizations and claims settlement |
+| Housekeeping | `api/support_api.py` | Room sanitization tasks, hygiene inspections, and bed turnover |
+| Diet & Nutrition | `api/support_api.py` | Clinical diet orders (Diabetic, Renal, High-Protein) & kitchen dispatch |
+| Ambulance Fleet | `api/support_api.py` | Emergency fleet dispatch with ALS/BLS vehicles and GPS trip logs |
+| Biomedical Assets | `api/support_api.py` | Medical device registry, calibration dates, and work orders |
+| Facility Maintenance | `api/support_api.py` | Hospital infrastructure maintenance tickets (HVAC, O2, Electrical) |
+| Staff & Rosters | `api/people_api.py` | Staff directory, shift duty rosters, and leave approvals |
+| Incidents & CAPA | `api/governance_api.py` | Sentinel event reporting, Root Cause Analysis (RCA), and CAPA tracking |
+| Quality Audits | `models/quality_audit.py` | NABH & ISO 9001 hospital quality inspection checklist with compliance scoring |
 | Defect Checksheet | `models/audit.py` | Quality defect checksheet feeding Pareto 80/20 and Shewhart SPC analyses |
-| Lab Diagnostics | `models/lab_test.py` | Pathology & radiology test ordering with biological reference range Poka-Yoke |
-| Emergency Triage | `models/triage.py` | Real-time emergency priority queue auto-sorted by Code Red / Yellow / Green severity |
-| Quality Audits | `models/quality_audit.py` | NABH & ISO 9001 hospital quality inspection checklist with departmental compliance scoring |
-
+| SPC Control Charts | `sqc/spc_chart.py` | 3-Sigma Shewhart control charts tracking waiting times and TAT |
+| User Management | `api/auth.py` | 21-role RBAC user accounts, lockout management, and password resets |
+| Patient Portal | `api/patient_portal_api.py`| Patient self-service access to appointments, Rx, labs, and bills |
 ---
 
 ## Q07 Feature Implementation (Poka-Yoke & Clinical Safety)
@@ -113,6 +138,7 @@ In accordance with the **Base Project Guideline (Sections 1 to 26)**, the system
 
 | Document / Dossier | Scope & Statutory Standard Covered | Key Deliverable |
 |---|---|---|
+| [`docs/RBAC_MATRIX.md`](docs/RBAC_MATRIX.md) | 21-Role Enterprise RBAC Matrix & Row-Level Security Rules | Complete permissions table across 11 module domains with audit violation logging. |
 | [`docs/LITERATURE_REVIEW.md`](docs/LITERATURE_REVIEW.md) | NABH 6th Edition (10 Chapters) & ABDM Interoperability | Benchmarks (Apollo, Practo, e-Hospital, and NABH Case Study *"Small Hospital, Big Leap"*). |
 | [`docs/STAKEHOLDER_SRS_TRACEABILITY.md`](docs/STAKEHOLDER_SRS_TRACEABILITY.md) | 10-Role Stakeholder Register & 24 Testable SRS Items | 6-Way Requirements Traceability Matrix (`SR-PAT-001` through `SR-SEC-003`). |
 | [`docs/PROCESS_WORKFLOW_MAPS.md`](docs/PROCESS_WORKFLOW_MAPS.md) | Lean Waste Analysis (Muda), Multi-Role Swimlanes | Finite State Machines (FSM) for Appointment, Lab Order, and Bed lifecycles. |
@@ -296,7 +322,7 @@ HMS_Project/
 │   ├── fishbone_diagram.py        # Ishikawa root-cause diagram generator
 │   └── fishbone_diagram.png       # Generated Fishbone diagram
 │
-└── tests/                         # 156 automated unit & integration tests across 30 test suites
+└── tests/                         # 176 automated unit & integration tests across 30 test suites
     ├── test_institutional_uhid.py # Institutional UHID generation and padding tests
     ├── test_extended_process_states.py # Extended appointment and room state machine tests
     ├── test_db.py                 # Data access layer & CRUD tests

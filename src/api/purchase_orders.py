@@ -1,20 +1,23 @@
 """
-purchase_orders.py -- REST API Blueprint for Pharmacy Purchase Orders and Replenishment.
+purchase_orders.py -- REST API Blueprint for Pharmacy Purchase Orders and Replenishment with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import purchase_order as po_model
+from auth.permissions import require_permission
 from utils.exception_handler import ValidationError
 
 purchase_orders_bp = Blueprint("purchase_orders", __name__)
 
 
 @purchase_orders_bp.route("/purchase-orders", methods=["GET"])
+@require_permission("pharmacy", "view")
 def get_purchase_orders():
     orders = po_model.list_all()
     return jsonify(orders), 200
 
 
 @purchase_orders_bp.route("/purchase-orders/<int:po_id>", methods=["GET"])
+@require_permission("pharmacy", "view")
 def get_purchase_order(po_id):
     order = po_model.get_by_id(po_id)
     if not order:
@@ -23,6 +26,7 @@ def get_purchase_order(po_id):
 
 
 @purchase_orders_bp.route("/purchase-orders", methods=["POST"])
+@require_permission("pharmacy", "create")
 def create_purchase_order():
     data = request.get_json() or {}
     user = session.get("username", "pharmacist")
@@ -43,6 +47,7 @@ def create_purchase_order():
 
 
 @purchase_orders_bp.route("/purchase-orders/auto-generate", methods=["POST"])
+@require_permission("pharmacy", "create")
 def auto_generate_pos():
     user = session.get("username", "pharmacist")
     created_ids = po_model.generate_auto_pos_for_low_stock(performed_by=user)
@@ -53,6 +58,7 @@ def auto_generate_pos():
 
 
 @purchase_orders_bp.route("/purchase-orders/<int:po_id>/receive", methods=["POST"])
+@require_permission("pharmacy", "approve")
 def receive_purchase_order(po_id):
     data = request.get_json(silent=True) or {}
     user = session.get("username", "pharmacist")
@@ -63,7 +69,7 @@ def receive_purchase_order(po_id):
             performed_by=user
         )
         return jsonify({
-            "message": f"PO #{po_id} received. Pharmacy stock replenished successfully.",
+            "message": f"PO #{po_id} received into inventory",
             "purchase_order": updated
         }), 200
     except ValidationError as e:

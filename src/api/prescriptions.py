@@ -1,14 +1,16 @@
 """
-prescriptions.py -- REST API Blueprint for Prescriptions and Clinical Visit History.
+prescriptions.py -- REST API Blueprint for Prescriptions, Safety Verification, and Pharmacy Dispensing.
 """
 from flask import Blueprint, request, jsonify, session
 from models import prescription as prescription_model
+from auth.permissions import require_permission
 from utils.exception_handler import ValidationError
 
 prescriptions_bp = Blueprint("prescriptions", __name__)
 
 
 @prescriptions_bp.route("/prescriptions", methods=["GET"])
+@require_permission("pharmacy", "view")
 def list_prescriptions():
     patient_id = request.args.get("patient_id")
     active_only = request.args.get("active_only") in ["1", "true", "True"]
@@ -22,6 +24,7 @@ def list_prescriptions():
 
 
 @prescriptions_bp.route("/prescriptions", methods=["POST"])
+@require_permission("clinical", "create")
 def create_prescription():
     data = request.get_json() or {}
     user = session.get("username", "doctor_user")
@@ -46,6 +49,7 @@ def create_prescription():
 
 
 @prescriptions_bp.route("/prescriptions/<int:prescription_id>/dispense", methods=["POST"])
+@require_permission("pharmacy", "edit")
 def dispense_prescription(prescription_id):
     data = request.get_json() or {}
     user = session.get("username", "pharmacist_user")

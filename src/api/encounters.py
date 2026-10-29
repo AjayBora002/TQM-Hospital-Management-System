@@ -1,19 +1,22 @@
 """
-encounters.py -- REST API Blueprint for SOAP Notes & Clinical Consultations.
+encounters.py -- REST API Blueprint for SOAP Notes & Clinical Consultations with RBAC.
 """
 from flask import Blueprint, request, jsonify, session
 from models import encounter as encounter_model
+from auth.permissions import require_permission
 
 encounters_bp = Blueprint("encounters_api", __name__)
 
 
 @encounters_bp.route("/encounters/patient/<int:patient_id>", methods=["GET"])
+@require_permission("clinical", "view")
 def get_patient_encounters(patient_id):
     history = encounter_model.get_patient_encounters(patient_id)
     return jsonify(history), 200
 
 
 @encounters_bp.route("/encounters", methods=["POST"])
+@require_permission("clinical", "create")
 def post_encounter():
     data = request.get_json() or {}
     pat_id = int(data.get("patient_id"))
@@ -42,4 +45,3 @@ def post_encounter():
         performed_by=user
     )
     return jsonify({"message": "Consultation record saved", "encounter_id": enc_id}), 201
-

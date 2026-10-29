@@ -382,6 +382,383 @@ CREATE TABLE IF NOT EXISTS encounters (
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
     FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE
 );
+
+-- Visitor Management
+CREATE TABLE IF NOT EXISTS visitor_logs (
+    visitor_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+    visitor_name   TEXT NOT NULL,
+    phone          TEXT NOT NULL,
+    patient_id     INTEGER NOT NULL,
+    pass_number    TEXT NOT NULL UNIQUE,
+    purpose        TEXT NOT NULL DEFAULT 'Patient Visit',
+    check_in       TEXT NOT NULL,
+    check_out      TEXT,
+    status         TEXT NOT NULL DEFAULT 'Active' CHECK(status IN ('Active','Checked Out')),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
+);
+
+-- Emergency & Trauma Management
+CREATE TABLE IF NOT EXISTS emergency_cases (
+    emergency_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id     INTEGER,
+    patient_name   TEXT NOT NULL,
+    triage_color   TEXT NOT NULL CHECK(triage_color IN ('Red','Yellow','Green','Black')),
+    chief_complaint TEXT NOT NULL,
+    vitals_summary TEXT,
+    trauma_details TEXT,
+    attending_doctor_id INTEGER,
+    arrival_mode   TEXT NOT NULL DEFAULT 'Walk-in',
+    arrival_time   TEXT NOT NULL,
+    disposition    TEXT,
+    status         TEXT NOT NULL DEFAULT 'Active' CHECK(status IN ('Active','Transferred to ICU','Admitted','Discharged','Deceased')),
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE SET NULL,
+    FOREIGN KEY (attending_doctor_id) REFERENCES doctors(doctor_id) ON DELETE SET NULL
+);
+
+-- ICU Monitoring & Critical Care Chart
+CREATE TABLE IF NOT EXISTS icu_monitoring_logs (
+    log_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id      INTEGER NOT NULL,
+    bed_id          INTEGER,
+    ventilator_mode TEXT,
+    fio2            REAL,
+    peep            REAL,
+    cvp             REAL,
+    gcs_score       INTEGER CHECK(gcs_score BETWEEN 3 AND 15),
+    urine_output_ml REAL,
+    infusion_rates  TEXT,
+    recorded_at     TEXT NOT NULL,
+    recorded_by     TEXT NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
+);
+
+-- Operation Theatre (OT) Scheduling & Checklist
+CREATE TABLE IF NOT EXISTS ot_schedules (
+    ot_id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id            INTEGER NOT NULL,
+    procedure_name        TEXT NOT NULL,
+    surgeon_id            INTEGER NOT NULL,
+    anesthetist_name      TEXT NOT NULL,
+    ot_room               TEXT NOT NULL,
+    scheduled_start       TEXT NOT NULL,
+    scheduled_end         TEXT NOT NULL,
+    pre_op_checklist_ok   INTEGER NOT NULL DEFAULT 0,
+    post_op_checklist_ok  INTEGER NOT NULL DEFAULT 0,
+    anesthesia_type       TEXT NOT NULL DEFAULT 'General',
+    status                TEXT NOT NULL DEFAULT 'Scheduled' CHECK(status IN ('Scheduled','In Progress','Completed','Cancelled','Delayed')),
+    notes                 TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (surgeon_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE
+);
+
+-- Diagnostic Radiology & Imaging Workflow
+CREATE TABLE IF NOT EXISTS radiology_orders (
+    order_id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id          INTEGER NOT NULL,
+    doctor_id           INTEGER NOT NULL,
+    modality            TEXT NOT NULL CHECK(modality IN ('X-Ray','CT Scan','MRI','Ultrasound','Mammography','DEXA')),
+    body_part           TEXT NOT NULL,
+    clinical_indication TEXT,
+    urgency             TEXT NOT NULL DEFAULT 'Routine' CHECK(urgency IN ('Routine','Urgent','STAT')),
+    status              TEXT NOT NULL DEFAULT 'Ordered' CHECK(status IN ('Ordered','Scheduled','Scan In Progress','Reported','Verified')),
+    radiologist_id      INTEGER,
+    findings            TEXT,
+    impression          TEXT,
+    dicom_link          TEXT,
+    ordered_at          TEXT NOT NULL,
+    reported_at         TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE
+);
+
+-- Blood Bank: Donors, Units, Requests & Cross-matching
+CREATE TABLE IF NOT EXISTS blood_donors (
+    donor_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name        TEXT NOT NULL,
+    blood_group      TEXT NOT NULL CHECK(blood_group IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')),
+    phone            TEXT NOT NULL,
+    age              INTEGER NOT NULL,
+    weight_kg        REAL NOT NULL,
+    hemoglobin       REAL NOT NULL,
+    donation_date    TEXT NOT NULL,
+    screening_status TEXT NOT NULL DEFAULT 'Passed' CHECK(screening_status IN ('Passed','Deferred','Pending Screening')),
+    deferral_reason  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS blood_inventory (
+    unit_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    donor_id         INTEGER,
+    blood_group      TEXT NOT NULL CHECK(blood_group IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')),
+    component_type   TEXT NOT NULL CHECK(component_type IN ('Whole Blood','Packed Red Cells (PRBC)','Fresh Frozen Plasma (FFP)','Platelet Concentrate','Cryoprecipitate')),
+    bag_number       TEXT NOT NULL UNIQUE,
+    collection_date  TEXT NOT NULL,
+    expiry_date      TEXT NOT NULL,
+    storage_location TEXT NOT NULL DEFAULT 'Refrigerator A (2-6 C)',
+    status           TEXT NOT NULL DEFAULT 'Available' CHECK(status IN ('Available','Reserved','Crossmatched','Transfused','Expired','Discarded')),
+    FOREIGN KEY (donor_id) REFERENCES blood_donors(donor_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS blood_requests (
+    request_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id       INTEGER NOT NULL,
+    doctor_id        INTEGER NOT NULL,
+    blood_group      TEXT NOT NULL CHECK(blood_group IN ('A+','A-','B+','B-','AB+','AB-','O+','O-')),
+    component_type   TEXT NOT NULL,
+    units_requested  INTEGER NOT NULL DEFAULT 1,
+    urgency          TEXT NOT NULL DEFAULT 'Routine' CHECK(urgency IN ('Routine','Urgent','Immediate Emergency')),
+    status           TEXT NOT NULL DEFAULT 'Requested' CHECK(status IN ('Requested','Crossmatched','Issued','Completed','Cancelled')),
+    requested_at     TEXT NOT NULL,
+    issued_unit_id   INTEGER,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE CASCADE,
+    FOREIGN KEY (issued_unit_id) REFERENCES blood_inventory(unit_id) ON DELETE SET NULL
+);
+
+-- Inpatient Medication Administration Record (MAR)
+CREATE TABLE IF NOT EXISTS nursing_mar (
+    mar_id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    admission_id      INTEGER,
+    patient_id        INTEGER NOT NULL,
+    prescription_id   INTEGER,
+    medicine_name     TEXT NOT NULL,
+    dosage            TEXT NOT NULL,
+    route             TEXT NOT NULL DEFAULT 'Oral',
+    scheduled_time    TEXT NOT NULL,
+    administered_time TEXT,
+    administered_by   TEXT,
+    status            TEXT NOT NULL DEFAULT 'Scheduled' CHECK(status IN ('Scheduled','Given','Refused','Held','Missed')),
+    vital_check       TEXT,
+    notes             TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (prescription_id) REFERENCES prescriptions(prescription_id) ON DELETE SET NULL
+);
+
+-- Inpatient Bed Transfers
+CREATE TABLE IF NOT EXISTS bed_transfers (
+    transfer_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    admission_id      INTEGER NOT NULL,
+    patient_id        INTEGER NOT NULL,
+    from_room_id      INTEGER NOT NULL,
+    to_room_id        INTEGER NOT NULL,
+    transfer_reason   TEXT NOT NULL,
+    requested_by      TEXT NOT NULL,
+    transfer_date     TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'Completed',
+    FOREIGN KEY (admission_id) REFERENCES admissions(admission_id) ON DELETE CASCADE,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
+);
+
+-- General Stores & Inventory Management
+CREATE TABLE IF NOT EXISTS inventory_items (
+    item_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_code         TEXT NOT NULL UNIQUE,
+    item_name         TEXT NOT NULL,
+    category          TEXT NOT NULL CHECK(category IN ('Surgical Item','Consumable','Linen','Sanitation','Stationery','Lab Reagent','Medical Gas')),
+    unit              TEXT NOT NULL DEFAULT 'Pieces',
+    stock_qty         INTEGER NOT NULL DEFAULT 0,
+    reorder_level     INTEGER NOT NULL DEFAULT 20,
+    unit_cost         REAL NOT NULL DEFAULT 0,
+    location          TEXT NOT NULL DEFAULT 'Central Store Rack A',
+    last_restocked    TEXT
+);
+
+CREATE TABLE IF NOT EXISTS inventory_transactions (
+    txn_id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id           INTEGER NOT NULL,
+    txn_type          TEXT NOT NULL CHECK(txn_type IN ('ISSUE_TO_WARD','RECEIPT','ADJUSTMENT','DISCARD')),
+    qty               INTEGER NOT NULL,
+    ward_id           INTEGER,
+    reference_no      TEXT,
+    performed_by      TEXT NOT NULL,
+    notes             TEXT,
+    txn_date          TEXT NOT NULL,
+    FOREIGN KEY (item_id) REFERENCES inventory_items(item_id) ON DELETE CASCADE
+);
+
+-- Patient Advance Deposits
+CREATE TABLE IF NOT EXISTS advance_deposits (
+    deposit_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id        INTEGER NOT NULL,
+    admission_id      INTEGER,
+    amount            REAL NOT NULL,
+    payment_method    TEXT NOT NULL CHECK(payment_method IN ('Cash','Card','UPI','Bank Transfer')),
+    transaction_ref   TEXT,
+    received_by       TEXT NOT NULL,
+    receipt_date      TEXT NOT NULL,
+    notes             TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
+);
+
+-- Insurance & TPA Claims Management
+CREATE TABLE IF NOT EXISTS insurance_claims (
+    claim_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id        INTEGER NOT NULL,
+    bill_id           INTEGER,
+    tpa_name          TEXT NOT NULL,
+    policy_number     TEXT NOT NULL,
+    claim_amount      REAL NOT NULL,
+    approved_amount   REAL DEFAULT 0,
+    pre_auth_status   TEXT NOT NULL DEFAULT 'Pending' CHECK(pre_auth_status IN ('Pending','Approved','Rejected','Queried')),
+    pre_auth_number   TEXT,
+    claim_status      TEXT NOT NULL DEFAULT 'Draft' CHECK(claim_status IN ('Draft','Submitted','In Review','Settled','Rejected')),
+    submission_date   TEXT,
+    settled_date      TEXT,
+    notes             TEXT,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+    FOREIGN KEY (bill_id) REFERENCES bills(bill_id) ON DELETE SET NULL
+);
+
+-- Housekeeping & Sanitation Tasks
+CREATE TABLE IF NOT EXISTS housekeeping_tasks (
+    task_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_id           INTEGER,
+    ward_id           INTEGER,
+    area_name         TEXT NOT NULL,
+    task_type         TEXT NOT NULL CHECK(task_type IN ('Terminal Clean','Routine Sanitization','Biohazard Spill','Discharge Preparation','Linen Change')),
+    priority          TEXT NOT NULL DEFAULT 'Routine' CHECK(priority IN ('Routine','Urgent','Immediate')),
+    status            TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','In Progress','Completed','Inspected')),
+    assigned_to       TEXT,
+    requested_by      TEXT NOT NULL,
+    requested_at      TEXT NOT NULL,
+    completed_at      TEXT,
+    notes             TEXT,
+    FOREIGN KEY (room_id) REFERENCES rooms(room_id) ON DELETE SET NULL
+);
+
+-- Clinical Dietetics & Nutrition Orders
+CREATE TABLE IF NOT EXISTS diet_orders (
+    order_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id        INTEGER NOT NULL,
+    admission_id      INTEGER,
+    diet_type         TEXT NOT NULL CHECK(diet_type IN ('Normal / Standard','Diabetic','Low Sodium / Cardiac','Renal / Low Protein','Soft / Pureed','Clear Liquid','NPO (Nil Per Os)')),
+    meal_type         TEXT NOT NULL CHECK(meal_type IN ('Breakfast','Lunch','Dinner','Evening Snacks','Full Day Plan')),
+    allergies         TEXT,
+    calories_kcal     INTEGER DEFAULT 1800,
+    dietitian_notes   TEXT,
+    status            TEXT NOT NULL DEFAULT 'Ordered' CHECK(status IN ('Ordered','Prepared','Delivered','Cancelled')),
+    delivery_date     TEXT NOT NULL,
+    dietitian_id      INTEGER,
+    FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE
+);
+
+-- Ambulance & Emergency Fleet Dispatch
+CREATE TABLE IF NOT EXISTS ambulance_trips (
+    trip_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    vehicle_number    TEXT NOT NULL,
+    driver_name       TEXT NOT NULL,
+    paramedic_name    TEXT,
+    trip_type         TEXT NOT NULL CHECK(trip_type IN ('Emergency Pickup','Inter-facility Transfer','Discharge Drop','Critical Neonatal Transport')),
+    patient_name      TEXT NOT NULL,
+    pickup_location   TEXT NOT NULL,
+    drop_location     TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'Dispatched' CHECK(status IN ('Dispatched','En Route','Patient Onboard','Arrived at Hospital','Completed','Cancelled')),
+    dispatch_time     TEXT NOT NULL,
+    completion_time   TEXT,
+    notes             TEXT
+);
+
+-- Biomedical Equipment & Asset Tracking
+CREATE TABLE IF NOT EXISTS biomedical_equipment (
+    equip_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    equipment_name    TEXT NOT NULL,
+    model             TEXT NOT NULL,
+    serial_number     TEXT NOT NULL UNIQUE,
+    department_id     INTEGER,
+    location          TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'Operational' CHECK(status IN ('Operational','Under Maintenance','Calibrated','Breakdown','Decommissioned')),
+    last_service_date TEXT,
+    next_service_date TEXT,
+    calibration_due   TEXT,
+    vendor_contact    TEXT
+);
+
+-- Facility Tickets & Maintenance
+CREATE TABLE IF NOT EXISTS facility_tickets (
+    ticket_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    department_id     INTEGER,
+    ward_id           INTEGER,
+    location          TEXT NOT NULL,
+    issue_category    TEXT NOT NULL CHECK(issue_category IN ('Electrical','Plumbing','HVAC / Air Conditioning','Medical Gas / Oxygen','Carpentry','IT / Network')),
+    description       TEXT NOT NULL,
+    urgency           TEXT NOT NULL DEFAULT 'Medium' CHECK(urgency IN ('Low','Medium','High','Critical Emergency')),
+    status            TEXT NOT NULL DEFAULT 'Open' CHECK(status IN ('Open','Assigned','In Progress','Resolved','Closed')),
+    reported_by       TEXT NOT NULL,
+    assigned_to       TEXT,
+    reported_at       TEXT NOT NULL,
+    resolved_at       TEXT
+);
+
+-- Staff Rostering & Leaves (HR)
+CREATE TABLE IF NOT EXISTS staff_shifts (
+    shift_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id          INTEGER,
+    user_id           INTEGER,
+    shift_date        TEXT NOT NULL,
+    shift_type        TEXT NOT NULL CHECK(shift_type IN ('Morning','Evening','Night','General')),
+    department        TEXT NOT NULL,
+    notes             TEXT,
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS staff_leaves (
+    leave_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id          INTEGER NOT NULL,
+    leave_type        TEXT NOT NULL CHECK(leave_type IN ('Casual Leave','Sick Leave','Earned Leave','Maternity/Paternity','Compensatory Off')),
+    start_date        TEXT NOT NULL,
+    end_date          TEXT NOT NULL,
+    reason            TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'Pending' CHECK(status IN ('Pending','Approved','Rejected')),
+    approved_by       TEXT,
+    created_at        TEXT NOT NULL,
+    FOREIGN KEY (staff_id) REFERENCES staff(staff_id) ON DELETE CASCADE
+);
+
+-- Quality Incidents & Corrective/Preventive Actions (CAPA)
+CREATE TABLE IF NOT EXISTS quality_incidents (
+    incident_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+    incident_type     TEXT NOT NULL CHECK(incident_type IN ('Medication Error','Patient Fall','Needlestick Injury','Surgical Near Miss','Hospital Acquired Infection','Equipment Failure','Documentation Defect','Patient Identification Mismatch')),
+    department        TEXT NOT NULL,
+    severity          TEXT NOT NULL CHECK(severity IN ('Near Miss','Minor (No Harm)','Moderate (Temporary Harm)','Severe (Permanent Harm)','Sentinel Event')),
+    description       TEXT NOT NULL,
+    reported_by       TEXT NOT NULL,
+    reported_at       TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'Reported' CHECK(status IN ('Reported','Under Investigation','Root Cause Analyzed','CAPA Initiated','Closed'))
+);
+
+CREATE TABLE IF NOT EXISTS capa_actions (
+    capa_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    incident_id       INTEGER NOT NULL,
+    root_cause        TEXT NOT NULL,
+    corrective_action TEXT NOT NULL,
+    preventive_action TEXT NOT NULL,
+    assigned_to       TEXT NOT NULL,
+    due_date          TEXT NOT NULL,
+    status            TEXT NOT NULL DEFAULT 'Open' CHECK(status IN ('Open','In Progress','Completed','Verified Effective')),
+    verified_by       TEXT,
+    completed_at      TEXT,
+    FOREIGN KEY (incident_id) REFERENCES quality_incidents(incident_id) ON DELETE CASCADE
+);
+
+-- System Notifications
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id   INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id           INTEGER,
+    role              TEXT NOT NULL DEFAULT 'All',
+    title             TEXT NOT NULL,
+    message           TEXT NOT NULL,
+    type              TEXT NOT NULL DEFAULT 'INFO' CHECK(type IN ('INFO','WARNING','CRITICAL','ORDER')),
+    is_read           INTEGER NOT NULL DEFAULT 0,
+    link              TEXT,
+    created_at        TEXT NOT NULL
+);
+
+-- User Login Security & Account Lockout
+CREATE TABLE IF NOT EXISTS login_attempts (
+    username       TEXT PRIMARY KEY,
+    failed_count   INTEGER NOT NULL DEFAULT 0,
+    last_failed_at REAL NOT NULL,
+    locked_until   REAL NOT NULL DEFAULT 0
+);
 """
 
 
@@ -454,7 +831,7 @@ def init_db():
             seed_meds
         )
 
-    # 6. Seed all 10 demo user accounts
+    # 6. Seed all 21 demo user accounts
     now_str = datetime.now().isoformat(timespec="seconds")
     demo_users = [
         ("admin", _hash_pw("admin123"), "Admin", "Dr. Ajay Bora (System Admin)", "admin@hospital.local"),
@@ -467,6 +844,17 @@ def init_db():
         ("cashier", _hash_pw("cash123"), "Cashier", "Ramesh Gupta (Senior Billing Officer)", "cashier@hospital.local"),
         ("hospital_manager", _hash_pw("hosp123"), "Hospital Manager", "Dr. Sunita Rao (Medical Superintendent)", "manager@hospital.local"),
         ("patient", _hash_pw("patient123"), "Patient", "Rohan Sharma (Patient Portal)", "rohan.patient@example.com"),
+        ("quality_mgr", _hash_pw("quality123"), "Quality Manager", "Dr. Ananya Roy (NABH Quality Director)", "quality@hospital.local"),
+        ("radiologist", _hash_pw("radio123"), "Radiologist", "Dr. Deepak Varma (Chief Radiologist)", "radiology@hospital.local"),
+        ("ot_mgr", _hash_pw("ot123"), "OT Manager", "Dr. Sanjay Malhotra (OT Coordinator)", "ot@hospital.local"),
+        ("blood_tech", _hash_pw("blood123"), "Blood Bank Technician", "Kavita Nair (Blood Bank Officer)", "bloodbank@hospital.local"),
+        ("housekeeping_sup", _hash_pw("clean123"), "Housekeeping Supervisor", "Mohan Lal (Sanitation Supervisor)", "housekeeping@hospital.local"),
+        ("biomed_eng", _hash_pw("biomed123"), "Biomedical Engineer", "Eng. Suresh Nair (Bio-Medical Lead)", "biomed@hospital.local"),
+        ("hr_mgr", _hash_pw("hr123"), "HR Manager", "Pooja Hegde (Chief People Officer)", "hr@hospital.local"),
+        ("store_mgr", _hash_pw("store123"), "Store/Inventory Manager", "Alok Mathur (Central Stores Incharge)", "stores@hospital.local"),
+        ("tpa_desk", _hash_pw("tpa123"), "Insurance/TPA Desk", "Neha Kothari (TPA & Claims Coordinator)", "insurance@hospital.local"),
+        ("ambulance_dispatch", _hash_pw("ems123"), "Ambulance Dispatcher", "Gopal Singh (Emergency Dispatch Lead)", "ambulance@hospital.local"),
+        ("dietitian", _hash_pw("diet123"), "Dietitian", "Dt. Shalini Menon (Chief Clinical Dietitian)", "dietetics@hospital.local"),
     ]
     for u in demo_users:
         exists = conn.execute("SELECT 1 FROM users WHERE username = ?", (u[0],)).fetchone()
@@ -474,6 +862,12 @@ def init_db():
             conn.execute(
                 "INSERT INTO users (username, password_hash, role, full_name, email, created_at) VALUES (?,?,?,?,?,?)",
                 (u[0], u[1], u[2], u[3], u[4], now_str)
+            )
+        else:
+            # Update password and role to ensure consistency
+            conn.execute(
+                "UPDATE users SET password_hash = ?, role = ?, full_name = ?, email = ? WHERE username = ?",
+                (u[1], u[2], u[3], u[4], u[0])
             )
 
     # 7. Seed Departments
@@ -679,6 +1073,160 @@ def init_db():
             seed_audits
         )
 
+
+    # 18. Seed General Store Inventory Items
+    item_count = conn.execute("SELECT COUNT(*) as c FROM inventory_items").fetchone()["c"]
+    if item_count == 0:
+        seed_items = [
+            ("INV-SURG-01", "Disposable Sterile Surgical Gloves (Size 7.5)", "Surgical Item", "Pairs", 450, 100, 18.0, "Central Store Rack A", "2026-10-15"),
+            ("INV-CONS-02", "IV Cannula 20G (Pink)", "Consumable", "Pieces", 320, 50, 22.0, "Central Store Rack B", "2026-10-18"),
+            ("INV-CONS-03", "3-Ply Surgical Face Masks (Box of 50)", "Consumable", "Boxes", 85, 20, 150.0, "Central Store Rack B", "2026-10-12"),
+            ("INV-LIN-04", "Standard Hospital Bed Sheet (White Cotton)", "Linen", "Pieces", 160, 40, 350.0, "Linen Room 1st Floor", "2026-10-05"),
+            ("INV-SAN-05", "Hospital Grade Disinfectant Surface Cleaner 5L", "Sanitation", "Bottles", 25, 10, 680.0, "Housekeeping Store", "2026-10-20"),
+            ("INV-LAB-06", "EDTA K2 Vacuum Blood Collection Tubes 3ml", "Lab Reagent", "Pieces", 800, 200, 8.5, "Lab Store B1", "2026-10-22"),
+            ("INV-GAS-07", "Medical Oxygen Cylinder 46.7L (D-Type)", "Medical Gas", "Cylinders", 18, 5, 450.0, "Gas Manifold Room", "2026-10-25"),
+        ]
+        conn.executemany(
+            "INSERT INTO inventory_items (item_code, item_name, category, unit, stock_qty, reorder_level, unit_cost, location, last_restocked) "
+            "VALUES (?,?,?,?,?,?,?,?,?)",
+            seed_items
+        )
+
+    # 19. Seed Blood Donors & Blood Inventory
+    donor_count = conn.execute("SELECT COUNT(*) as c FROM blood_donors").fetchone()["c"]
+    if donor_count == 0:
+        seed_donors = [
+            ("Manish Tiwari", "O+", "+91-98765-22001", 28, 72.5, 14.8, "2026-10-14", "Passed", None),
+            ("Divya Sundaram", "B+", "+91-98765-22002", 34, 61.0, 13.2, "2026-10-18", "Passed", None),
+            ("Rahul Saxena", "A-", "+91-98765-22003", 41, 79.0, 15.1, "2026-10-22", "Passed", None),
+        ]
+        conn.executemany(
+            "INSERT INTO blood_donors (full_name, blood_group, phone, age, weight_kg, hemoglobin, donation_date, screening_status, deferral_reason) "
+            "VALUES (?,?,?,?,?,?,?,?,?)",
+            seed_donors
+        )
+        seed_blood_units = [
+            (1, "O+", "Packed Red Cells (PRBC)", "BAG-O-8801", "2026-10-14", "2026-11-25", "Refrigerator A (2-6 C)", "Available"),
+            (1, "O+", "Fresh Frozen Plasma (FFP)", "BAG-O-8802", "2026-10-14", "2027-10-14", "Deep Freezer -40 C", "Available"),
+            (2, "B+", "Platelet Concentrate", "BAG-B-9901", "2026-10-18", "2026-10-23", "Agitator Incubator (22 C)", "Available"),
+            (3, "A-", "Packed Red Cells (PRBC)", "BAG-A-7701", "2026-10-22", "2026-12-03", "Refrigerator A (2-6 C)", "Available"),
+        ]
+        conn.executemany(
+            "INSERT INTO blood_inventory (donor_id, blood_group, component_type, bag_number, collection_date, expiry_date, storage_location, status) "
+            "VALUES (?,?,?,?,?,?,?,?)",
+            seed_blood_units
+        )
+
+# 20. Seed Emergency Cases
+    er_count = conn.execute("SELECT COUNT(*) as c FROM emergency_cases").fetchone()["c"]
+    if er_count == 0:
+        doc_row = conn.execute("SELECT doctor_id FROM doctors ORDER BY doctor_id LIMIT 1").fetchone()
+        pat_row = conn.execute("SELECT patient_id FROM patients ORDER BY patient_id LIMIT 1").fetchone()
+        v_doc_id = doc_row["doctor_id"] if doc_row else None
+        v_pat_id = pat_row["patient_id"] if pat_row else None
+        seed_er = [
+            (v_pat_id, "Amitabh Verma", "Yellow", "Severe acute chest pain radiating to left jaw, sweating", "BP: 165/100, Pulse: 104, SpO2: 92%", "Suspected Acute Coronary Syndrome", v_doc_id, "Ambulance", "2026-10-29 08:30:00", "Transferred to CCW-Bed-02", "Active"),
+            (None, "Unknown Male (RTA)", "Red", "Multiple trauma, polytrauma post vehicular accident, head laceration", "BP: 85/50, Pulse: 130, SpO2: 89%", "Severe concussion, compound fracture right femur", v_doc_id, "108 Emergency Ambulance", "2026-10-29 09:15:00", "Trauma Bay 1 Resuscitation", "Active"),
+            (v_pat_id, "Vikramaditya Sen", "Green", "Sprained right ankle after slip, mild swelling", "BP: 122/78, Pulse: 72, SpO2: 99%", "Soft tissue sprain, no deformity", v_doc_id, "Walk-in", "2026-10-29 10:00:00", "X-ray ordered, crepe bandage", "Active"),
+        ]
+        conn.executemany(
+            "INSERT INTO emergency_cases (patient_id, patient_name, triage_color, chief_complaint, vitals_summary, trauma_details, attending_doctor_id, arrival_mode, arrival_time, disposition, status) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            seed_er
+        )
+
+    # 21. Seed Radiology Orders
+    rad_count = conn.execute("SELECT COUNT(*) as c FROM radiology_orders").fetchone()["c"]
+    if rad_count == 0:
+        doc_row = conn.execute("SELECT doctor_id FROM doctors ORDER BY doctor_id LIMIT 1").fetchone()
+        pat_row = conn.execute("SELECT patient_id FROM patients ORDER BY patient_id LIMIT 1").fetchone()
+        if doc_row and pat_row:
+            v_doc_id = doc_row["doctor_id"]
+            v_pat_id = pat_row["patient_id"]
+            seed_rad = [
+                (v_pat_id, v_doc_id, "X-Ray", "Chest PA View", "Evaluate cardiomegaly and pulmonary congestion", "Urgent", "Verified", v_doc_id, "Bilateral lung fields clear. Mild borderline cardiothoracic ratio prominence (52%). Costophrenic angles normal.", "Borderline cardiomegaly without overt pulmonary edema.", "DICOM-XR-2026-001", "2026-10-29 09:00:00", "2026-10-29 10:15:00"),
+                (v_pat_id, v_doc_id, "X-Ray", "Right Ankle AP & Lateral", "Suspected lateral malleolus fracture", "Routine", "Reported", v_doc_id, "No displaced cortical fracture seen. Mild lateral soft tissue swelling.", "Soft tissue sprain right ankle, no radiographic fracture.", "DICOM-XR-2026-002", "2026-10-29 10:10:00", "2026-10-29 11:00:00"),
+            ]
+            conn.executemany(
+                "INSERT INTO radiology_orders (patient_id, doctor_id, modality, body_part, clinical_indication, urgency, status, radiologist_id, findings, impression, dicom_link, ordered_at, reported_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                seed_rad
+            )
+
+    # 22. Seed Housekeeping Tasks
+    hk_count = conn.execute("SELECT COUNT(*) as c FROM housekeeping_tasks").fetchone()["c"]
+    if hk_count == 0:
+        r_row = conn.execute("SELECT room_id FROM rooms ORDER BY room_id LIMIT 1").fetchone()
+        w_row = conn.execute("SELECT ward_id FROM wards ORDER BY ward_id LIMIT 1").fetchone()
+        v_r_id = r_row["room_id"] if r_row else None
+        v_w_id = w_row["ward_id"] if w_row else None
+        seed_hk = [
+            (v_r_id, v_w_id, "Room 101 (General Ward)", "Routine Sanitization", "Routine", "Completed", "Mohan Lal", "Sister Sunita Patel", "2026-10-29 07:00:00", "2026-10-29 07:45:00", "Floors mopped with 1% hypochlorite, dustbins cleared"),
+            (v_r_id, v_w_id, "Room 201 (ICU)", "Terminal Clean", "Urgent", "In Progress", "Ramesh Kumar", "Sister Sunita Patel", "2026-10-29 09:30:00", None, "Full terminal sterilization in progress post patient transfer"),
+        ]
+        conn.executemany(
+            "INSERT INTO housekeeping_tasks (room_id, ward_id, area_name, task_type, priority, status, assigned_to, requested_by, requested_at, completed_at, notes) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            seed_hk
+        )
+
+    # 23. Seed Biomedical Equipment
+    bio_count = conn.execute("SELECT COUNT(*) as c FROM biomedical_equipment").fetchone()["c"]
+    if bio_count == 0:
+        seed_bio = [
+            ("Defibrillator / Multi-parameter Monitor", "Philips HeartStart XL+", "SN-PHIL-DF-901", 10, "ICU Bed 01 Bay", "Operational", "2026-09-15", "2027-03-15", "2027-03-15", "Philips Healthcare Tech Support (+91-1800-419-6789)"),
+            ("Mechanical Ventilator (Invasive/NIV)", "Hamilton-C3 High-End", "SN-HAM-VENT-441", 10, "ICU Bed 02 Bay", "Operational", "2026-10-01", "2027-04-01", "2027-04-01", "Hamilton Medical India (+91-98111-23456)"),
+            ("12-Lead Digital ECG Machine", "GE Healthcare MAC 2000", "SN-GE-ECG-228", 1, "Cardiology OPD-101", "Operational", "2026-08-20", "2027-02-20", "2027-02-20", "GE Service Hub (+91-1800-102-4363)"),
+        ]
+        conn.executemany(
+            "INSERT INTO biomedical_equipment (equipment_name, model, serial_number, department_id, location, status, last_service_date, next_service_date, calibration_due, vendor_contact) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?)",
+            seed_bio
+        )
+
+    # 24. Seed Diet Orders
+    diet_count = conn.execute("SELECT COUNT(*) as c FROM diet_orders").fetchone()["c"]
+    if diet_count == 0:
+        pat_row = conn.execute("SELECT patient_id FROM patients ORDER BY patient_id LIMIT 1").fetchone()
+        adm_row = conn.execute("SELECT admission_id FROM admissions ORDER BY admission_id LIMIT 1").fetchone()
+        if pat_row:
+            v_pat_id = pat_row["patient_id"]
+            v_adm_id = adm_row["admission_id"] if adm_row else None
+            seed_diet = [
+                (v_pat_id, v_adm_id, "Low Sodium / Cardiac", "Lunch", "Penicillin allergy noted", 1750, "Strict salt restriction < 2g/day. Steamed vegetables and oats roti.", "Prepared", "2026-10-29", 1),
+                (v_pat_id, v_adm_id, "Diabetic", "Lunch", "None", 1600, "Low glycemic index, no refined sugar, brown rice and sprouted dal.", "Delivered", "2026-10-29", 1),
+            ]
+            conn.executemany(
+                "INSERT INTO diet_orders (patient_id, admission_id, diet_type, meal_type, allergies, calories_kcal, dietitian_notes, status, delivery_date, dietitian_id) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?)",
+                seed_diet
+            )
+
+    # 25. Seed Ambulance Fleet
+    amb_count = conn.execute("SELECT COUNT(*) as c FROM ambulance_trips").fetchone()["c"]
+    if amb_count == 0:
+        seed_amb = [
+            ("DL-1T-4021 (Advanced Life Support)", "Gopal Singh", "Paramedic Manoj Sharma", "Emergency Pickup", "Patient RTA Case", "Ring Road Flyover, Junction 4", "Hospital Emergency Trauma Bay", "Completed", "2026-10-29 08:45:00", "2026-10-29 09:14:00", "Arrived safely, patient handed over to ER resuscitation"),
+            ("DL-1T-9912 (Basic Life Support)", "Dharmendra Rai", "Paramedic Anita Roy", "Inter-facility Transfer", "Cardiac Patient Transfer", "District Hospital North", "Hospital Cardiac Care Wing", "En Route", "2026-10-29 10:30:00", None, "En route on Highway 8, vitals monitored"),
+        ]
+        conn.executemany(
+            "INSERT INTO ambulance_trips (vehicle_number, driver_name, paramedic_name, trip_type, patient_name, pickup_location, drop_location, status, dispatch_time, completion_time, notes) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            seed_amb
+        )
+
+    # 26. Seed Quality Incidents & CAPA
+    inc_count = conn.execute("SELECT COUNT(*) as c FROM quality_incidents").fetchone()["c"]
+    if inc_count == 0:
+        conn.execute(
+            "INSERT INTO quality_incidents (incident_type, department, severity, description, reported_by, reported_at, status) "
+            "VALUES ('Medication Error', 'Pharmacy & Dispensary', 'Near Miss', 'Pharmacist flagged near-miss: Look-Alike Sound-Alike (LASA) Ampicillin vs Amoxicillin picked during rush hour, caught before dispensing.', 'Meena Iyer (Chief Pharmacist)', '2026-10-25 14:15:00', 'CAPA Initiated')"
+        )
+        conn.execute(
+            "INSERT INTO capa_actions (incident_id, root_cause, corrective_action, preventive_action, assigned_to, due_date, status, verified_by, completed_at) "
+            "VALUES (1, 'LASA ampoules stored on adjacent shelves with similar font packaging', 'Re-arranged storage with Tall-Man lettering (AMOxicillin vs AMPicillin) and separate color-coded bins', 'Double-sign verification enforced in pharmacy dispensing workflow', 'Meena Iyer', '2026-11-05', 'Completed', 'Dr. Ananya Roy (Quality Lead)', '2026-10-28 16:00:00')"
+        )
+
     conn.commit()
     conn.close()
 
@@ -686,10 +1234,13 @@ def init_db():
 def log_audit(conn, table_name, record_id, action, details, user="front_desk_user"):
     """Shared helper -- every model module calls this inside the same transaction
     as its INSERT/UPDATE/DELETE so the audit trail can never go out of sync."""
+    db_action = action if action in ('INSERT', 'UPDATE', 'DELETE') else 'INSERT'
+    if action not in ('INSERT', 'UPDATE', 'DELETE'):
+        details = f"[{action}] {details}"
     conn.execute(
         "INSERT INTO audit_log (table_name, record_id, action, details, performed_by, timestamp) "
         "VALUES (?,?,?,?,?,?)",
-        (table_name, record_id, action, details, user, datetime.now().isoformat(timespec="seconds")),
+        (table_name, record_id, db_action, details, user, datetime.now().isoformat(timespec="seconds")),
     )
     # Dual-persistence to TQM audit evidence CSV
     try:

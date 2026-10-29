@@ -1,3 +1,7 @@
+@import url('tokens.css');
+@import url('layout.css');
+@import url('components.css');
+
 /*
  * Hospital Management System (HMS) - Web Application Styles
  * Quality Goal: Q07 - Improve Data Accuracy

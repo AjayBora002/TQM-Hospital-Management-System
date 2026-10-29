@@ -1,23 +1,30 @@
 """
-rooms.py -- Room allocation and management REST API endpoints
+rooms.py -- Room & Bed allocation and bed board management REST API endpoints with RBAC.
 """
 from flask import Blueprint, request, jsonify
 import models.room as room_model
+from auth.permissions import require_permission
 from .helpers import rows_to_list
 
 rooms_bp = Blueprint("rooms", __name__)
 
+
 @rooms_bp.route("/rooms", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_rooms():
     return jsonify(rows_to_list(room_model.list_all()))
 
+
 @rooms_bp.route("/rooms/choices", methods=["GET"])
+@require_permission("inpatient", "view")
 def get_room_choices():
     avail_only = request.args.get("available_only", "0") == "1"
     cmap = room_model.choices_map(only_available=avail_only)
     return jsonify([{"id": v, "label": k} for k, v in cmap.items()])
 
+
 @rooms_bp.route("/rooms", methods=["POST"])
+@require_permission("inpatient", "create")
 def create_room():
     data = request.json or {}
     new_id = room_model.add(
@@ -28,7 +35,9 @@ def create_room():
     )
     return jsonify({"room_id": new_id, "status": "created"}), 201
 
+
 @rooms_bp.route("/rooms/<int:room_id>", methods=["PUT"])
+@require_permission("inpatient", "edit")
 def update_room(room_id):
     data = request.json or {}
     room_model.update(
@@ -40,7 +49,9 @@ def update_room(room_id):
     )
     return jsonify({"status": "updated"})
 
+
 @rooms_bp.route("/rooms/<int:room_id>", methods=["DELETE"])
+@require_permission("inpatient", "delete")
 def delete_room(room_id):
     room_model.delete(room_id)
     return jsonify({"status": "deleted"})
