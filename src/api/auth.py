@@ -35,6 +35,14 @@ DEMO_PERSONAS = [
     {"username": "tpa_desk", "role": "Insurance/TPA Desk", "name": "Neha Kothari (TPA Lead)", "password": "tpa123", "domain": "Insurance & Claims"},
     {"username": "ambulance_dispatch", "role": "Ambulance Dispatcher", "name": "Gopal Singh (EMS Lead)", "password": "ems123", "domain": "Fleet & Dispatch"},
     {"username": "dietitian", "role": "Dietitian", "name": "Dt. Shalini Menon (Dietitian)", "password": "diet123", "domain": "Diet & Nutrition"}
+,
+    {"username": "mrd_officer", "role": "MRD Officer", "name": "Suman Lata (MRD Officer)", "password": "mrd123", "domain": "Medical Records & ICD"},
+    {"username": "mortuary_attendant", "role": "Mortuary Attendant", "name": "Dinesh Rawat (Mortuary Attendant)", "password": "mort123", "domain": "Mortuary & Decedents"},
+    {"username": "cssd_tech", "role": "CSSD Technician", "name": "Ravi Shankar (Sterilization Tech)", "password": "cssd123", "domain": "CSSD & Autoclave"},
+    {"username": "infection_control", "role": "Infection Control Nurse", "name": "Sister Mary Thomas (Infection Control)", "password": "ic123", "domain": "HAI Surveillance"},
+    {"username": "physiotherapist", "role": "Physiotherapist", "name": "Dr. Shalini Menon (Lead PT)", "password": "physio123", "domain": "Rehab & Physiotherapy"},
+    {"username": "security_officer", "role": "Security Officer", "name": "Insp. Balram Yadav (Security Chief)", "password": "sec123", "domain": "Gate & Campus Security"},
+    {"username": "telemed_doc", "role": "Telemedicine Doctor", "name": "Dr. Ajay Bora (Virtual Health)", "password": "tele123", "domain": "Teleconsultation & Remote Care"}
 ]
 
 

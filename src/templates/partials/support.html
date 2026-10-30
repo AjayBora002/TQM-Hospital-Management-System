@@ -1,0 +1,358 @@
+<section id="tab-housekeeping" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Housekeeping, Bed Disinfection &amp; Hygiene Logs</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenHousekeepingModal()">+ Assign Cleaning Task</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Task ID</th><th>Room / Bed</th><th>Type</th><th>Assigned Cleaner</th><th>Priority</th><th>Requested At</th><th>Completed At</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="housekeepingTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading housekeeping roster...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DIETETICS & NUTRITION TAB ================= -->
+        <section id="tab-dietetics" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Clinical Dietetics &amp; Patient Meal Orders</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenDietOrderModal()">+ Prescribe Patient Diet</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Diet ID</th><th>Patient (Bed)</th><th>Diet Type</th><th>Calorie Target</th><th>Allergies / Special Instructions</th><th>Kitchen Status</th><th>Delivered At</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="dieteticsTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading diet orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AMBULANCE FLEET TAB ================= -->
+        <section id="tab-ambulance" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Emergency Ambulance Fleet Dispatch</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenAmbulanceModal()">+ Dispatch Ambulance</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Trip ID</th><th>Vehicle Reg</th><th>Type (ALS/BLS)</th><th>Driver</th><th>Destination / Pickup</th><th>Dispatched Time</th><th>Paramedic</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="ambulanceTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading fleet dispatch log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BIOMEDICAL ASSETS TAB ================= -->
+        <section id="tab-biomedical" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Biomedical Engineering &amp; Equipment Maintenance</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenBiomedicalModal()">+ Register Medical Asset</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Asset Tag</th><th>Equipment Name</th><th>Department</th><th>Serial No</th><th>Calibration Due</th><th>Last PM</th><th>Operating Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="biomedicalTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading biomedical assets...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FACILITY TICKETS TAB ================= -->
+        <section id="tab-facility" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Hospital Facility &amp; Infrastructure Work Orders</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenFacilityTicketModal()">+ Log Facility Issue</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Ticket ID</th><th>Location</th><th>Category (HVAC/O2/Elec)</th><th>Issue Summary</th><th>Reported By</th><th>Priority</th><th>Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="facilityTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading facility maintenance tickets...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SHIFT ROSTERS TAB ================= -->
+
+        <!-- ================= CSSD STERILIZATION TAB ================= -->
+        <section id="tab-cssd" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Log Autoclave Sterilization Cycle</h3>
+                    <form id="cssdForm" onsubmit="window.hmsSaveCssd(event)">
+                        <div class="form-group">
+                            <label>Autoclave Unit *</label>
+                            <input type="text" id="cssd-autoclave" class="form-control" required placeholder="e.g. Autoclave Unit 02">
+                        </div>
+                        <div class="form-group">
+                            <label>Cycle Type *</label>
+                            <select id="cssd-type" class="form-control" required>
+                                <option value="Steam 134C Bowie-Dick">Steam 134°C Bowie-Dick (Porous Load)</option>
+                                <option value="Steam 121C Standard">Steam 121°C Standard (Rubber/Plastic)</option>
+                                <option value="ETO Gas Sterilization">ETO Gas Low-Temperature</option>
+                                <option value="Plasma Hydrogen Peroxide">Plasma Hydrogen Peroxide</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Trays / Packs Count *</label>
+                            <input type="number" id="cssd-items" class="form-control" required min="1" value="12">
+                        </div>
+                        <div class="form-group">
+                            <label>Chemical Indicator Class 5/6 *</label>
+                            <select id="cssd-indicator" class="form-control" required>
+                                <option value="1">Passed (Color Changed Completely)</option>
+                                <option value="0">Failed (Reject Entire Batch)</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Start Cycle</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Central Sterile Services Department (CSSD) Cycles</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadCssd()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Cycle ID</th><th>Autoclave Unit</th><th>Cycle Type</th><th>Items Count</th><th>Chemical Indicator</th><th>Started At</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="cssdTableBody">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading sterilization cycles...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= LAUNDRY & LINEN TAB ================= -->
+        <section id="tab-laundry" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Record Ward Linen Batch</h3>
+                    <form id="laundryForm" onsubmit="window.hmsSaveLaundry(event)">
+                        <div class="form-group">
+                            <label>Ward Name *</label>
+                            <input type="text" id="ln-ward" class="form-control" required placeholder="e.g. ICU, General Ward A">
+                        </div>
+                        <div class="form-group">
+                            <label>Linen Category *</label>
+                            <select id="ln-type" class="form-control" required>
+                                <option value="Bed Sheets & Pillow Covers">Bed Sheets & Pillow Covers</option>
+                                <option value="OT Surgical Gowns & Drapes">OT Surgical Gowns & Drapes</option>
+                                <option value="Patient Thermal Blankets">Patient Thermal Blankets</option>
+                                <option value="Staff Scrub Suits">Staff Scrub Suits</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Clean Dispatched Qty</label>
+                            <input type="number" id="ln-clean" class="form-control" value="25" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Soiled / Biohazard Collected Qty</label>
+                            <input type="number" id="ln-soiled" class="form-control" value="20" min="0">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Log Linen Batch</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Hospital Linen Distribution &amp; Laundry Log</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadLaundry()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Batch ID</th><th>Ward</th><th>Linen Type</th><th>Clean Qty</th><th>Soiled Qty</th><th>Status</th><th>Last Updated</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="laundryTableBody">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading laundry batches...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MORTUARY REGISTER TAB ================= -->
+        <section id="tab-mortuary" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Decedent Intake Registration</h3>
+                    <form id="mortuaryForm" onsubmit="window.hmsSaveMortuary(event)">
+                        <div class="form-group">
+                            <label>Deceased UHID *</label>
+                            <input type="text" id="mor-uhid" class="form-control" required placeholder="UHID-2026-000009">
+                        </div>
+                        <div class="form-group">
+                            <label>Deceased Full Name *</label>
+                            <input type="text" id="mor-name" class="form-control" required placeholder="Full Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Cause of Death *</label>
+                            <input type="text" id="mor-cause" class="form-control" required placeholder="e.g. Cardiopulmonary arrest secondary to septic shock">
+                        </div>
+                        <div class="form-group">
+                            <label>Cold Chamber Cabinet *</label>
+                            <input type="text" id="mor-chamber" class="form-control" required placeholder="Chamber-CC-02">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Intake Body</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Hospital Mortuary Register</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadMortuary()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Entry ID</th><th>UHID</th><th>Deceased Name</th><th>Cause of Death</th><th>Cold Chamber</th><th>Received At</th><th>Status</th><th>Released To</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="mortuaryTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading mortuary log...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECURITY & GATE LOG TAB ================= -->
+        <section id="tab-security-log" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Campus Gate Entry Badge</h3>
+                    <form id="securityForm" onsubmit="window.hmsSaveSecurity(event)">
+                        <div class="form-group">
+                            <label>Gate Number *</label>
+                            <select id="sec-gate" class="form-control" required>
+                                <option value="Gate-1 Main Entrance">Gate-1 Main Entrance</option>
+                                <option value="Gate-2 Emergency Bay">Gate-2 Emergency Bay</option>
+                                <option value="Gate-3 Service / Logistics">Gate-3 Service / Logistics</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Visitor / Contractor Name *</label>
+                            <input type="text" id="sec-visitor" class="form-control" required placeholder="Visitor / Driver Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Badge Number *</label>
+                            <input type="text" id="sec-badge" class="form-control" required placeholder="SEC-B-104">
+                        </div>
+                        <div class="form-group">
+                            <label>Purpose of Visit</label>
+                            <input type="text" id="sec-purpose" class="form-control" placeholder="Vendor Delivery / Patient Relative">
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Reg Number</label>
+                            <input type="text" id="sec-vehicle" class="form-control" placeholder="MH-12-CD-5678">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Check-In Badge</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Campus Security &amp; Gate Entry Log</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadSecurity()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Log ID</th><th>Gate</th><th>Visitor Name</th><th>Badge No</th><th>Purpose</th><th>Vehicle #</th><th>Entry Time</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="securityLogTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading security gate log...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= FACILITY SAFETY CHECKLISTS TAB ================= -->
+        <section id="tab-safety-checklists" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>NABH Daily Life-Safety Round</h3>
+                    <form id="safetyChecklistForm" onsubmit="window.hmsSaveSafetyChecklist(event)">
+                        <div class="form-group">
+                            <label>Oxygen Manifold PSI (Nominal 55-65 PSI) *</label>
+                            <input type="number" step="0.1" id="sft-o2" class="form-control" required placeholder="60.5">
+                        </div>
+                        <div class="form-group">
+                            <label>Medical Vacuum PSI (Nominal -18 to -22) *</label>
+                            <input type="number" step="0.1" id="sft-vacuum" class="form-control" required placeholder="-20.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Fire Alarm Central Panel *</label>
+                            <select id="sft-fire" class="form-control" required>
+                                <option value="1">Normal (All zones green, 0 faults)</option>
+                                <option value="0">Warning / Zone Fault Active</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Emergency DG Set Diesel Fuel (%) *</label>
+                            <input type="number" step="1" id="sft-fuel" class="form-control" required placeholder="92" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Engineering Notes / Remarks</label>
+                            <input type="text" id="sft-notes" class="form-control" placeholder="All manifold lines verified, battery ok">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Submit Daily Round</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>NABH / NFPA Life-Safety &amp; Utility Audit Log</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadSafetyChecklists()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Round ID</th><th>O2 Line PSI</th><th>Vacuum PSI</th><th>Fire Panel</th><th>DG Diesel %</th><th>Inspected By</th><th>Time</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="safetyChecklistsTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading life safety audits...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>

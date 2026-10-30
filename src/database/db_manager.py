@@ -759,6 +759,247 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     last_failed_at REAL NOT NULL,
     locked_until   REAL NOT NULL DEFAULT 0
 );
+
+-- Extended Modules Schema
+CREATE TABLE IF NOT EXISTS medical_records (
+    record_id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid           TEXT NOT NULL,
+    patient_name   TEXT NOT NULL,
+    icd_code       TEXT,
+    diagnosis      TEXT,
+    location_shelf TEXT NOT NULL,
+    status         TEXT NOT NULL DEFAULT 'Archived',
+    requested_by   TEXT,
+    issue_date     TEXT,
+    created_at     TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS mortuary_register (
+    case_id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    deceased_uhid      TEXT,
+    patient_name       TEXT NOT NULL,
+    age                INTEGER,
+    gender             TEXT,
+    cause_of_death     TEXT,
+    date_time_of_death TEXT NOT NULL,
+    freezer_number     TEXT NOT NULL,
+    claimant_name      TEXT,
+    id_proof_type      TEXT,
+    release_date       TEXT,
+    status             TEXT NOT NULL DEFAULT 'Admitted',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS cssd_cycles (
+    cycle_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    set_name           TEXT NOT NULL,
+    set_code           TEXT NOT NULL,
+    department_name    TEXT NOT NULL,
+    autoclave_id       TEXT NOT NULL,
+    cycle_type         TEXT NOT NULL,
+    temp_c             REAL NOT NULL,
+    pressure_psi       REAL NOT NULL,
+    bio_indicator      TEXT NOT NULL DEFAULT 'Passed (Negative)',
+    status             TEXT NOT NULL DEFAULT 'Sterile - Released',
+    operator_name      TEXT NOT NULL,
+    cycle_date         TEXT NOT NULL,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS laundry_linen (
+    linen_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    ward_name          TEXT NOT NULL,
+    linen_type         TEXT NOT NULL,
+    qty_clean          INTEGER NOT NULL DEFAULT 0,
+    qty_soiled         INTEGER NOT NULL DEFAULT 0,
+    qty_dispatched     INTEGER NOT NULL DEFAULT 0,
+    status             TEXT NOT NULL DEFAULT 'In Circulation',
+    updated_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS infection_control_surveillance (
+    surveillance_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    infection_type     TEXT NOT NULL,
+    organism_isolated  TEXT,
+    ward_name          TEXT NOT NULL,
+    isolation_flag     TEXT NOT NULL DEFAULT 'Contact Precaution',
+    status             TEXT NOT NULL DEFAULT 'Active Surveillance',
+    onset_date         TEXT NOT NULL,
+    reported_by        TEXT NOT NULL,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS dialysis_sessions (
+    session_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    machine_no         TEXT NOT NULL,
+    dialyzer_type      TEXT NOT NULL,
+    pre_weight         REAL,
+    post_weight        REAL,
+    heparin_units      INTEGER,
+    session_date       TEXT NOT NULL,
+    doctor_name        TEXT NOT NULL,
+    status             TEXT NOT NULL DEFAULT 'Scheduled',
+    bill_id            INTEGER,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS maternity_nursery (
+    delivery_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    mother_uhid        TEXT NOT NULL,
+    mother_name        TEXT NOT NULL,
+    baby_gender        TEXT NOT NULL,
+    birth_weight_kg    REAL NOT NULL,
+    birth_datetime     TEXT NOT NULL,
+    apgar_1min         INTEGER,
+    apgar_5min         INTEGER,
+    delivery_type      TEXT NOT NULL,
+    pediatrician_name  TEXT NOT NULL,
+    nursery_bed        TEXT NOT NULL,
+    status             TEXT NOT NULL DEFAULT 'Delivered',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS physiotherapy_sessions (
+    session_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    diagnosis          TEXT NOT NULL,
+    protocol           TEXT NOT NULL,
+    session_number     INTEGER NOT NULL DEFAULT 1,
+    total_sessions     INTEGER NOT NULL DEFAULT 10,
+    therapist_name     TEXT NOT NULL,
+    status             TEXT NOT NULL DEFAULT 'Scheduled',
+    bill_id            INTEGER,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS health_packages (
+    package_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    package_name       TEXT NOT NULL,
+    code               TEXT NOT NULL UNIQUE,
+    description        TEXT,
+    price              REAL NOT NULL,
+    tests_included     TEXT NOT NULL,
+    active             INTEGER NOT NULL DEFAULT 1,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS vaccination_register (
+    vac_id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    vaccine_name       TEXT NOT NULL,
+    dose_number        INTEGER NOT NULL DEFAULT 1,
+    batch_number       TEXT NOT NULL,
+    expiry_date        TEXT NOT NULL,
+    administered_by    TEXT NOT NULL,
+    administration_date TEXT NOT NULL,
+    next_due_date      TEXT,
+    status             TEXT NOT NULL DEFAULT 'Administered',
+    bill_id            INTEGER,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS referrals (
+    referral_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    referral_type      TEXT NOT NULL,
+    partner_hospital   TEXT NOT NULL,
+    doctor_name        TEXT NOT NULL,
+    specialty          TEXT NOT NULL,
+    clinical_reason    TEXT NOT NULL,
+    status             TEXT NOT NULL DEFAULT 'Pending',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS patient_feedback (
+    feedback_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT,
+    patient_name       TEXT,
+    department         TEXT NOT NULL,
+    rating             INTEGER NOT NULL,
+    comments           TEXT NOT NULL,
+    category           TEXT NOT NULL DEFAULT 'Care Quality',
+    status             TEXT NOT NULL DEFAULT 'Open',
+    resolution_notes   TEXT,
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS telemedicine_appointments (
+    telemed_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    doctor_id          INTEGER,
+    doctor_name        TEXT NOT NULL,
+    appointment_datetime TEXT NOT NULL,
+    platform_link      TEXT NOT NULL,
+    chief_complaint    TEXT,
+    status             TEXT NOT NULL DEFAULT 'Scheduled',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS security_gate_log (
+    log_id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    visitor_name       TEXT NOT NULL,
+    badge_no           TEXT NOT NULL,
+    vehicle_no         TEXT,
+    entry_gate         TEXT NOT NULL,
+    purpose            TEXT NOT NULL,
+    patient_uhid       TEXT,
+    entry_time         TEXT NOT NULL,
+    exit_time          TEXT,
+    status             TEXT NOT NULL DEFAULT 'Inside',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS pharmacy_returns (
+    return_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    bill_id            INTEGER,
+    patient_id         INTEGER,
+    uhid               TEXT NOT NULL,
+    medicine_name      TEXT NOT NULL,
+    qty_returned       INTEGER NOT NULL,
+    refund_amount      REAL NOT NULL,
+    return_reason      TEXT NOT NULL,
+    approved_by        TEXT NOT NULL,
+    status             TEXT NOT NULL DEFAULT 'Approved',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS morbid_mortality_reviews (
+    review_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    uhid               TEXT NOT NULL,
+    patient_name       TEXT NOT NULL,
+    death_date         TEXT NOT NULL,
+    department         TEXT NOT NULL,
+    primary_diagnosis  TEXT NOT NULL,
+    complication       TEXT NOT NULL,
+    root_cause         TEXT NOT NULL,
+    preventability     TEXT NOT NULL DEFAULT 'Potentially Preventable',
+    committee_chair    TEXT NOT NULL,
+    status             TEXT NOT NULL DEFAULT 'Under Review',
+    created_at         TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS facility_safety_checklists (
+    check_id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    inspection_date        TEXT NOT NULL,
+    inspector_name         TEXT NOT NULL,
+    o2_manifold_psi        REAL NOT NULL,
+    n2o_psi                REAL NOT NULL,
+    vacuum_bar             REAL NOT NULL,
+    fire_extinguishers_ok  INTEGER NOT NULL DEFAULT 1,
+    smoke_alarms_ok        INTEGER NOT NULL DEFAULT 1,
+    emergency_exits_clear  INTEGER NOT NULL DEFAULT 1,
+    status                 TEXT NOT NULL DEFAULT 'Compliant',
+    remarks                TEXT,
+    created_at             TEXT NOT NULL
+);
 """
 
 
@@ -855,6 +1096,13 @@ def init_db():
         ("tpa_desk", _hash_pw("tpa123"), "Insurance/TPA Desk", "Neha Kothari (TPA & Claims Coordinator)", "insurance@hospital.local"),
         ("ambulance_dispatch", _hash_pw("ems123"), "Ambulance Dispatcher", "Gopal Singh (Emergency Dispatch Lead)", "ambulance@hospital.local"),
         ("dietitian", _hash_pw("diet123"), "Dietitian", "Dt. Shalini Menon (Chief Clinical Dietitian)", "dietetics@hospital.local"),
+        ("mrd_officer", _hash_pw("mrd123"), "MRD Officer", "Suman Lata (MRD Officer)", "mrd@hospital.local"),
+        ("mortuary_attendant", _hash_pw("mort123"), "Mortuary Attendant", "Dinesh Rawat (Mortuary Attendant)", "mortuary@hospital.local"),
+        ("cssd_tech", _hash_pw("cssd123"), "CSSD Technician", "Ravi Shankar (Sterilization Tech)", "cssd@hospital.local"),
+        ("infection_control", _hash_pw("ic123"), "Infection Control Nurse", "Sister Mary Thomas (Infection Control)", "infection@hospital.local"),
+        ("physiotherapist", _hash_pw("physio123"), "Physiotherapist", "Dr. Shalini Menon (Lead PT)", "physio@hospital.local"),
+        ("security_officer", _hash_pw("sec123"), "Security Officer", "Insp. Balram Yadav (Security Chief)", "security@hospital.local"),
+        ("telemed_doc", _hash_pw("tele123"), "Telemedicine Doctor", "Dr. Ajay Bora (Virtual Health)", "telemed@hospital.local"),
     ]
     for u in demo_users:
         exists = conn.execute("SELECT 1 FROM users WHERE username = ?", (u[0],)).fetchone()
@@ -870,29 +1118,93 @@ def init_db():
                 (u[1], u[2], u[3], u[4], u[0])
             )
 
-    # 7. Seed Departments
-    dept_count = conn.execute("SELECT COUNT(*) as c FROM departments").fetchone()["c"]
-    if dept_count == 0:
-        seed_depts = [
-            ("Cardiology", "CARD", "Comprehensive cardiovascular care, ECG, ECHO, and Catheterization", "Wing A - 2nd Floor", "+91-98765-10001", 1, 1),
-            ("Orthopedics", "ORTH", "Bone, joint, spine, and trauma care with arthroscopy unit", "Wing B - 3rd Floor", "+91-98765-10002", 1, 1),
-            ("Pediatrics", "PED", "Neonatal and child healthcare with pediatric intensive care", "Wing A - 1st Floor", "+91-98765-10003", 1, 1),
-            ("General Medicine", "MED", "Internal medicine, chronic illness, and general outpatient clinics", "Ground Floor - OPD", "+91-98765-10004", 1, 1),
-            ("Neurology", "NEUR", "Brain, nerve, stroke unit, and neurosurgery consultation", "Wing C - 2nd Floor", "+91-98765-10005", 1, 1),
-            ("ENT", "ENT", "Ear, Nose, Throat diagnosis and microsurgical procedures", "Ground Floor - OPD", "+91-98765-10006", 1, 0),
-            ("Dermatology", "DERM", "Skin, allergy, cosmetology, and laser dermatology", "Ground Floor - OPD", "+91-98765-10007", 1, 0),
-            ("Gynecology & Obstetrics", "GYN", "Maternity care, antenatal clinics, and women's health", "Wing B - 1st Floor", "+91-98765-10008", 1, 1),
-            ("Emergency & Trauma", "EMER", "24/7 emergency resuscitation, trauma triage, and critical intake", "Ground Floor - ER Bay", "+91-98765-10009", 1, 1),
-            ("Intensive Care Unit (ICU)", "ICU", "High-dependency multi-parameter critical care life support", "Wing A - 4th Floor", "+91-98765-10010", 0, 1),
-            ("Operation Theatre", "OT", "State-of-the-art sterile surgical suites", "Wing C - 3rd Floor", "+91-98765-10011", 0, 1),
-            ("Laboratory & Diagnostics", "LAB", "Automated clinical pathology, hematology, and biochemistry", "Basement - Level 1", "+91-98765-10012", 0, 0),
-            ("Radiology & Imaging", "RAD", "Digital X-Ray, CT Scan, MRI, and Ultrasonography", "Basement - Level 1", "+91-98765-10013", 0, 0),
-            ("Pharmacy", "PHARM", "24/7 central dispensary and inpatient unit-dose supply", "Ground Floor - Lobby", "+91-98765-10014", 0, 0),
-        ]
-        conn.executemany(
-            "INSERT INTO departments (name, code, description, location, phone, has_opd, has_ipd, created_at) VALUES (?,?,?,?,?,?,?,?)",
-            [(d[0], d[1], d[2], d[3], d[4], d[5], d[6], now_str) for d in seed_depts]
-        )
+    # 7. Seed Departments & Ensure Columns
+    dept_cols = [r["name"] for r in conn.execute("PRAGMA table_info(departments)").fetchall()]
+    if "type" not in dept_cols:
+        conn.execute("ALTER TABLE departments ADD COLUMN type TEXT NOT NULL DEFAULT 'Clinical'")
+    if "head_of_dept" not in dept_cols:
+        conn.execute("ALTER TABLE departments ADD COLUMN head_of_dept TEXT NOT NULL DEFAULT ''")
+    if "active" not in dept_cols:
+        conn.execute("ALTER TABLE departments ADD COLUMN active INTEGER NOT NULL DEFAULT 1")
+
+    all_seed_depts = [
+        # Clinical
+        ("Cardiology", "CARD", "Comprehensive cardiovascular care, ECG, ECHO, and Catheterization", "Dr. Rajesh Sharma", "Wing A - 2nd Floor", "+91-98765-10001", "Clinical", 1, 1),
+        ("Orthopedics", "ORTH", "Bone, joint, spine, and trauma care with arthroscopy unit", "Dr. Preeti Deshmukh", "Wing B - 3rd Floor", "+91-98765-10002", "Clinical", 1, 1),
+        ("Pediatrics", "PED", "Neonatal and child healthcare with pediatric intensive care", "Dr. Sneha Kulkarni", "Wing A - 1st Floor", "+91-98765-10003", "Clinical", 1, 1),
+        ("General Medicine", "MED", "Internal medicine, chronic illness, and general outpatient clinics", "Dr. Amit Mehra", "Ground Floor - OPD", "+91-98765-10004", "Clinical", 1, 1),
+        ("Neurology", "NEUR", "Brain, nerve, stroke unit, and neurosurgery consultation", "Dr. Arvind Kejriwal", "Wing C - 2nd Floor", "+91-98765-10005", "Clinical", 1, 1),
+        ("ENT", "ENT", "Ear, Nose, Throat diagnosis and microsurgical procedures", "Dr. Farhan Akhtar", "Ground Floor - OPD", "+91-98765-10006", "Clinical", 1, 0),
+        ("Dermatology", "DERM", "Skin, allergy, cosmetology, and laser dermatology", "Dr. Pooja Chopra", "Ground Floor - OPD", "+91-98765-10007", "Clinical", 1, 0),
+        ("Gynecology & Obstetrics", "GYN", "Maternity care, antenatal clinics, and women's health", "Dr. Kavita Reddy", "Wing B - 1st Floor", "+91-98765-10008", "Clinical", 1, 1),
+        ("Emergency & Trauma", "EMER", "24/7 emergency resuscitation, trauma triage, and critical intake", "Dr. Sameer Khan", "Ground Floor - ER Bay", "+91-98765-10009", "Clinical", 1, 1),
+        ("Intensive Care Unit (ICU)", "ICU", "High-dependency multi-parameter critical care life support", "Dr. Rajesh Sharma", "Wing A - 4th Floor", "+91-98765-10010", "Clinical", 0, 1),
+        ("Operation Theatre", "OT", "State-of-the-art sterile surgical suites", "Dr. Sanjay Malhotra", "Wing C - 3rd Floor", "+91-98765-10011", "Clinical", 0, 1),
+        ("Oncology", "ONCO", "Medical and surgical oncology with day-care chemotherapy", "Dr. Vikram Seth", "Wing D - 1st Floor", "+91-98765-10015", "Clinical", 1, 1),
+        ("Nephrology and Dialysis", "NEPH", "Renal disease management and hemodialysis unit", "Dr. Priya Nair", "Wing D - 2nd Floor", "+91-98765-10016", "Clinical", 1, 1),
+        ("Urology", "UROL", "Urinary tract and male reproductive system care", "Dr. Sunil Gupta", "Wing B - 2nd Floor", "+91-98765-10017", "Clinical", 1, 1),
+        ("Gastroenterology", "GAST", "Digestive system, liver clinic, and endoscopy", "Dr. Ramesh Patel", "Wing C - 1st Floor", "+91-98765-10018", "Clinical", 1, 1),
+        ("Pulmonology", "PULM", "Respiratory diseases, asthma, and sleep lab", "Dr. Meera Sen", "Wing A - 3rd Floor", "+91-98765-10019", "Clinical", 1, 1),
+        ("Endocrinology/Diabetology", "ENDO", "Diabetes, thyroid, and metabolic disorders", "Dr. Anita Joshi", "Ground Floor - OPD", "+91-98765-10020", "Clinical", 1, 0),
+        ("Psychiatry", "PSYC", "Mental health, counseling, and behavioral therapy", "Dr. Rahul Bose", "Wing D - Ground Floor", "+91-98765-10021", "Clinical", 1, 0),
+        ("Ophthalmology", "OPHT", "Comprehensive eye care, cataract surgery, and retinal clinic", "Dr. Deepa Rao", "Ground Floor - OPD", "+91-98765-10022", "Clinical", 1, 0),
+        ("Dental", "DENT", "Oral surgery, orthodontics, and restorative dentistry", "Dr. Sanjay Roy", "Ground Floor - OPD", "+91-98765-10023", "Clinical", 1, 0),
+        ("Obstetrics and Labour room", "LBR", "Labour delivery recovery suites and fetal monitoring", "Dr. Kavita Reddy", "Wing B - 2nd Floor", "+91-98765-10024", "Clinical", 0, 1),
+        ("Neonatology/NICU", "NICU", "Level III neonatal intensive care with incubators", "Dr. Sneha Kulkarni", "Wing A - 2nd Floor", "+91-98765-10025", "Clinical", 0, 1),
+        ("Anaesthesiology", "ANES", "Perioperative anaesthesia and acute pain service", "Dr. Alok Verma", "Wing C - OT Block", "+91-98765-10026", "Clinical", 0, 1),
+        ("Plastic and Burns", "PLAS", "Reconstructive plastic surgery and burns ICU", "Dr. Shweta Singh", "Wing D - 3rd Floor", "+91-98765-10027", "Clinical", 1, 1),
+        ("Cardiothoracic surgery", "CTVS", "Open heart, bypass, and thoracic procedures", "Dr. Rajesh Sharma", "Wing C - 4th Floor", "+91-98765-10028", "Clinical", 0, 1),
+        ("Vascular surgery", "VASC", "Arterial and venous disease management", "Dr. Mohan Das", "Wing C - 4th Floor", "+91-98765-10029", "Clinical", 1, 1),
+        ("Rheumatology", "RHEU", "Arthritis, lupus, and autoimmune disorders", "Dr. Vandana Jain", "Ground Floor - OPD", "+91-98765-10030", "Clinical", 1, 0),
+        ("Physiotherapy and Rehab", "PHYS", "Musculoskeletal rehab, neuro-rehab, and electrotherapy", "Dr. Shalini Menon", "Basement - Level 1", "+91-98765-10031", "Clinical", 1, 1),
+        ("Pain clinic", "PAIN", "Interventional pain management and palliative support", "Dr. Alok Verma", "Ground Floor - OPD", "+91-98765-10032", "Clinical", 1, 0),
+        ("AYUSH", "AYUS", "Ayurveda, Yoga, and integrative wellness therapies", "Dr. Vinod Sharma", "Ground Floor - AYUSH Wing", "+91-98765-10033", "Clinical", 1, 0),
+        ("Geriatrics", "GERI", "Specialized elder healthcare and chronic disease care", "Dr. Amit Mehra", "Wing A - Ground Floor", "+91-98765-10034", "Clinical", 1, 1),
+        ("Cath Lab", "CATH", "Coronary angiography, angioplasty, and pacemaker implants", "Dr. Rajesh Sharma", "Wing C - 2nd Floor", "+91-98765-10035", "Clinical", 0, 1),
+        ("Endoscopy suite", "ENDO-S", "Upper GI endoscopy, colonoscopy, and ERCP", "Dr. Ramesh Patel", "Wing C - 1st Floor", "+91-98765-10036", "Clinical", 0, 1),
+        ("General Surgery", "SURG", "Laparoscopic and open abdominal procedures", "Dr. Preeti Deshmukh", "Wing B - 3rd Floor", "+91-98765-10037", "Clinical", 1, 1),
+        ("Preventive health check-up", "PREV", "Master health checkups and corporate wellness", "Dr. Amit Mehra", "Ground Floor - Wellness", "+91-98765-10038", "Clinical", 1, 0),
+        ("Vaccination", "VACC", "Pediatric and adult immunization clinic", "Dr. Sneha Kulkarni", "Ground Floor - Pediatrics", "+91-98765-10039", "Clinical", 1, 0),
+        ("Telemedicine", "TELE", "Virtual consultations and digital triage", "Dr. Ajay Bora", "Admin Block - Level 2", "+91-98765-10040", "Clinical", 1, 0),
+        # Diagnostic
+        ("Laboratory & Diagnostics", "LAB", "Automated clinical pathology, hematology, and biochemistry", "Anil Kumar", "Basement - Level 1", "+91-98765-10012", "Diagnostic", 0, 0),
+        ("Radiology & Imaging", "RAD", "Digital X-Ray, CT Scan, MRI, and Ultrasonography", "Dr. Deepak Varma", "Basement - Level 1", "+91-98765-10013", "Diagnostic", 0, 0),
+        ("Blood Bank", "BLD", "Voluntary blood donation, component separation, and testing", "Kavita Nair", "Basement - Level 1", "+91-98765-10041", "Diagnostic", 0, 0),
+        ("Pathology & Histology", "PATH", "Surgical biopsy and tissue examination", "Dr. Swati Ghosh", "Basement - Level 1", "+91-98765-10042", "Diagnostic", 0, 0),
+        ("Microbiology", "MICR", "Bacterial culture, antibiotic sensitivity, and serology", "Dr. Rajiv Bansal", "Basement - Level 1", "+91-98765-10043", "Diagnostic", 0, 0),
+        ("Nuclear Medicine", "NUCL", "PET-CT and radioisotope diagnostic imaging", "Dr. Harish Rao", "Basement - Level 2", "+91-98765-10044", "Diagnostic", 0, 0),
+        # Support
+        ("Pharmacy", "PHARM", "24/7 central dispensary and inpatient unit-dose supply", "Meena Iyer", "Ground Floor - Lobby", "+91-98765-10014", "Support", 0, 0),
+        ("Housekeeping & Sanitation", "HK", "Hospital hygiene, biomedical waste handling, and terminal cleaning", "Mohan Lal", "Service Block - B1", "+91-98765-10045", "Support", 0, 0),
+        ("Dietary & Nutrition", "DIET", "Therapeutic meal preparation and inpatient nutrition planning", "Dt. Shalini Menon", "Service Block - Ground", "+91-98765-10046", "Support", 0, 0),
+        ("Biomedical Engineering", "BIOM", "Medical equipment calibration, maintenance, and safety", "Eng. Suresh Nair", "Service Block - B2", "+91-98765-10047", "Support", 0, 0),
+        ("Ambulance & EMS", "AMB", "Advanced life-support emergency ambulances and patient transport", "Gopal Singh", "Emergency Gate 1", "+91-98765-10048", "Support", 0, 0),
+        ("Central Sterile Services (CSSD)", "CSSD", "Decontamination and autoclave sterilization of surgical packs", "Ravi Shankar", "Wing C - Basement", "+91-98765-10049", "Support", 0, 0),
+        ("Laundry and Linen", "LAUN", "Linen washing, infection barrier handling, and ward circulation", "Santosh Yadav", "Service Block - B1", "+91-98765-10050", "Support", 0, 0),
+        ("Mortuary", "MORT", "Dignified decedent preservation and cold-chamber storage", "Dinesh Rawat", "Basement - Level 2", "+91-98765-10051", "Support", 0, 0),
+        ("Security & Safety", "SEC", "24/7 campus surveillance, visitor badges, and access control", "Insp. Balram Yadav", "Gate 1 Guardhouse", "+91-98765-10052", "Support", 0, 0),
+        ("Medical Gas & Fire Safety", "MGPS", "Central O2 pipeline monitoring, vacuum pumps, and fire drills", "Eng. Vinay Patil", "Utility Plant", "+91-98765-10053", "Support", 0, 0),
+        # Administrative
+        ("Front Desk & Reception", "FDESK", "Patient registration, appointment scheduling, and inquiries", "Priya Verma", "Ground Floor - Lobby", "+91-98765-10054", "Administrative", 1, 0),
+        ("Billing & Cashier", "CASH", "OPD/IPD estimation, cashiering, and insurance settlements", "Ramesh Gupta", "Ground Floor - Billing", "+91-98765-10055", "Administrative", 0, 0),
+        ("Medical Records (MRD)", "MRD", "Physical/electronic case-sheet archiving, ICD coding, and audits", "Suman Lata", "Basement - Archive Wing", "+91-98765-10056", "Administrative", 0, 0),
+        ("Quality & Accreditation (NABH)", "QUAL", "Clinical audit, incident monitoring, and NABH compliance", "Dr. Ananya Roy", "Admin Block - Level 3", "+91-98765-10057", "Administrative", 0, 0),
+        ("Hospital Administration & HR", "ADMIN", "Staff credentials, shift rosters, and general governance", "Pooja Hegde", "Admin Block - Level 2", "+91-98765-10058", "Administrative", 0, 0),
+        ("Insurance & TPA Desk", "TPA", "Cashless claim pre-authorizations and government schemes", "Neha Kothari", "Ground Floor - TPA", "+91-98765-10059", "Administrative", 0, 0)
+    ]
+
+    for d in all_seed_depts:
+        exists = conn.execute("SELECT department_id FROM departments WHERE name = ?", (d[0],)).fetchone()
+        if not exists:
+            conn.execute(
+                "INSERT INTO departments (name, code, description, head_of_dept, location, phone, type, has_opd, has_ipd, active, created_at) VALUES (?,?,?,?,?,?,?,?,?,1,?)",
+                (d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], now_str)
+            )
+        else:
+            conn.execute(
+                "UPDATE departments SET head_of_dept = ?, location = ?, type = ?, active = 1 WHERE name = ?",
+                (d[3], d[4], d[6], d[0])
+            )
 
     # 8. Seed Doctors across diverse specializations
     doc_count = conn.execute("SELECT COUNT(*) as c FROM doctors").fetchone()["c"]
@@ -1225,6 +1537,197 @@ def init_db():
         conn.execute(
             "INSERT INTO capa_actions (incident_id, root_cause, corrective_action, preventive_action, assigned_to, due_date, status, verified_by, completed_at) "
             "VALUES (1, 'LASA ampoules stored on adjacent shelves with similar font packaging', 'Re-arranged storage with Tall-Man lettering (AMOxicillin vs AMPicillin) and separate color-coded bins', 'Double-sign verification enforced in pharmacy dispensing workflow', 'Meena Iyer', '2026-11-05', 'Completed', 'Dr. Ananya Roy (Quality Lead)', '2026-10-28 16:00:00')"
+        )
+
+
+    # 17. Seed Extended Modules Initial Demonstration Data
+    # 1. Health Packages
+    if conn.execute("SELECT COUNT(*) as c FROM health_packages").fetchone()["c"] == 0:
+        pkgs = [
+            ("Executive Master Health Checkup", "PKG-EXEC", "Comprehensive screening including ECG, ECHO, USG, Lipid, Liver, Renal, HbA1c", 4999.0, "CBC, LFT, KFT, Lipid Profile, ECG, ECHO, USG Abdomen, Chest X-Ray"),
+            ("Comprehensive Cardiac Wellness", "PKG-CARD", "Specialized cardiac profile with TMT, Troponin-I, Lipid Profile & Cardiology consult", 3499.0, "Lipid Profile, ECG, TMT, 2D ECHO, Cardiologist Consultation"),
+            ("Senior Citizen Comprehensive Care", "PKG-SNR", "Geriatric profile focusing on bone density, vit D/B12, kidney & vision", 3999.0, "CBC, Vit D3, Vit B12, Dexa Scan, Eye Exam, Renal Function, Physician Consult"),
+            ("Women Wellness & Breast Care", "PKG-WMN", "Well-woman package with Pap smear, Mammogram, Thyroid & Pelvic USG", 3299.0, "Pap Smear, Bilateral Mammogram, TSH, Pelvic Ultrasound, Gynecologist Consult")
+        ]
+        conn.executemany(
+            "INSERT INTO health_packages (package_name, code, description, price, tests_included, active, created_at) VALUES (?,?,?,?,?,1,?)",
+            [(p[0], p[1], p[2], p[3], p[4], now_str) for p in pkgs]
+        )
+
+    # 2. Medical Records (MRD)
+    if conn.execute("SELECT COUNT(*) as c FROM medical_records").fetchone()["c"] == 0:
+        mrds = [
+            ("UHID-2026-000001", "Rohan Sharma", "I20.9", "Angina pectoris, unspecified", "Shelf-A3-Bay2", "Archived", None, None),
+            ("UHID-2026-000002", "Priya Verma", "E11.9", "Type 2 diabetes mellitus without complications", "Shelf-B1-Bay4", "Issued", "Dr. Rajesh Sharma", "2026-10-28"),
+            ("UHID-2026-000003", "Ananya Deshmukh", "O80", "Encounter for full-term uncomplicated delivery", "Shelf-C2-Bay1", "Archived", None, None)
+        ]
+        conn.executemany(
+            "INSERT INTO medical_records (uhid, patient_name, icd_code, diagnosis, location_shelf, status, requested_by, issue_date, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            [(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], now_str) for m in mrds]
+        )
+
+    # 3. Mortuary Register
+    if conn.execute("SELECT COUNT(*) as c FROM mortuary_register").fetchone()["c"] == 0:
+        morts = [
+            ("UHID-2026-000009", "Late Harishankar Bose", 78, "Male", "Cardiogenic Shock secondary to Acute MI", "2026-10-27 22:45:00", "Freezer-04", "Amit Bose (Son)", "Aadhaar Card", "2026-10-28 11:30:00", "Released"),
+            ("UHID-2026-000010", "Late Kanti Devi", 84, "Female", "Septic Shock / Multi-Organ Failure", "2026-10-29 04:15:00", "Freezer-02", None, None, None, "Admitted")
+        ]
+        conn.executemany(
+            "INSERT INTO mortuary_register (deceased_uhid, patient_name, age, gender, cause_of_death, date_time_of_death, freezer_number, claimant_name, id_proof_type, release_date, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            [(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], now_str) for m in morts]
+        )
+
+    # 4. CSSD Cycles
+    if conn.execute("SELECT COUNT(*) as c FROM cssd_cycles").fetchone()["c"] == 0:
+        cssds = [
+            ("Major Laparotomy Surgical Set", "SET-LAP-01", "Operation Theatre", "Autoclave-1 (Steam)", "Gravity Steam 134C", 134.0, 30.2, "Passed (Negative)", "Sterile - Released", "Ravi Shankar", "2026-10-29"),
+            ("Orthopedic Arthroplasty Tray", "SET-ORTH-04", "Operation Theatre", "Autoclave-2 (Pre-Vac)", "Pre-Vacuum 134C", 134.2, 31.0, "Passed (Negative)", "Sterile - Released", "Ravi Shankar", "2026-10-29"),
+            ("Dental Extraction Kit #3", "SET-DENT-03", "Dental", "Autoclave-3 (Benchtop)", "Flash Steam 121C", 121.0, 15.0, "Passed (Negative)", "Sterilizing", "Ravi Shankar", "2026-10-30")
+        ]
+        conn.executemany(
+            "INSERT INTO cssd_cycles (set_name, set_code, department_name, autoclave_id, cycle_type, temp_c, pressure_psi, bio_indicator, status, operator_name, cycle_date, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            [(c[0], c[1], c[2], c[3], c[4], c[5], c[6], c[7], c[8], c[9], c[10], now_str) for c in cssds]
+        )
+
+    # 5. Laundry and Linen
+    if conn.execute("SELECT COUNT(*) as c FROM laundry_linen").fetchone()["c"] == 0:
+        linens = [
+            ("ICU - Critical Care", "Bed Sheets (Anti-Microbial)", 45, 12, 40, "In Circulation"),
+            ("General Medical Ward", "Patient Gowns", 60, 25, 55, "In Circulation"),
+            ("Operation Theatre", "Surgical Drapes & Towels", 80, 18, 75, "In Circulation"),
+            ("Pediatrics & NICU", "Baby Wraps & Blankets", 35, 8, 30, "In Circulation")
+        ]
+        conn.executemany(
+            "INSERT INTO laundry_linen (ward_name, linen_type, qty_clean, qty_soiled, qty_dispatched, status, updated_at) VALUES (?,?,?,?,?,?,?)",
+            [(l[0], l[1], l[2], l[3], l[4], l[5], now_str) for l in linens]
+        )
+
+    # 6. Infection Control Surveillance
+    if conn.execute("SELECT COUNT(*) as c FROM infection_control_surveillance").fetchone()["c"] == 0:
+        survs = [
+            ("UHID-2026-000004", "Vikram Patel", "Catheter-Associated UTI (CAUTI)", "Escherichia coli (ESBL+)", "ICU - Critical Care", "Contact Precaution", "Active Surveillance", "2026-10-26", "Sister Mary Thomas"),
+            ("UHID-2026-000005", "Sunil Joshi", "Surgical Site Infection (SSI)", "Staphylococcus aureus (MRSA)", "Ward 3B - Surgery", "Strict Contact Isolation", "Active Surveillance", "2026-10-28", "Sister Mary Thomas")
+        ]
+        conn.executemany(
+            "INSERT INTO infection_control_surveillance (uhid, patient_name, infection_type, organism_isolated, ward_name, isolation_flag, status, onset_date, reported_by, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            [(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], now_str) for s in survs]
+        )
+
+    # 7. Dialysis Sessions
+    if conn.execute("SELECT COUNT(*) as c FROM dialysis_sessions").fetchone()["c"] == 0:
+        dialysis = [
+            ("UHID-2026-000001", "Rohan Sharma", "HD-Machine-02", "High-Flux Polysulfone 1.8", 68.5, 65.2, 5000, "2026-10-29", "Dr. Priya Nair", "Completed", 1),
+            ("UHID-2026-000006", "Ramesh Verma", "HD-Machine-04", "High-Flux Polysulfone 1.6", 72.0, None, 4500, "2026-10-30", "Dr. Priya Nair", "In Progress", None)
+        ]
+        conn.executemany(
+            "INSERT INTO dialysis_sessions (uhid, patient_name, machine_no, dialyzer_type, pre_weight, post_weight, heparin_units, session_date, doctor_name, status, bill_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            [(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9], d[10], now_str) for d in dialysis]
+        )
+
+    # 8. Maternity & Nursery
+    if conn.execute("SELECT COUNT(*) as c FROM maternity_nursery").fetchone()["c"] == 0:
+        mat = [
+            ("UHID-2026-000003", "Ananya Deshmukh", "Female", 3.15, "2026-10-28 08:35:00", 8, 9, "Normal Vaginal Delivery", "Dr. Sneha Kulkarni", "Crib-NICU-03", "Delivered")
+        ]
+        conn.executemany(
+            "INSERT INTO maternity_nursery (mother_uhid, mother_name, baby_gender, birth_weight_kg, birth_datetime, apgar_1min, apgar_5min, delivery_type, pediatrician_name, nursery_bed, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            [(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10], now_str) for m in mat]
+        )
+
+    # 9. Physiotherapy Sessions
+    if conn.execute("SELECT COUNT(*) as c FROM physiotherapy_sessions").fetchone()["c"] == 0:
+        pt = [
+            ("UHID-2026-000001", "Rohan Sharma", "Post-Total Knee Arthroplasty (TKA)", "Passive ROM, Quad Strengthening, Gait Training", 4, 10, "Dr. Shalini Menon", "Completed", 1),
+            ("UHID-2026-000007", "Kavita Sen", "Cervical Spondylosis with Radiculopathy", "Cervical Traction, Ultrasound Therapy & Postural Correction", 1, 6, "Dr. Shalini Menon", "Scheduled", None)
+        ]
+        conn.executemany(
+            "INSERT INTO physiotherapy_sessions (uhid, patient_name, diagnosis, protocol, session_number, total_sessions, therapist_name, status, bill_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            [(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], now_str) for p in pt]
+        )
+
+    # 10. Vaccination Register
+    if conn.execute("SELECT COUNT(*) as c FROM vaccination_register").fetchone()["c"] == 0:
+        vacs = [
+            ("UHID-2026-000001", "Rohan Sharma", "Hepatitis B (Recombinant)", 2, "VAC-HEP-881", "2027-06-30", "Sister Sunita Patel", "2026-10-25", "2026-11-25", "Administered", 1),
+            ("UHID-2026-000003", "Ananya Deshmukh", "BCG & OPV-0", 1, "VAC-BCG-102", "2027-09-15", "Dr. Sneha Kulkarni", "2026-10-28", "2026-12-10", "Administered", None)
+        ]
+        conn.executemany(
+            "INSERT INTO vaccination_register (uhid, patient_name, vaccine_name, dose_number, batch_number, expiry_date, administered_by, administration_date, next_due_date, status, bill_id, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            [(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8], v[9], v[10], now_str) for v in vacs]
+        )
+
+    # 11. Referrals Management
+    if conn.execute("SELECT COUNT(*) as c FROM referrals").fetchone()["c"] == 0:
+        refs = [
+            ("UHID-2026-000002", "Priya Verma", "OUTBOUND", "Apex Multi-Specialty Heart Institute", "Dr. Rajesh Sharma", "Cardiothoracic Surgery", "Urgent Coronary Artery Bypass Grafting (CABG) evaluation", "Pending"),
+            ("UHID-2026-000008", "Deepak Chopra", "INBOUND", "Community Health Center North", "Dr. R. K. Singhal", "General Medicine", "Uncontrolled Pyrexia of Unknown Origin (PUO) workup", "Accepted")
+        ]
+        conn.executemany(
+            "INSERT INTO referrals (uhid, patient_name, referral_type, partner_hospital, doctor_name, specialty, clinical_reason, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            [(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], now_str) for r in refs]
+        )
+
+    # 12. Patient Feedback & Complaints
+    if conn.execute("SELECT COUNT(*) as c FROM patient_feedback").fetchone()["c"] == 0:
+        fb = [
+            ("UHID-2026-000001", "Rohan Sharma", "Cardiology", 5, "Dr. Rajesh Sharma explained the ECG and treatment plan thoroughly. Nursing staff was courteous.", "Care Quality", "Resolved", "Acknowledged in departmental quality review"),
+            ("UHID-2026-000002", "Priya Verma", "Pharmacy & Dispensary", 3, "Billing queue was 25 minutes long during afternoon hours.", "Wait Time", "Investigating", "Counter 4 opened during peak hours to distribute load")
+        ]
+        conn.executemany(
+            "INSERT INTO patient_feedback (uhid, patient_name, department, rating, comments, category, status, resolution_notes, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            [(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], now_str) for f in fb]
+        )
+
+    # 13. Telemedicine Appointments
+    if conn.execute("SELECT COUNT(*) as c FROM telemedicine_appointments").fetchone()["c"] == 0:
+        tele = [
+            ("UHID-2026-000001", "Rohan Sharma", 1, "Dr. Rajesh Sharma", "2026-10-31 16:00:00", "https://telemed.apex-hospital.local/room/conf-88219", "Follow-up for post-angina medication titration", "Scheduled"),
+            ("UHID-2026-000002", "Priya Verma", 5, "Dr. Amit Mehra", "2026-10-31 17:30:00", "https://telemed.apex-hospital.local/room/conf-88220", "Fasting blood sugar log review", "Scheduled")
+        ]
+        conn.executemany(
+            "INSERT INTO telemedicine_appointments (uhid, patient_name, doctor_id, doctor_name, appointment_datetime, platform_link, chief_complaint, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            [(t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], now_str) for t in tele]
+        )
+
+    # 14. Security Gate Log
+    if conn.execute("SELECT COUNT(*) as c FROM security_gate_log").fetchone()["c"] == 0:
+        sec = [
+            ("Sunil Mehra (Visitor)", "BADGE-104", "DL-01-AB-1234", "Main Gate 1", "Attendant visit for Inpatient", "UHID-2026-000001", "2026-10-30 18:30:00", None, "Inside"),
+            ("Dr. Pooja Chopra (Staff)", "STF-208", "DL-04-XY-9876", "Staff Gate 2", "Physician Duty", None, "2026-10-30 08:45:00", "2026-10-30 17:15:00", "Exited")
+        ]
+        conn.executemany(
+            "INSERT INTO security_gate_log (visitor_name, badge_no, vehicle_no, entry_gate, purpose, patient_uhid, entry_time, exit_time, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            [(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], now_str) for s in sec]
+        )
+
+    # 15. Pharmacy Returns
+    if conn.execute("SELECT COUNT(*) as c FROM pharmacy_returns").fetchone()["c"] == 0:
+        rets = [
+            (1, 1, "UHID-2026-000001", "Amoxicillin 500mg Capsule", 5, 45.0, "Patient discharged earlier than scheduled, sealed strip returned intact", "Meena Iyer (Chief Pharmacist)", "Approved")
+        ]
+        conn.executemany(
+            "INSERT INTO pharmacy_returns (bill_id, patient_id, uhid, medicine_name, qty_returned, refund_amount, return_reason, approved_by, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            [(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], now_str) for r in rets]
+        )
+
+    # 16. Mortality & Morbidity (M&M) Review
+    if conn.execute("SELECT COUNT(*) as c FROM morbid_mortality_reviews").fetchone()["c"] == 0:
+        mm = [
+            ("UHID-2026-000009", "Late Harishankar Bose", "2026-10-27", "Cardiology", "Acute Extensive Anterior Wall MI", "Refractory Ventricular Fibrillation post-PCI", "Advanced 3-vessel disease with 90 min door-to-balloon time compliant with guidelines", "Non-Preventable (Advanced Pathology)", "Dr. Sunita Rao (Medical Supt.)", "Closed")
+        ]
+        conn.executemany(
+            "INSERT INTO morbid_mortality_reviews (uhid, patient_name, death_date, department, primary_diagnosis, complication, root_cause, preventability, committee_chair, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            [(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], now_str) for m in mm]
+        )
+
+    # 17. Facility & Safety Checklist
+    if conn.execute("SELECT COUNT(*) as c FROM facility_safety_checklists").fetchone()["c"] == 0:
+        safety = [
+            ("2026-10-30", "Eng. Vinay Patil", 62.5, 55.0, -0.65, 1, 1, 1, "Compliant", "O2 Bulk tank at 82% capacity; fire alarm annunciator panel fully tested.")
+        ]
+        conn.executemany(
+            "INSERT INTO facility_safety_checklists (inspection_date, inspector_name, o2_manifold_psi, n2o_psi, vacuum_bar, fire_extinguishers_ok, smoke_alarms_ok, emergency_exits_clear, status, remarks, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            [(s[0], s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], now_str) for s in safety]
         )
 
     conn.commit()

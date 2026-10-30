@@ -1,0 +1,43 @@
+        <section id="tab-users" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Hospital Users &amp; Role-Based Access Control (21 Stakeholder Roles)</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenCreateUserModal()">+ Create User Account</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>User ID</th><th>Username</th><th>Role Profile</th><th>Full Name</th><th>Email</th><th>Created At</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading authorized system users...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BACKUP & RESTORE TAB ================= -->
+        <section id="tab-backup" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3 style="margin:0;">SQLite Atomic Online Database Snapshots</h3>
+                        <p style="font-size:12px; color:#64748b; margin:2px 0 0 0;">Zero-downtime hot backups with sha256 checksums and automated restoration verify.</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="triggerManualBackup()">+ Create Instant Snapshot Now</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Snapshot Filename</th><th>Size</th><th>Created Timestamp</th><th>Integrity Check</th></tr>
+                        </thead>
+                        <tbody id="backupsTableBody">
+                            <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Loading database snapshots...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PATIENT PORTAL TAB ================= -->

@@ -1,0 +1,120 @@
+        <section id="tab-billing" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="bill-form-title">Generate Patient Invoice</h3>
+                    <form id="bill-form" onsubmit="saveBill(event)">
+                        <input type="hidden" id="bill-id">
+                        <input type="hidden" id="bill-patient-id">
+                        <div class="form-group">
+                            <label>Patient (Q07 Auto-Complete) *</label>
+                            <input type="text" id="bill-patient-name" class="form-control" required placeholder="Search patient..." autocomplete="off">
+                            <div id="bill-patient-autocomplete" class="autocomplete-items" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Room Charges (₹) *</label>
+                            <input type="number" step="0.01" id="bill-room" class="form-control calc-total" required value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Consultation Fee (₹) *</label>
+                            <input type="number" step="0.01" id="bill-consult" class="form-control calc-total" required value="500">
+                        </div>
+                        <div class="form-group">
+                            <label>Medicine Charges (₹) *</label>
+                            <input type="number" step="0.01" id="bill-med" class="form-control calc-total" required value="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Method (Q07 Dropdown) *</label>
+                            <select id="bill-method" class="form-control" required>
+                                {% for m in payment_methods %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Payment Status (Q07 Dropdown) *</label>
+                            <select id="bill-status" class="form-control" required>
+                                {% for s in payment_statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; margin-bottom: 1rem;">
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Calculated Grand Total:</span>
+                            <div id="bill-calculated-total" style="font-size: 1.4rem; font-weight: 700; color: var(--primary);">₹500.00</div>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Generate Bill</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetBillForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Patient Invoices</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-bills" placeholder="Search patient name..." oninput="filterBillsTable(this.value)">
+                            <a href="/api/export/bills" class="btn btn-secondary btn-sm" download style="text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">📥 Export CSV</a>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Bill ID</th>
+                                    <th>Patient</th>
+                                    <th>Room (₹)</th>
+                                    <th>Consult (₹)</th>
+                                    <th>Meds (₹)</th>
+                                    <th>Total (₹)</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bills-table-body">
+                                <tr><td colspan="9" style="text-align: center;">Loading bills...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= AUDIT LOG TAB ================= -->
+        <section id="tab-advances" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>IPD Patient Advance Deposits &amp; Receipts</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenAdvanceModal()">+ Collect Advance Deposit</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Receipt No</th><th>Patient</th><th>Admission ID</th><th>Amount Paid</th><th>Payment Mode</th><th>Collected By</th><th>Timestamp</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="advancesTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading advance deposits...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= INSURANCE & TPA TAB ================= -->
+        <section id="tab-insurance" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Insurance &amp; Third-Party Administrator (TPA) Claims</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenClaimModal()">+ Initiate TPA Claim</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Claim No</th><th>Patient</th><th>TPA / Insurer</th><th>Policy Number</th><th>Estimated Amount</th><th>Approved Amount</th><th>Pre-Auth Status</th><th>Claim Status</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="insuranceClaimsTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading insurance claims...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= HOUSEKEEPING TAB ================= -->

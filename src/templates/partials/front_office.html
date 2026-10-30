@@ -1,0 +1,476 @@
+<section id="tab-patients" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="patient-form-title">Register Patient</h3>
+                    <form id="patient-form" onsubmit="savePatient(event)">
+                        <input type="hidden" id="patient-id">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="patient-name" class="form-control" required placeholder="e.g. Ramesh Kumar">
+                        </div>
+                        <div class="form-group">
+                            <label>Gender (Q07 Dropdown) *</label>
+                            <select id="patient-gender" class="form-control" required>
+                                {% for g in genders %}<option value="{{ g }}">{{ g }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date of Birth *</label>
+                            <input type="date" id="patient-dob" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Blood Group (Q07 Dropdown) *</label>
+                            <select id="patient-blood" class="form-control" required>
+                                {% for b in blood_groups %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number (Q07 Masking) *</label>
+                            <input type="text" id="patient-phone" class="form-control phone-mask" required placeholder="+91-XXXXX-XXXXX">
+                            <div class="form-hint">Auto-formats to +91-XXXXX-XXXXX</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" id="patient-address" class="form-control" placeholder="City, Street">
+                        </div>
+                        <div class="form-group">
+                            <label>Known Drug Allergies (Clinical Poka-Yoke) *</label>
+                            <select id="patient-allergies" class="form-control">
+                                {% for a in allergies %}<option value="{{ a }}">{{ a }}</option>{% endfor %}
+                            </select>
+                            <div class="form-hint">Used for automated contraindication & adverse reaction checks</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Assign Ward / Room</label>
+                            <select id="patient-room" class="form-control">
+                                <option value="">-- None / Outpatient --</option>
+                            </select>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Patient</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetPatientForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Registered Patients</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-patients" placeholder="Search name or phone..." oninput="loadPatients(this.value)">
+                            <a href="/api/export/patients" class="btn btn-secondary btn-sm" download style="text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">📥 Export CSV</a>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Full Name</th>
+                                    <th>Gender</th>
+                                    <th>DOB</th>
+                                    <th>Blood</th>
+                                    <th>Allergies</th>
+                                    <th>Phone</th>
+                                    <th>Room</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body">
+                                <tr><td colspan="9" style="text-align: center;">Loading patients...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DOCTORS TAB ================= -->
+        <section id="tab-doctors" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="doctor-form-title">Add Doctor</h3>
+                    <form id="doctor-form" onsubmit="saveDoctor(event)">
+                        <input type="hidden" id="doctor-id">
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" id="doctor-name" class="form-control" required placeholder="e.g. Dr. Rajesh Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label>Department (Q07 Dropdown) *</label>
+                            <select id="doctor-department" class="form-control" required>
+                                {% for d in departments %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number (Q07 Masking) *</label>
+                            <input type="text" id="doctor-phone" class="form-control phone-mask" required placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Doctor</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetDoctorForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Medical Staff & Doctors</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Doctor Name</th>
+                                    <th>Department</th>
+                                    <th>Phone</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doctors-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading doctors...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= APPOINTMENTS TAB ================= -->
+        <section id="tab-appointments" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="appt-form-title">Schedule Appointment</h3>
+                    <form id="appt-form" onsubmit="saveAppointment(event)">
+                        <input type="hidden" id="appt-id">
+                        <input type="hidden" id="appt-patient-id">
+                        <div class="form-group">
+                            <label>Patient Name (Q07 Auto-Complete) *</label>
+                            <input type="text" id="appt-patient-name" class="form-control" required placeholder="Type to search patient..." autocomplete="off">
+                            <div id="patient-autocomplete-box" class="autocomplete-items" style="display:none;"></div>
+                            <div class="form-hint">Type 1+ letters to see suggestions</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Doctor (Q07 Dropdown) *</label>
+                            <select id="appt-doctor-id" class="form-control" required>
+                                <option value="">-- Select Doctor --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="appt-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time (HH:MM) *</label>
+                            <div style="display:flex; gap: 8px;">
+                                <input type="time" id="appt-time" class="form-control" required style="flex:1;" onchange="checkApptConflict()">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="fetchDoctorAvailableSlots()" title="Check Doctor Free Slots">Free Slots</button>
+                            </div>
+                            <div id="slot-conflict-indicator" style="display:none; margin-top: 6px; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 500;"></div>
+                            <div id="quick-slots-container" style="display:none; margin-top: 8px; display:flex; gap: 4px; flex-wrap: wrap;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Status (Q07 Dropdown) *</label>
+                            <select id="appt-status" class="form-control" required>
+                                {% for s in appt_statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Book Appointment</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetApptForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Appointments Schedule</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-appointments" placeholder="Search doctor or patient..." oninput="filterAppointmentsTable(this.value)">
+                            <a href="/api/export/appointments" class="btn btn-secondary btn-sm" download style="text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;">📥 Export CSV</a>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appts-table-body">
+                                <tr><td colspan="7" style="text-align: center;">Loading appointments...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ROOMS / WARDS TAB ================= -->
+        <section id="tab-queue" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">OPD Token Queue Desk & Waiting Room</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Real-time outpatient queuing, token allocation & consultation dispatch</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadOpdQueue()">🔄 Refresh Live Queue</button>
+                </div>
+            </div>
+
+            <!-- Now Serving Digital Board Display -->
+            <div style="background:#0f172a; color:#fff; border-radius:12px; padding:16px 20px; margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.2rem;">📺</span>
+                        <strong style="font-size:1.05rem; letter-spacing:0.5px;">OPD WAITING ROOM DISPLAY • NOW SERVING</strong>
+                    </div>
+                    <span class="badge-live"><span class="live-dot"></span> Real-Time Digital Queue</span>
+                </div>
+                <div id="now-serving-container" class="token-display-board">
+                    <div class="token-card">
+                        <div style="font-size:0.75rem; color:#94a3b8;">ROOM OPD-101</div>
+                        <div class="token-number-large" id="now-serving-token">#01</div>
+                        <div style="font-size:0.82rem; font-weight:600;">Dr. Rajesh Sharma</div>
+                        <div style="font-size:0.72rem; color:#38bdf8;">Cardiology</div>
+                    </div>
+                    <div class="token-card">
+                        <div style="font-size:0.75rem; color:#94a3b8;">ROOM OPD-105</div>
+                        <div class="token-number-large">#02</div>
+                        <div style="font-size:0.82rem; font-weight:600;">Dr. Amit Mehra</div>
+                        <div style="font-size:0.72rem; color:#38bdf8;">General Medicine</div>
+                    </div>
+                    <div class="token-card">
+                        <div style="font-size:0.75rem; color:#94a3b8;">ROOM ER-01</div>
+                        <div class="token-number-large" style="color:#ef4444;">EM-01</div>
+                        <div style="font-size:0.82rem; font-weight:600;">Dr. Sameer Khan</div>
+                        <div style="font-size:0.72rem; color:#ef4444;">Emergency Triage</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                <!-- Issue Token Form -->
+                <div class="form-card">
+                    <h3>🎫 Issue New OPD Token</h3>
+                    <form id="tokenIssueForm" onsubmit="handleTokenIssueSubmit(event)">
+                        <div class="form-group">
+                            <label>Patient *</label>
+                            <input type="text" id="token-patient-search" class="form-control" required placeholder="Type patient name to select..." autocomplete="off">
+                            <input type="hidden" id="token-patient-id">
+                            <div id="token-patient-suggestions" class="autocomplete-suggestions"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Attending Consultant Doctor *</label>
+                            <select id="token-doctor-select" class="form-control" required>
+                                <option value="">Select Doctor...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Priority Tier *</label>
+                            <select id="token-priority-select" class="form-control">
+                                <option value="Normal">Normal Queue</option>
+                                <option value="Urgent">Urgent (Senior Citizen / Pediatric / Acute)</option>
+                                <option value="Emergency">Emergency (Code Red / Severe)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">✓ Allocate Token & Check-in</button>
+                    </form>
+                </div>
+
+                <!-- Today's Live Queue Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Today's Patient Queue</h3>
+                        <span id="queue-count-badge" class="badge badge-info">0 Waiting</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Token #</th>
+                                    <th>Patient Name</th>
+                                    <th>Doctor</th>
+                                    <th>OPD Room</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="opd-queue-table-body">
+                                <tr><td colspan="7" style="text-align:center;">Loading today's queue...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= NURSING STATION & TASKS TAB ================= -->
+        <section id="tab-visitors" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Issue Visitor Pass</h3>
+                    <form id="visitor-form" onsubmit="window.hmsSaveVisitor(event)">
+                        <div class="form-group">
+                            <label>Inpatient UHID / Patient *</label>
+                            <input type="text" id="vis-patient-input" class="form-control" placeholder="Search patient name or UHID..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Visitor Full Name *</label>
+                            <input type="text" id="vis-name" class="form-control" required placeholder="Visitor legal name">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Phone *</label>
+                            <input type="text" id="vis-phone" class="form-control" required placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Relation to Patient *</label>
+                            <select id="vis-relation" class="form-control" required>
+                                <option value="Spouse">Spouse</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Child">Child</option>
+                                <option value="Friend">Friend / Relative</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Issue Visitor Pass &amp; Print Badge</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Active Hospital Visitors</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadVisitors()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Badge No</th><th>Visitor Name</th><th>Patient</th><th>Room</th><th>Check-In</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="visitorsTableBody">
+                                <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading visitor logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= TRIAGE & VITALS TAB ================= -->
+
+        <!-- ================= HEALTH PACKAGES TAB ================= -->
+        <section id="tab-health-packages" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Create Health Package</h3>
+                    <form id="healthPackageForm" onsubmit="window.hmsSaveHealthPackage(event)">
+                        <div class="form-group">
+                            <label>Package Name *</label>
+                            <input type="text" id="hp-name" class="form-control" required placeholder="e.g. Master Cardiac Wellness">
+                        </div>
+                        <div class="form-group">
+                            <label>Package Code *</label>
+                            <input type="text" id="hp-code" class="form-control" required placeholder="e.g. PKG-CARD-02">
+                        </div>
+                        <div class="form-group">
+                            <label>Price (₹) *</label>
+                            <input type="number" step="0.01" id="hp-price" class="form-control" required placeholder="3999.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Tests & Services Included</label>
+                            <textarea id="hp-tests" class="form-control" rows="2" placeholder="CBC, Lipid Profile, ECG, 2D-ECHO, Doctor Consult"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" id="hp-desc" class="form-control" placeholder="Target demographic & screening purpose">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Package</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Preventive Health Checkup Packages</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadHealthPackages()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Code</th><th>Package Name</th><th>Price</th><th>Tests Included</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="healthPackagesTableBody">
+                                <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading wellness packages...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= REFERRALS DESK TAB ================= -->
+        <section id="tab-referrals" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Log Clinical Referral</h3>
+                    <form id="referralForm" onsubmit="window.hmsSaveReferral(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="ref-uhid" class="form-control" required placeholder="UHID-2026-000001">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="ref-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Referral Type *</label>
+                            <select id="ref-type" class="form-control" required>
+                                <option value="Inbound">Inbound (Referred to us)</option>
+                                <option value="Outbound">Outbound (Referred outside)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Partner Center / Hospital *</label>
+                            <input type="text" id="ref-center" class="form-control" required placeholder="e.g. Metro Care Heart Institute">
+                        </div>
+                        <div class="form-group">
+                            <label>Specialty Department</label>
+                            <input type="text" id="ref-dept" class="form-control" placeholder="e.g. Cardiology, Oncology">
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Reason &amp; Summary</label>
+                            <textarea id="ref-reason" class="form-control" rows="2" placeholder="Clinical justification & prior workup"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Register Referral</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Inter-Hospital Referrals Register</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadReferrals()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Ref ID</th><th>UHID</th><th>Patient</th><th>Type</th><th>Partner Center</th><th>Specialty</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="referralsTableBody">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading referral logs...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>

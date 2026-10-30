@@ -11,6 +11,7 @@ from datetime import datetime
 blood_bank_bp = Blueprint("blood_bank", __name__)
 
 
+@blood_bank_bp.route("/blood-bank/units", methods=["GET"])
 @blood_bank_bp.route("/blood-bank/inventory", methods=["GET"])
 @require_permission("diagnostics", "view")
 def list_blood_inventory():

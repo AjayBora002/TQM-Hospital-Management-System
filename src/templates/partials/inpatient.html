@@ -1,0 +1,391 @@
+        <section id="tab-rooms" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3 id="room-form-title">Add Room / Ward</h3>
+                    <form id="room-form" onsubmit="saveRoom(event)">
+                        <input type="hidden" id="room-id">
+                        <div class="form-group">
+                            <label>Room Number *</label>
+                            <input type="text" id="room-number" class="form-control" required placeholder="e.g. 101, ICU-1">
+                        </div>
+                        <div class="form-group">
+                            <label>Room Type (Q07 Dropdown) *</label>
+                            <select id="room-type" class="form-control" required>
+                                {% for t in room_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status (Q07 Dropdown) *</label>
+                            <select id="room-status" class="form-control" required>
+                                {% for s in room_statuses %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rate Per Day (₹) *</label>
+                            <input type="number" step="0.01" id="room-rate" class="form-control" required placeholder="1500.00">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Save Room</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetRoomForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Rooms & Wards Availability</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Room No.</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Rate / Day</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rooms-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading rooms...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= INPATIENT ADMISSIONS & STAYS TAB ================= -->
+        <section id="tab-admissions" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Admit Inpatient to Bed</h3>
+                    <form id="admit-form" onsubmit="saveAdmission(event)">
+                        <div class="form-group">
+                            <label>Patient (Q07 Auto-Complete) *</label>
+                            <input type="text" id="admit-patient-name" class="form-control" required placeholder="Type patient name..." autocomplete="off">
+                            <input type="hidden" id="admit-patient-id">
+                            <div id="admit-patient-autocomplete" class="autocomplete-items" style="display:none;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Allocate Room / Bed *</label>
+                            <select id="admit-room-id" class="form-control" required>
+                                <option value="">-- Select Available Room --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Admission Date *</label>
+                            <input type="date" id="admit-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Admission Diagnosis / Clinical Reason</label>
+                            <textarea id="admit-diagnosis" class="form-control" rows="3" placeholder="e.g. Acute appendicitis, scheduled for laparoscopy"></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">✓ Admit Patient & Reserve Bed</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetAdmitForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Inpatient Admissions & Stays</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <label style="font-size: 0.82rem; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="checkbox" id="admissions-active-only" onchange="loadAdmissions()" checked> Active Stays Only
+                            </label>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Stay ID</th>
+                                    <th>Patient</th>
+                                    <th>Room</th>
+                                    <th>Type</th>
+                                    <th>Admitted Date</th>
+                                    <th>Discharged Date</th>
+                                    <th>Diagnosis</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admissions-table-body">
+                                <tr><td colspan="9" style="text-align: center;">Loading admissions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STAFF TAB ================= -->
+        <section id="tab-nursing" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Nursing Station & Inpatient Ward Care</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Inpatient roster, vital signs monitoring, medication administration & task execution</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadNursingData()">🔄 Refresh Station</button>
+                </div>
+            </div>
+
+            <!-- Inpatient Care & Bed Allocation Overview -->
+            <div class="table-card" style="margin-bottom: 20px;">
+                <div class="table-header">
+                    <div>
+                        <h3>Ward Inpatients Under Active Nursing Care</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Admitted patients, assigned beds, primary diagnoses & clinical alerts</p>
+                    </div>
+                    <span id="nursing-patient-count" class="badge badge-info">0 Inpatients</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bed #</th>
+                                <th>Ward</th>
+                                <th>Patient Name</th>
+                                <th>Gender / Age</th>
+                                <th>Blood Group</th>
+                                <th>Allergies</th>
+                                <th>Admission Date</th>
+                                <th>Diagnosis</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nursing-inpatients-table-body">
+                            <tr><td colspan="9" style="text-align:center;">Loading ward inpatients...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <!-- Record Patient Vitals Form -->
+                <div class="form-card">
+                    <h3>🩺 Record Inpatient Vitals (Nursing Station)</h3>
+                    <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:12px;">Physiological checks with automated Code Red alert threshold</p>
+                    <form id="nursingVitalsForm" onsubmit="handleNursingVitalsSubmit(event)">
+                        <div class="form-group">
+                            <label>Inpatient Bed *</label>
+                            <select id="nv-patient-select" class="form-control" required>
+                                <option value="">Select Inpatient Bed...</option>
+                            </select>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Systolic BP (mmHg)</label>
+                                <input type="number" id="nv-systolic" class="form-control" placeholder="120" min="60" max="260">
+                            </div>
+                            <div class="form-group">
+                                <label>Diastolic BP (mmHg)</label>
+                                <input type="number" id="nv-diastolic" class="form-control" placeholder="80" min="40" max="150">
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Pulse Rate (bpm)</label>
+                                <input type="number" id="nv-pulse" class="form-control" placeholder="72" min="30" max="220">
+                            </div>
+                            <div class="form-group">
+                                <label>Temperature (°F)</label>
+                                <input type="number" step="0.1" id="nv-temp" class="form-control" placeholder="98.6" min="94" max="108">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Oxygen Saturation SpO2 (%) *</label>
+                            <input type="number" id="nv-spo2" class="form-control" placeholder="98" min="50" max="100" required>
+                            <div class="form-hint">Values &lt; 90% automatically trigger emergency broadcast to attending physician.</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">✓ Record Vitals & Check Safety</button>
+                    </form>
+                </div>
+
+                <!-- Doctor's Orders Acknowledgment & Administration Board -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Pending Doctor Clinical Orders</h3>
+                        <span id="nursing-orders-count" class="badge badge-warning">0 Pending</span>
+                    </div>
+                    <div style="max-height: 380px; overflow-y: auto; padding-right: 4px;" id="nursing-orders-container">
+                        <p style="text-align:center; color:var(--text-muted); padding:20px;">Loading clinical orders...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DOCTOR-NURSE COMMS TAB ================= -->
+        <section id="tab-bedboard" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Inpatient Ward Bed Board & Matrix</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Real-time bed occupancy, cleaning turnover & bed maintenance status</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <select id="bedboard-ward-filter" class="form-control" style="width:auto; font-size:0.84rem;" onchange="loadBedBoard(this.value)">
+                        <option value="">All Wards</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" onclick="loadBedBoard()">🔄 Refresh Board</button>
+                </div>
+            </div>
+
+            <!-- Occupancy Counters -->
+            <div class="grid-dashboard" style="grid-template-columns: repeat(5, 1fr); margin-bottom: 20px;">
+                <div class="stat-card">
+                    <span class="stat-label">Total Beds</span>
+                    <span class="stat-value" id="bb-stat-total">0</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Available Beds</span>
+                    <span class="stat-value" id="bb-stat-available">0</span>
+                </div>
+                <div class="stat-card" style="border-top: 4px solid #ef4444;">
+                    <span class="stat-label">Occupied Beds</span>
+                    <span class="stat-value" id="bb-stat-occupied" style="color:#ef4444;">0</span>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-label">Cleaning / Sanitizing</span>
+                    <span class="stat-value" id="bb-stat-cleaning">0</span>
+                </div>
+                <div class="stat-card teal">
+                    <span class="stat-label">Occupancy Rate</span>
+                    <span class="stat-value" id="bb-stat-rate">0%</span>
+                </div>
+            </div>
+
+            <!-- Interactive Bed Cards Grid -->
+            <div id="bed-matrix-container" class="bed-matrix-grid">
+                <p style="text-align:center; color:var(--text-muted); padding:30px; grid-column: 1 / -1;">Loading bed matrix...</p>
+            </div>
+        </section>
+
+        <!-- ================= VISITOR MANAGEMENT TAB ================= -->
+        <section id="tab-emergency" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Emergency Department &amp; Casualty Trauma Board</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Live Red/Yellow/Green acuity board with crash team dispatch and resuscitation status.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenEmergencyIntakeModal()">+ Intake Emergency Case</button>
+            </div>
+            <div id="emergencyBoardContainer">
+                <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                    <table>
+                        <thead>
+                            <tr><th>Case No</th><th>Patient</th><th>Triage Color</th><th>Chief Complaint</th><th>GCS</th><th>Assigned Bed</th><th>Attending Doctor</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="emergencyTableBody">
+                            <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading emergency cases...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ICU VITAL CHART TAB ================= -->
+        <section id="tab-icu" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Intensive Care Unit (ICU) Multi-Parameter Flowsheet</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Hourly telemetry, invasive arterial lines, ventilator parameters, inotrope titration, and urine output.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenIcuLogModal()">+ Log Hourly ICU Vitals</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Time</th><th>Patient (Bed)</th><th>Heart Rate</th><th>BP (MAP)</th><th>SpO2</th><th>Vent Mode / FiO2</th><th>Inotropes</th><th>GCS</th><th>Urine (mL/h)</th></tr>
+                    </thead>
+                    <tbody id="icuTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading ICU flowsheet...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= OPERATION THEATRE TAB ================= -->
+        <section id="tab-ot" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Operation Theatre (OT) Schedules &amp; Surgical Checklists</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Theatre allocation, surgical team roster, and WHO Surgical Safety Checklist (Sign In, Time Out, Sign Out).</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenOtScheduleModal()">+ Schedule Surgery</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>OT Room</th><th>Scheduled Time</th><th>Patient</th><th>Procedure</th><th>Lead Surgeon</th><th>Anaesthetist</th><th>WHO Checklist</th><th>Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="otTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading OT schedule...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= RADIOLOGY & PACS TAB ================= -->
+        <section id="tab-transfers" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Inpatient Bed &amp; Ward Transfers</h3>
+                    <button class="btn btn-primary btn-sm" onclick="window.hmsOpenBedTransferModal()">+ Transfer Patient Bed</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Transfer ID</th><th>Patient</th><th>From Bed</th><th>To Bed</th><th>Transfer Reason</th><th>Authorized By</th><th>Timestamp</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="transfersTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading bed transfer log...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SHIFT HANDOVER TAB ================= -->
+        <section id="tab-handover" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Nursing Shift Handover Logs (SBAR Protocol)</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openHandoverModal()">+ New Shift Handover</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Timestamp</th><th>Ward / Unit</th><th>Outgoing Nurse</th><th>Incoming Nurse</th><th>Critical Watchlist</th><th>Pending Tasks</th><th>Status</th></tr>
+                        </thead>
+                        <tbody id="handoverTableBody">
+                            <tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Loading shift handovers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DISCHARGE SUMMARIES TAB ================= -->
+        <section id="tab-discharge" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Patient Discharge Summaries &amp; Clinical Closures</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Admission ID</th><th>Patient</th><th>Admit Date</th><th>Discharge Date</th><th>Primary Diagnosis</th><th>Discharge Advice</th><th>Financial Clearance</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="dischargeSummariesTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading discharge summaries...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PHARMACY DISPENSING TAB ================= -->

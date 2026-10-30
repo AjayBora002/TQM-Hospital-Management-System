@@ -15,7 +15,17 @@ patients_bp = Blueprint("patients", __name__)
 @require_permission("front_office", "view")
 def get_patients():
     q = request.args.get("q", "").strip()
-    return jsonify(rows_to_list(patient_model.list_all(q)))
+    patients_list = rows_to_list(patient_model.list_all(q))
+    user_role = session.get("role", "")
+    # Field-level privacy: Non-clinical roles receive demographic data only (no clinical SOAP notes)
+    if user_role in ("Receptionist", "Cashier"):
+        for p in patients_list:
+            p.pop("clinical_notes", None)
+            p.pop("soap_subjective", None)
+            p.pop("soap_objective", None)
+            p.pop("soap_assessment", None)
+            p.pop("soap_plan", None)
+    return jsonify(patients_list)
 
 
 @patients_bp.route("/patients/autocomplete", methods=["GET"])

@@ -1,0 +1,27 @@
+        <section id="tab-portal" class="tab-panel">
+            <div style="background:#f0fdfa; border:1px solid #99f6e4; padding:16px 20px; border-radius:8px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="margin:0 0 4px 0; color:#0f766e;">Patient Self-Service Health Portal</h2>
+                    <p style="margin:0; font-size:13px; color:#115e59;">View your confirmed appointments, verified laboratory diagnostic results, active e-prescriptions, and billing receipts.</p>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="window.hmsRefreshPatientPortal()">Refresh My Records</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <div class="card">
+                    <h4>My Appointments</h4>
+                    <div id="portalAppointmentsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your appointments...</div>
+                </div>
+                <div class="card">
+                    <h4>My Verified Lab Reports</h4>
+                    <div id="portalLabReportsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your lab reports...</div>
+                </div>
+                <div class="card">
+                    <h4>My e-Prescriptions</h4>
+                    <div id="portalPrescriptionsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your prescriptions...</div>
+                </div>
+                <div class="card">
+                    <h4>My Invoices &amp; Receipts</h4>
+                    <div id="portalBillsList" style="font-size:13px; color:#64748b; padding:10px 0;">Loading your billing invoices...</div>
+                </div>
+            </div>
+        </section>

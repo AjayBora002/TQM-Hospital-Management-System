@@ -36,7 +36,14 @@ ALL_ROLES = [
     "Store/Inventory Manager",
     "Insurance/TPA Desk",
     "Ambulance Dispatcher",
-    "Dietitian"
+    "Dietitian",
+    "MRD Officer",
+    "Mortuary Attendant",
+    "CSSD Technician",
+    "Infection Control Nurse",
+    "Physiotherapist",
+    "Security Officer",
+    "Telemedicine Doctor"
 ]
 
 # Permissions mapping: role -> { module -> list of allowed actions }
@@ -53,7 +60,24 @@ ROLE_PERMISSIONS = {
         "people": ["view", "create", "edit", "delete", "approve"],
         "quality": ["view", "create", "edit", "delete", "approve"],
         "admin": ["view", "create", "edit", "delete", "approve"],
-        "reports": ["view", "approve"]
+        "reports": ["view", "approve"],
+        "mrd": ["view", "create", "edit", "delete", "approve"],
+        "mortuary": ["view", "create", "edit", "delete", "approve"],
+        "cssd": ["view", "create", "edit", "delete", "approve"],
+        "laundry": ["view", "create", "edit", "delete", "approve"],
+        "infection_control": ["view", "create", "edit", "delete", "approve"],
+        "dialysis": ["view", "create", "edit", "delete", "approve"],
+        "maternity": ["view", "create", "edit", "delete", "approve"],
+        "physiotherapy": ["view", "create", "edit", "delete", "approve"],
+        "health_packages": ["view", "create", "edit", "delete", "approve"],
+        "vaccination": ["view", "create", "edit", "delete", "approve"],
+        "referrals": ["view", "create", "edit", "delete", "approve"],
+        "feedback": ["view", "create", "edit", "delete", "approve"],
+        "telemedicine": ["view", "create", "edit", "delete", "approve"],
+        "security": ["view", "create", "edit", "delete", "approve"],
+        "pharmacy_returns": ["view", "create", "edit", "delete", "approve"],
+        "mm_reviews": ["view", "create", "edit", "delete", "approve"],
+        "safety_checklists": ["view", "create", "edit", "delete", "approve"]
     },
     "Hospital Manager": {
         "front_office": ["view"],
@@ -66,7 +90,24 @@ ROLE_PERMISSIONS = {
         "people": ["view", "approve"],
         "quality": ["view", "approve"],
         "admin": ["view"],
-        "reports": ["view", "approve"]
+        "reports": ["view", "approve"],
+        "mrd": ["view", "approve"],
+        "mortuary": ["view", "approve"],
+        "cssd": ["view", "approve"],
+        "laundry": ["view", "approve"],
+        "infection_control": ["view", "approve"],
+        "dialysis": ["view", "approve"],
+        "maternity": ["view", "approve"],
+        "physiotherapy": ["view", "approve"],
+        "health_packages": ["view", "approve"],
+        "vaccination": ["view", "approve"],
+        "referrals": ["view", "approve"],
+        "feedback": ["view", "approve"],
+        "telemedicine": ["view", "approve"],
+        "security": ["view", "approve"],
+        "pharmacy_returns": ["view", "approve"],
+        "mm_reviews": ["view", "approve"],
+        "safety_checklists": ["view", "approve"]
     },
     "Doctor": {
         "front_office": ["view"],
@@ -76,7 +117,13 @@ ROLE_PERMISSIONS = {
         "pharmacy": ["view", "create"],     # Write prescriptions
         "quality": ["view", "create"],      # Incident reporting
         "people": ["view"],
-        "reports": ["view"]
+        "reports": ["view"],
+        "telemedicine": ["view", "create", "edit"],
+        "dialysis": ["view", "create", "edit"],
+        "maternity": ["view", "create", "edit"],
+        "vaccination": ["view", "create", "edit"],
+        "referrals": ["view", "create", "edit"],
+        "mrd": ["view"]
     },
     "Nurse": {
         "front_office": ["view"],
@@ -86,7 +133,12 @@ ROLE_PERMISSIONS = {
         "pharmacy": ["view"],
         "support_services": ["view", "create"],  # Housekeeping / meal requests
         "quality": ["view", "create"],
-        "reports": ["view"]
+        "reports": ["view"],
+        "maternity": ["view", "edit"],
+        "dialysis": ["view", "edit"],
+        "vaccination": ["view", "edit"],
+        "cssd": ["view", "create"],
+        "laundry": ["view", "create"]
     },
     "Ward Manager": {
         "front_office": ["view"],
@@ -112,6 +164,7 @@ ROLE_PERMISSIONS = {
         "front_office": ["view"],
         "clinical": ["view"],  # Read prescriptions only
         "pharmacy": ["view", "create", "edit", "approve"],  # Dispensing, stock, purchase orders
+        "pharmacy_returns": ["view", "create", "edit", "approve"],
         "finance": ["view"]
     },
     "Cashier": {
@@ -127,7 +180,12 @@ ROLE_PERMISSIONS = {
         "inpatient": ["view"],
         "quality": ["view", "create", "edit", "approve"],  # NABH audits, incidents, CAPA, SPC, Pareto
         "admin": ["view"],                                 # Audit trail inspection
-        "reports": ["view", "approve"]
+        "reports": ["view", "approve"],
+        "infection_control": ["view", "create", "edit", "approve"],
+        "mm_reviews": ["view", "create", "edit", "approve"],
+        "feedback": ["view", "create", "edit", "approve"],
+        "safety_checklists": ["view", "approve"],
+        "mrd": ["view"]
     },
     "Radiologist": {
         "front_office": ["view"],
@@ -182,6 +240,38 @@ ROLE_PERMISSIONS = {
         "inpatient": ["view"],   # Inpatient list
         "support_services": ["view", "create", "edit", "approve"]  # Diet orders, clinical nutrition plans
     }
+,
+    "MRD Officer": {
+        "mrd": ["view", "create", "edit", "approve"],
+        "front_office": ["view"],
+        "clinical": ["view"]
+    },
+    "Mortuary Attendant": {
+        "mortuary": ["view", "create", "edit", "approve"],
+        "support_services": ["view"]
+    },
+    "CSSD Technician": {
+        "cssd": ["view", "create", "edit", "approve"],
+        "support_services": ["view"]
+    },
+    "Infection Control Nurse": {
+        "infection_control": ["view", "create", "edit", "approve"],
+        "clinical": ["view"],
+        "inpatient": ["view"],
+        "quality": ["view", "create", "edit"]
+    },
+    "Physiotherapist": {
+        "physiotherapy": ["view", "create", "edit", "approve"],
+        "clinical": ["view"]
+    },
+    "Security Officer": {
+        "security": ["view", "create", "edit", "approve"],
+        "support_services": ["view"]
+    },
+    "Telemedicine Doctor": {
+        "telemedicine": ["view", "create", "edit", "approve"],
+        "clinical": ["view", "create", "edit"]
+    }
 }
 
 
@@ -192,6 +282,10 @@ def has_permission(role: str, module: str, action: str) -> bool:
     """
     if not role or role not in ROLE_PERMISSIONS:
         return False
+
+    # Any authenticated role can view dashboard stats
+    if module == "dashboard" and action == "view":
+        return True
 
     # Hard restriction: Admin CANNOT edit or create clinical records
     if role == "Admin" and module == "clinical" and action in ("create", "edit", "delete"):
@@ -306,5 +400,6 @@ def require_permission(module: str, action: str = "view"):
                         print(f"[BreakGlass Error] {bg_err}")
 
             return fn(*args, **kwargs)
+        wrapper._required_permission = (module, action)
         return wrapper
     return decorator

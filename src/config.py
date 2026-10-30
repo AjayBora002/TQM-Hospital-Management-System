@@ -18,10 +18,27 @@ UHID_PREFIX = "UHID-2026-"
 GENDERS = ["Male", "Female", "Other"]
 BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 DEPARTMENTS = [
+    # Clinical Departments
     "Cardiology", "Orthopedics", "Pediatrics", "General Medicine",
-    "Neurology", "ENT", "Dermatology", "Gynecology",
+    "Neurology", "ENT", "Dermatology", "Gynecology", "Gynecology & Obstetrics",
     "Emergency & Trauma", "Intensive Care Unit (ICU)", "Operation Theatre",
-    "Laboratory", "Radiology", "Pharmacy"
+    "Oncology", "Nephrology and Dialysis", "Urology", "Gastroenterology",
+    "Pulmonology", "Endocrinology/Diabetology", "Psychiatry", "Ophthalmology",
+    "Dental", "Obstetrics and Labour room", "Neonatology/NICU", "Anaesthesiology",
+    "Plastic and Burns", "Cardiothoracic surgery", "Vascular surgery",
+    "Rheumatology", "Physiotherapy and Rehab", "Pain clinic", "AYUSH",
+    "Geriatrics", "Cath Lab", "Endoscopy suite", "General Surgery",
+    "Preventive health check-up", "Vaccination", "Telemedicine",
+    # Diagnostic Departments
+    "Laboratory", "Laboratory & Diagnostics", "Radiology", "Radiology & Imaging",
+    "Blood Bank", "Pathology & Histology", "Microbiology", "Nuclear Medicine",
+    # Support Departments
+    "Pharmacy", "Housekeeping & Sanitation", "Dietary & Nutrition",
+    "Biomedical Engineering", "Ambulance & EMS", "Central Sterile Services (CSSD)",
+    "Laundry and Linen", "Mortuary", "Security & Safety", "Medical Gas & Fire Safety",
+    # Administrative Departments
+    "Front Desk & Reception", "Billing & Cashier", "Medical Records (MRD)",
+    "Quality & Accreditation (NABH)", "Hospital Administration & HR", "Insurance & TPA Desk"
 ]
 DOCTOR_SPECIALIZATIONS = [
     "Cardiologist", "Interventional Cardiologist", "Orthopedic Surgeon",
@@ -114,7 +131,14 @@ USER_ROLES = [
     "Store/Inventory Manager",
     "Insurance/TPA Desk",
     "Ambulance Dispatcher",
-    "Dietitian"
+    "Dietitian",
+    "MRD Officer",
+    "Mortuary Attendant",
+    "CSSD Technician",
+    "Infection Control Nurse",
+    "Physiotherapist",
+    "Security Officer",
+    "Telemedicine Doctor"
 ]
 
 # ---- Inpatient Admission & Stays -------------------------------------------

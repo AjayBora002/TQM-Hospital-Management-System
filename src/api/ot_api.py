@@ -10,6 +10,7 @@ from utils.exception_handler import ValidationError
 ot_bp = Blueprint("ot", __name__)
 
 
+@ot_bp.route("/ot", methods=["GET"])
 @ot_bp.route("/ot/schedules", methods=["GET"])
 @require_permission("clinical", "view")
 def list_ot_schedules():

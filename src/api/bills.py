@@ -1,7 +1,7 @@
 """
 bills.py -- Patient billing and invoice REST API endpoints with server-side RBAC.
 """
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, jsonify, Response, session
 import models.bill as bill_model
 from auth.permissions import require_permission
 from .helpers import rows_to_list
@@ -12,7 +12,15 @@ bills_bp = Blueprint("bills", __name__)
 @bills_bp.route("/bills", methods=["GET"])
 @require_permission("finance", "view")
 def get_bills():
-    return jsonify(rows_to_list(bill_model.list_all()))
+    bills_list = rows_to_list(bill_model.list_all())
+    user_role = session.get("role", "")
+    # Field-level security: Cashiers and front desk cannot access clinical data
+    if user_role in ("Cashier", "Receptionist"):
+        for b in bills_list:
+            b.pop("diagnosis", None)
+            b.pop("allergies", None)
+            b.pop("clinical_notes", None)
+    return jsonify(bills_list)
 
 
 @bills_bp.route("/bills", methods=["POST"])

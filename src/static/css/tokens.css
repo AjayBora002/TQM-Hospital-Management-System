@@ -110,3 +110,30 @@
   --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+
+/* Dark Mode Tokens */
+[data-theme="dark"] {
+  --color-bg-base: #0b0f19;
+  --color-bg-surface: #111827;
+  --color-bg-subtle: #1f2937;
+  --color-bg-muted: #374151;
+  --color-text-main: #f9fafb;
+  --color-text-muted: #9ca3af;
+  --color-text-subtle: #6b7280;
+  --color-text-inverse: #111827;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+  --bg-main: #0b0f19;
+  --card-bg: #111827;
+  --text-dark: #f9fafb;
+  --text-muted: #9ca3af;
+  --border-color: #374151;
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}

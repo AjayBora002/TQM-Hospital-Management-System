@@ -1,0 +1,519 @@
+<section id="tab-prescriptions" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Prescribe Medication (Clinical Safety)</h3>
+                    <form id="rx-form" onsubmit="savePrescription(event)">
+                        <div class="form-group">
+                            <label>Patient (Q07 Auto-Complete) *</label>
+                            <input type="text" id="rx-patient-name" class="form-control" required placeholder="Type patient name..." autocomplete="off">
+                            <input type="hidden" id="rx-patient-id">
+                            <input type="hidden" id="rx-patient-allergies" value="None">
+                            <div id="rx-patient-autocomplete" class="autocomplete-items" style="display:none;"></div>
+                            <div id="rx-patient-allergy-notice" style="display:none; font-size:0.8rem; margin-top:4px;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Attending Doctor *</label>
+                            <select id="rx-doctor-id" class="form-control" required>
+                                <option value="">-- Select Doctor --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Prescribe Medicine *</label>
+                            <select id="rx-medicine-id" class="form-control" required onchange="checkPrescriptionAllergyWarning()">
+                                <option value="">-- Select Pharmacy Item --</option>
+                            </select>
+                            <div id="rx-allergy-alert" class="clinical-danger-box" style="display:none;"></div>
+                        </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Dosage *</label>
+                                <input type="text" id="rx-dosage" class="form-control" required placeholder="e.g. 500mg, 1 tab">
+                            </div>
+                            <div class="form-group">
+                                <label>Frequency *</label>
+                                <select id="rx-frequency" class="form-control" required>
+                                    {% for f in dosage_frequencies %}<option value="{{ f }}">{{ f }}</option>{% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (Days) *</label>
+                            <input type="number" id="rx-duration" class="form-control" required value="5" min="1" max="90">
+                        </div>
+                        <div class="form-group">
+                            <label>Doctor's Advice / Clinical Instructions</label>
+                            <input type="text" id="rx-instructions" class="form-control" placeholder="e.g. Take after food with warm water">
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" id="rx-submit-btn" style="flex:1;">✓ Prescribe Medication</button>
+                            <button type="button" class="btn btn-secondary" onclick="resetRxForm()">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Prescription History & Medical Orders</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="text" class="search-input" id="search-prescriptions" placeholder="Search patient or medicine..." oninput="filterPrescriptionsTable(this.value)">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Rx ID</th>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                    <th>Duration</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescriptions-table-body">
+                                <tr><td colspan="10" style="text-align: center;">Loading prescriptions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BILLING TAB ================= -->
+        <section id="tab-triage" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Clinical Triage Assessment</h3>
+                    <form id="triage-form" onsubmit="window.hmsSaveTriage(event)">
+                        <div class="form-group">
+                            <label>Patient *</label>
+                            <input type="text" id="tr-patient-input" class="form-control" placeholder="Search patient..." required>
+                        </div>
+                        <div class="form-group">
+                            <label>Triage Category (ESI / Acuity) *</label>
+                            <select id="tr-category" class="form-control" required>
+                                <option value="Level 1 - Resuscitation" style="color:#b91c1c; font-weight:bold;">Level 1 - Resuscitation (Immediate STAT)</option>
+                                <option value="Level 2 - Emergent" style="color:#ea580c; font-weight:bold;">Level 2 - Emergent (&lt; 15 min)</option>
+                                <option value="Level 3 - Urgent" selected style="color:#ca8a04; font-weight:bold;">Level 3 - Urgent (&lt; 30 min)</option>
+                                <option value="Level 4 - Semi-Urgent" style="color:#16a34a;">Level 4 - Semi-Urgent (&lt; 60 min)</option>
+                                <option value="Level 5 - Non-Urgent" style="color:#2563eb;">Level 5 - Non-Urgent (&lt; 120 min)</option>
+                            </select>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>BP (Systolic/Diastolic)</label>
+                                <input type="text" id="tr-bp" class="form-control" placeholder="e.g. 120/80">
+                            </div>
+                            <div class="form-group">
+                                <label>Pulse / Heart Rate (bpm)</label>
+                                <input type="number" id="tr-pulse" class="form-control" placeholder="72">
+                            </div>
+                            <div class="form-group">
+                                <label>SpO2 (%)</label>
+                                <input type="number" id="tr-spo2" class="form-control" placeholder="98">
+                            </div>
+                            <div class="form-group">
+                                <label>Temp (°F)</label>
+                                <input type="number" step="0.1" id="tr-temp" class="form-control" placeholder="98.6">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Chief Presenting Complaint *</label>
+                            <textarea id="tr-complaint" class="form-control" rows="2" required placeholder="Chest pain, dyspnea, acute trauma..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Record Triage Score</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Recent Triage Scores &amp; Queue Priority</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Time</th><th>Patient</th><th>Acuity</th><th>Vitals</th><th>Complaint</th><th>Assigned Nurse</th></tr>
+                            </thead>
+                            <tbody id="triageTableBody">
+                                <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Loading triage queue...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EMR & TIMELINE TAB ================= -->
+        <section id="tab-emr" class="tab-panel">
+            <div style="margin-bottom:16px; display:flex; gap:12px; align-items:center;">
+                <input type="text" id="emrSearchPatientInput" class="form-control" placeholder="Search patient name or UHID to view full 360° EMR timeline..." style="max-width:400px;">
+                <button class="btn btn-primary" onclick="window.hmsSearchEmrTimeline()">Load Patient EMR</button>
+            </div>
+            <div id="emrTimelineContainer">
+                <div class="empty-state" style="padding:40px; text-align:center; background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                    <h3 style="color:#475569; margin:12px 0 4px 0;">360° Comprehensive Electronic Medical Record</h3>
+                    <p style="color:#94a3b8; font-size:14px;">Select a patient from the search bar above or Persistent Patient Banner to inspect clinical SOAP history, vital graphs, allergy alerts, prescriptions, and lab investigations.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= CLINICAL ORDERS TAB ================= -->
+        <section id="tab-orders" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Doctor Clinical Orders &amp; Nursing Administration</h3>
+                    <button class="btn btn-primary btn-sm" onclick="openDoctorOrderModal()">+ Write New Order</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Order ID</th><th>Patient</th><th>Type</th><th>Urgency</th><th>Order Instruction</th><th>Ordered By</th><th>Status</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading active orders...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= EMERGENCY & TRAUMA TAB ================= -->
+
+        <!-- ================= TELEMEDICINE TAB ================= -->
+        <section id="tab-telemedicine" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Schedule Virtual Consult</h3>
+                    <form id="telemedicineForm" onsubmit="window.hmsSaveTelemedicine(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="tele-uhid" class="form-control" required placeholder="UHID-2026-000001">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="tele-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Attending Doctor *</label>
+                            <input type="text" id="tele-doctor" class="form-control" required placeholder="Dr. Rajesh Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label>Appointment Time *</label>
+                            <input type="datetime-local" id="tele-time" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Platform *</label>
+                            <select id="tele-platform" class="form-control" required>
+                                <option value="Google Meet">Google Meet</option>
+                                <option value="WebRTC Encrypted Room">WebRTC Encrypted Room</option>
+                                <option value="Zoom Healthcare">Zoom Healthcare</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Book Tele-Consult</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Telemedicine Video Consultations</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadTelemedicine()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>UHID</th><th>Patient</th><th>Doctor</th><th>Scheduled Time</th><th>Platform</th><th>Status</th><th>Meeting Link</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="telemedicineTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading tele-consultations...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DIALYSIS UNIT TAB ================= -->
+        <section id="tab-dialysis" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Schedule Hemodialysis Session</h3>
+                    <form id="dialysisForm" onsubmit="window.hmsSaveDialysis(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="dia-uhid" class="form-control" required placeholder="UHID-2026-000002">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="dia-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Machine / Station *</label>
+                            <input type="text" id="dia-machine" class="form-control" required placeholder="e.g. Station HD-04">
+                        </div>
+                        <div class="form-group">
+                            <label>Dialysis Modality *</label>
+                            <select id="dia-type" class="form-control" required>
+                                <option value="Hemodialysis">Hemodialysis (4-hr standard)</option>
+                                <option value="Hemodiafiltration">Hemodiafiltration (HDF)</option>
+                                <option value="SLED">SLED (Sustained Low-Efficiency Dialysis)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Pre-Dialysis Weight (kg)</label>
+                            <input type="number" step="0.1" id="dia-pre-weight" class="form-control" placeholder="68.5">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Schedule Session</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Nephrology Hemodialysis Unit</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadDialysis()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Session ID</th><th>UHID</th><th>Patient</th><th>Station</th><th>Type</th><th>Pre-Wt</th><th>Post-Wt</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="dialysisTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading dialysis register...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MATERNITY & NURSERY TAB ================= -->
+        <section id="tab-maternity" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Labor &amp; Delivery Registration</h3>
+                    <form id="maternityForm" onsubmit="window.hmsSaveMaternity(event)">
+                        <div class="form-group">
+                            <label>Mother UHID *</label>
+                            <input type="text" id="mat-mother-uhid" class="form-control" required placeholder="UHID-2026-000003">
+                        </div>
+                        <div class="form-group">
+                            <label>Mother Name *</label>
+                            <input type="text" id="mat-mother-name" class="form-control" required placeholder="Mother's name">
+                        </div>
+                        <div class="form-group">
+                            <label>Delivery Method *</label>
+                            <select id="mat-delivery-type" class="form-control" required>
+                                <option value="Normal Vaginal Delivery">Normal Vaginal Delivery (NVD)</option>
+                                <option value="Elective LSCS">Elective LSCS (Cesarean)</option>
+                                <option value="Emergency LSCS">Emergency LSCS</option>
+                                <option value="Instrumental / Vacuum">Instrumental / Vacuum Assisted</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Newborn Gender *</label>
+                            <select id="mat-baby-gender" class="form-control" required>
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Birth Weight (kg) *</label>
+                            <input type="number" step="0.01" id="mat-birth-weight" class="form-control" required placeholder="3.15">
+                        </div>
+                        <div class="form-group" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                            <div>
+                                <label>APGAR 1 min</label>
+                                <input type="number" id="mat-apgar1" class="form-control" min="0" max="10" placeholder="8">
+                            </div>
+                            <div>
+                                <label>APGAR 5 min</label>
+                                <input type="number" id="mat-apgar5" class="form-control" min="0" max="10" placeholder="9">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Nursery Crib / Bassinet</label>
+                            <input type="text" id="mat-crib" class="form-control" placeholder="Crib-N-05">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Record Birth</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Obstetrics &amp; Neonatal Nursery Register</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadMaternity()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Record ID</th><th>Mother UHID</th><th>Mother Name</th><th>Delivery Type</th><th>Gender</th><th>Birth Wt</th><th>APGAR (1/5)</th><th>Crib No</th><th>Delivery Time</th></tr>
+                            </thead>
+                            <tbody id="maternityTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading delivery register...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PHYSIOTHERAPY TAB ================= -->
+        <section id="tab-physiotherapy" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Rehabilitation Protocol Scheduling</h3>
+                    <form id="physioForm" onsubmit="window.hmsSavePhysiotherapy(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="pt-uhid" class="form-control" required placeholder="UHID-2026-000004">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="pt-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Diagnosis *</label>
+                            <input type="text" id="pt-diagnosis" class="form-control" required placeholder="e.g. Post ACL reconstruction, Frozen shoulder">
+                        </div>
+                        <div class="form-group">
+                            <label>Therapy Protocol *</label>
+                            <textarea id="pt-protocol" class="form-control" rows="2" required placeholder="TENS, Ultrasound, Isometric strengthening, Gait training"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Schedule Session</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Physical Therapy &amp; Rehabilitation Registry</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadPhysiotherapy()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Session ID</th><th>UHID</th><th>Patient</th><th>Diagnosis</th><th>Protocol</th><th>Session #</th><th>Status</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="physiotherapyTableBody">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading physio sessions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VACCINATION TAB ================= -->
+        <section id="tab-vaccination" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Immunization Administration</h3>
+                    <form id="vaccinationForm" onsubmit="window.hmsSaveVaccination(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="vac-uhid" class="form-control" required placeholder="UHID-2026-000005">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="vac-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Vaccine Name *</label>
+                            <select id="vac-name" class="form-control" required>
+                                <option value="Hepatitis B">Hepatitis B</option>
+                                <option value="MMR (Measles, Mumps, Rubella)">MMR (Measles, Mumps, Rubella)</option>
+                                <option value="Tetanus Toxoid (TT)">Tetanus Toxoid (TT)</option>
+                                <option value="Influenza Quadrivalent">Influenza Quadrivalent</option>
+                                <option value="Typhoid Conjugate">Typhoid Conjugate</option>
+                                <option value="Rabies Prophylaxis">Rabies Prophylaxis</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Dose Number *</label>
+                            <input type="number" id="vac-dose" class="form-control" required min="1" max="5" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Batch / Lot Number</label>
+                            <input type="text" id="vac-batch" class="form-control" placeholder="e.g. VAC-2026-B89">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Administer Vaccine</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Immunization &amp; Vaccine Registry</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadVaccination()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Entry ID</th><th>UHID</th><th>Patient</th><th>Vaccine</th><th>Dose</th><th>Batch #</th><th>Expiry</th><th>Status</th><th>Date</th></tr>
+                            </thead>
+                            <tbody id="vaccinationTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading immunization register...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= MEDICAL RECORDS (MRD) TAB ================= -->
+        <section id="tab-mrd" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Archive / Retrieve Physical Record</h3>
+                    <form id="mrdForm" onsubmit="window.hmsSaveMrd(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="mrd-uhid" class="form-control" required placeholder="UHID-2026-000001">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="mrd-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Primary ICD-10 Code *</label>
+                            <input type="text" id="mrd-icd" class="form-control" required placeholder="e.g. I20.9">
+                        </div>
+                        <div class="form-group">
+                            <label>ICD Description</label>
+                            <input type="text" id="mrd-desc" class="form-control" placeholder="Angina pectoris, unspecified">
+                        </div>
+                        <div class="form-group">
+                            <label>Physical Shelf &amp; Bay Location *</label>
+                            <input type="text" id="mrd-location" class="form-control" required placeholder="Shelf-A3-Bay2">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Register MRD File</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Medical Records Department (MRD) File Tracking</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadMrd()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Record ID</th><th>UHID</th><th>Patient</th><th>ICD-10</th><th>Shelf / Bay</th><th>Status</th><th>Borrowed By</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="mrdTableBody">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading MRD archives...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>

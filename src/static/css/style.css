@@ -33,7 +33,7 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-body {
+body:not(.hms-app-body) {
     background-color: var(--bg-main);
     color: var(--text-dark);
     min-height: 100vh;
@@ -41,8 +41,8 @@ body {
     flex-direction: column;
 }
 
-/* Top Header */
-header {
+/* Top Header (legacy) */
+header:not(.app-topbar) {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #ffffff;
     padding: 1rem 2rem;
@@ -163,8 +163,8 @@ header {
     background: var(--primary-light);
 }
 
-/* Main Container */
-main {
+/* Main Container (legacy) */
+body:not(.hms-app-body) main {
     flex: 1;
     padding: 1.5rem 2rem;
     max-width: 1400px;

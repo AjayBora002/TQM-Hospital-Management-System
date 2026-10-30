@@ -6,6 +6,18 @@
 let currentTab = 'dashboard';
 let pendingModalAction = null;
 
+// HTML Entity escape helper for XSS prevention & safe rendering
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escapeHtml = escapeHtml;
+
 // Toast notification handler
 function showToast(msg, isError = false) {
     const toast = document.getElementById('toast');
@@ -38,8 +50,17 @@ document.getElementById('modalConfirmBtn').addEventListener('click', () => {
 });
 
 // Tab Switching & Navigation
-function switchTab(tabId) {
+function switchTab(tabId, pushHash = true) {
+    if (!tabId) tabId = 'dashboard';
     currentTab = tabId;
+
+    if (pushHash) {
+        const targetHash = '#' + tabId;
+        if (window.location.hash !== targetHash) {
+            window.location.hash = targetHash;
+        }
+    }
+
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-tab, .nav-item').forEach(b => b.classList.remove('active'));
 
@@ -51,6 +72,18 @@ function switchTab(tabId) {
     const navItems = document.querySelectorAll(`[data-tab="${tabId}"]`);
     navItems.forEach(b => b.classList.add('active'));
 
+    // Auto-expand accordion group containing this tab
+    const activeBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+    if (activeBtn) {
+        const parentGroup = activeBtn.closest('.sidebar-group');
+        if (parentGroup) {
+            parentGroup.classList.remove('collapsed');
+            const grpKey = parentGroup.getAttribute('data-module');
+            const hdr = document.querySelector(`.sidebar-section-header[data-group="${grpKey}"]`);
+            if (hdr) hdr.classList.remove('collapsed');
+        }
+    }
+
     // Update Breadcrumb
     const bc = document.getElementById('currentBreadcrumb');
     if (bc) {
@@ -59,7 +92,12 @@ function switchTab(tabId) {
     }
 
     // Lazy data refreshes for existing modules
-    if (tabId === 'dashboard') { loadDashboardData(); loadBackupStatus(); }
+    if (tabId === 'dashboard') {
+        loadDashboardData();
+        if (activeUserRole === 'Admin' || activeUserRole === 'Hospital Manager') {
+            loadBackupStatus();
+        }
+    }
     if (tabId === 'departments') { loadDepartments(); loadSpecializedDoctors(); }
     if (tabId === 'queue') { loadOpdQueue(); loadDoctorsForToken(); setupTokenPatientAutocomplete(); }
     if (tabId === 'nursing') { loadNursingData(); }
@@ -107,6 +145,23 @@ function switchTab(tabId) {
     if (tabId === 'users') window.hmsLoadUsers();
     if (tabId === 'backup') window.hmsLoadBackups();
     if (tabId === 'portal') window.hmsRefreshPatientPortal();
+    if (tabId === 'health-packages') window.hmsLoadHealthPackages && window.hmsLoadHealthPackages();
+    if (tabId === 'referrals') window.hmsLoadReferrals && window.hmsLoadReferrals();
+    if (tabId === 'telemedicine') window.hmsLoadTelemedicine && window.hmsLoadTelemedicine();
+    if (tabId === 'dialysis') window.hmsLoadDialysis && window.hmsLoadDialysis();
+    if (tabId === 'maternity') window.hmsLoadMaternity && window.hmsLoadMaternity();
+    if (tabId === 'physiotherapy') window.hmsLoadPhysiotherapy && window.hmsLoadPhysiotherapy();
+    if (tabId === 'vaccination') window.hmsLoadVaccination && window.hmsLoadVaccination();
+    if (tabId === 'mrd') window.hmsLoadMrd && window.hmsLoadMrd();
+    if (tabId === 'pharmacy-returns') window.hmsLoadPharmacyReturns && window.hmsLoadPharmacyReturns();
+    if (tabId === 'cssd') window.hmsLoadCssd && window.hmsLoadCssd();
+    if (tabId === 'laundry') window.hmsLoadLaundry && window.hmsLoadLaundry();
+    if (tabId === 'mortuary') window.hmsLoadMortuary && window.hmsLoadMortuary();
+    if (tabId === 'security-log') window.hmsLoadSecurity && window.hmsLoadSecurity();
+    if (tabId === 'safety-checklists') window.hmsLoadSafetyChecklists && window.hmsLoadSafetyChecklists();
+    if (tabId === 'infection-control') window.hmsLoadInfectionControl && window.hmsLoadInfectionControl();
+    if (tabId === 'patient-feedback') window.hmsLoadFeedback && window.hmsLoadFeedback();
+    if (tabId === 'mm-reviews') window.hmsLoadMmReviews && window.hmsLoadMmReviews();
 }
 
 // Q07 Feature: Input Masking for Phone (+91-XXXXX-XXXXX)
@@ -1044,7 +1099,7 @@ async function executeDischarge() {
 }
 
 // ================= AUTHENTICATION & ROLE-BASED ACCESS CONTROL =================
-let activeUserRole = 'Admin';
+let activeUserRole = null;
 let currentUserData = null;
 let currentPermissions = {};
 let idleTimer = null;
@@ -1081,6 +1136,15 @@ async function loadCurrentUser() {
                 if (dropName) dropName.innerText = data.user.full_name;
                 if (dropRole) dropRole.innerText = `${activeUserRole} • ${data.user.department || 'Hospital'}`;
                 if (sidebarPill) sidebarPill.innerText = activeUserRole;
+                const sideName = document.getElementById('sidebarUserName');
+                const sideRole = document.getElementById('sidebarUserRole');
+                const sideAvatar = document.getElementById('sidebarUserAvatar');
+                if (sideName) sideName.innerText = data.user.full_name;
+                if (sideRole) sideRole.innerText = activeUserRole;
+                if (sideAvatar) {
+                    const parts = (data.user.full_name || 'U').trim().split(' ');
+                    sideAvatar.innerText = parts.length > 1 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : parts[0][0].toUpperCase();
+                }
                 if (avatar) {
                     const parts = (data.user.full_name || 'U').trim().split(' ');
                     avatar.innerText = parts.length > 1 ? `${parts[0][0]}${parts[1][0]}`.toUpperCase() : parts[0][0].toUpperCase();
@@ -1114,10 +1178,13 @@ function applyRolePermissions(role, permissions) {
         }
 
         let isAllowed = false;
-        if (permissions && permissions[mod]) {
-            isAllowed = permissions[mod].includes('view');
-        } else {
+        const normalizedMod = (mod === 'portal') ? 'patient_portal' : (mod === 'support') ? 'support_services' : mod;
+        if (tab === 'dashboard') {
             isAllowed = true;
+        } else if (permissions && permissions[normalizedMod]) {
+            isAllowed = permissions[normalizedMod].includes('view');
+        } else {
+            isAllowed = false;
         }
 
         // Hard restriction for Patient role: only portal, appointments, billing
@@ -1129,15 +1196,22 @@ function applyRolePermissions(role, permissions) {
     });
 
     // Hide section headers if all items in the group are hidden
-    document.querySelectorAll('.sidebar-section-title').forEach(header => {
+    document.querySelectorAll('.sidebar-section-header').forEach(header => {
         const groupKey = header.getAttribute('data-group');
         const groupEl = document.querySelector(`.sidebar-group[data-module="${groupKey}"]`);
         if (groupEl) {
             const hasVisibleChild = Array.from(groupEl.querySelectorAll('.nav-item')).some(item => item.style.display !== 'none');
-            header.style.display = hasVisibleChild ? 'block' : 'none';
+            header.style.display = hasVisibleChild ? 'flex' : 'none';
             groupEl.style.display = hasVisibleChild ? 'block' : 'none';
         }
     });
+
+    // Gate audit log card on dashboard: only Admin, Hospital Manager, Quality Manager
+    const auditCard = document.getElementById('dashboardAuditCard');
+    if (auditCard) {
+        const canViewAudit = ['Admin', 'Hospital Manager', 'Quality Manager'].includes(role);
+        auditCard.style.display = canViewAudit ? 'block' : 'none';
+    }
 }
 
 function setupIdleSession(timeoutSeconds) {
@@ -1588,6 +1662,7 @@ async function triggerManualBackup() {
 }
 
 async function loadBackupStatus() {
+    if (activeUserRole !== 'Admin' && activeUserRole !== 'Hospital Manager') return;
     const area = document.getElementById('backup-last-status');
     if (!area) return;
     try {
@@ -1629,8 +1704,9 @@ function filterBillsTable(query) {
     });
 }
 
-// Initial setup on window load
-window.addEventListener('DOMContentLoaded', () => {
+// Initial setup on window/document load
+async function initApp() {
+    initTheme();
     setupPhoneMasking();
 
     // Setup patient auto-complete for appointment tab
@@ -1694,10 +1770,18 @@ window.addEventListener('DOMContentLoaded', () => {
     );
 
     // Load current user and initial dashboard view
-    loadCurrentUser();
+    await loadCurrentUser();
     loadDashboardData();
-    loadBackupStatus();
-});
+    if (activeUserRole === 'Admin' || activeUserRole === 'Hospital Manager') {
+        loadBackupStatus();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 // ================= PERSISTENT PATIENT CONTEXT BANNER =================
 window.currentPatientContext = null;
@@ -2705,3 +2789,453 @@ window.hmsRefreshPatientPortal = async function() {
         showToast('Personal health portal records refreshed.');
     } catch(e) {}
 };
+
+
+/* ================= ROLE-SPECIFIC WORKSPACES & ENTERPRISE NAVIGATION ================= */
+
+function renderRoleWorkspace(user) {
+    const container = document.getElementById('roleWorkspaceContainer');
+    if (!container || !user) return;
+    const role = user.role;
+
+    if (role === 'Doctor') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Clinical Command · Dr. ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#a7f3d0; margin:4px 0 0;">OPD Queue · Diagnostic Orders · Vitals &amp; EMR</p>
+                    </div>
+                    <span class="badge badge-success" style="font-size:12px; padding:6px 12px;">Active On Duty</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('queue')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a7f3d0; font-weight:700;">My OPD Queue</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Consultation</div>
+                        <div style="font-size:12px; color:#d1fae5;">View waiting patient tokens →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('prescriptions')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a7f3d0; font-weight:700;">Prescriptions</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">e-Prescribe</div>
+                        <div style="font-size:12px; color:#d1fae5;">Issue allergy-checked prescriptions →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('orders')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a7f3d0; font-weight:700;">Clinical Orders</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">STAT Orders</div>
+                        <div style="font-size:12px; color:#d1fae5;">Order Lab, Radiology, Blood Bank →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('comms')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a7f3d0; font-weight:700;">Doctor-Nurse Comms</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Clinical Alert</div>
+                        <div style="font-size:12px; color:#d1fae5;">Direct ward nurse communication →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Nurse') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #3730a3 0%, #4338ca 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Nursing Station · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#c7d2fe; margin:4px 0 0;">Medication Administration (MAR) · Inpatient Vitals · Bed Board</p>
+                    </div>
+                    <span class="badge" style="background:#818cf8; color:#ffffff; font-size:12px; padding:6px 12px;">Shift Active</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('nursing')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#c7d2fe; font-weight:700;">Medication Chart (MAR)</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Due Doses</div>
+                        <div style="font-size:12px; color:#e0e7ff;">Administer scheduled medications →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('bedboard')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#c7d2fe; font-weight:700;">Ward Bed Board</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Census Matrix</div>
+                        <div style="font-size:12px; color:#e0e7ff;">Inspect ward bed allocation →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('comms')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#c7d2fe; font-weight:700;">Doctor Alerts</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Urgent Comms</div>
+                        <div style="font-size:12px; color:#e0e7ff;">Escalate clinical vitals to doctor →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('handover')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#c7d2fe; font-weight:700;">Shift Handover</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">SBAR Log</div>
+                        <div style="font-size:12px; color:#e0e7ff;">Complete shift transfer report →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Lab Technician') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #155e75 0%, #0e7490 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Laboratory Information System (LIS) · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#a5f3fc; margin:4px 0 0;">Sample Collection Queue · Turnaround Time (TAT) · Critical Result Release</p>
+                    </div>
+                    <span class="badge" style="background:#22d3ee; color:#083344; font-size:12px; padding:6px 12px; font-weight:700;">LIS Online</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('lab')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a5f3fc; font-weight:700;">Diagnostic Tests</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Sample Queue</div>
+                        <div style="font-size:12px; color:#cffafe;">Enter &amp; verify specimen values →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('orders')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a5f3fc; font-weight:700;">STAT Orders</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Priority TAT</div>
+                        <div style="font-size:12px; color:#cffafe;">Review urgent clinical orders →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('bloodbank')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#a5f3fc; font-weight:700;">Blood Crossmatch</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Crossmatch</div>
+                        <div style="font-size:12px; color:#cffafe;">Match recipient compatibility →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Cashier') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #7c2d12 0%, #9a3412 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Hospital Billing &amp; Cash Desk · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#fed7aa; margin:4px 0 0;">Invoices Awaiting Payment · Daily Revenue Collection · Payment Receipts</p>
+                    </div>
+                    <span class="badge" style="background:#fb923c; color:#431407; font-size:12px; padding:6px 12px; font-weight:700;">Billing Active</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('billing')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#fed7aa; font-weight:700;">Generate Bill</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">New Invoice</div>
+                        <div style="font-size:12px; color:#ffedd5;">Create patient discharge bill →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('advances')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#fed7aa; font-weight:700;">Advance Deposits</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Collections</div>
+                        <div style="font-size:12px; color:#ffedd5;">Receive admission advance funds →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('insurance')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#fed7aa; font-weight:700;">TPA Claims</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Pre-Auth</div>
+                        <div style="font-size:12px; color:#ffedd5;">Verify insurance approvals →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Receptionist') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Front Office Reception · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#bfdbfe; margin:4px 0 0;">Patient Registration (UHID) · Appointment Scheduling · OPD Token Generation</p>
+                    </div>
+                    <span class="badge" style="background:#60a5fa; color:#172554; font-size:12px; padding:6px 12px; font-weight:700;">Front Desk Active</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('patients')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#bfdbfe; font-weight:700;">New Patient</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">UHID Register</div>
+                        <div style="font-size:12px; color:#dbeafe;">Enroll new patient with validation →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('appointments')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#bfdbfe; font-weight:700;">Appointments</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Book Slot</div>
+                        <div style="font-size:12px; color:#dbeafe;">Reserve doctor consultation slot →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('queue')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#bfdbfe; font-weight:700;">Queue Token</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Issue Token</div>
+                        <div style="font-size:12px; color:#dbeafe;">Generate OPD waitlist token →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('visitors')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#bfdbfe; font-weight:700;">Visitor Passes</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Issue Pass</div>
+                        <div style="font-size:12px; color:#dbeafe;">Generate ward visitor permit →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Pharmacist') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #134e4a 0%, #0f766e 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Central Pharmacy &amp; Dispensing · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#99f6e4; margin:4px 0 0;">Prescription Dispensing Queue · Batch Expiry · Stock Threshold Alerts</p>
+                    </div>
+                    <span class="badge" style="background:#2dd4bf; color:#134e4a; font-size:12px; padding:6px 12px; font-weight:700;">Dispensary Open</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('dispensing')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#99f6e4; font-weight:700;">Rx Queue</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Dispense Meds</div>
+                        <div style="font-size:12px; color:#ccfbf1;">Fulfill electronic prescriptions →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('pharmacy')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#99f6e4; font-weight:700;">Inventory</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Batches</div>
+                        <div style="font-size:12px; color:#ccfbf1;">Stock management &amp; reorders →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('purchase-orders')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#99f6e4; font-weight:700;">Purchase Orders</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">PO Orders</div>
+                        <div style="font-size:12px; color:#ccfbf1;">Procurement from pharma vendors →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Quality Manager') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Quality Assurance &amp; NABH Compliance · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#ddd6fe; margin:4px 0 0;">Incident Reports · Root Cause Analysis (CAPA) · SPC Six Sigma Control Charts</p>
+                    </div>
+                    <span class="badge" style="background:#a78bfa; color:#2e1065; font-size:12px; padding:6px 12px; font-weight:700;">NABH Lead</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('capa')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#ddd6fe; font-weight:700;">Incidents &amp; CAPA</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Open Incidents</div>
+                        <div style="font-size:12px; color:#ede9fe;">Investigate clinical deviations →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('audit')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#ddd6fe; font-weight:700;">System Audit Log</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Traceability</div>
+                        <div style="font-size:12px; color:#ede9fe;">Review tamper-proof audit trail →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('spc')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#ddd6fe; font-weight:700;">Six Sigma SPC</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">p-Chart / X-bar</div>
+                        <div style="font-size:12px; color:#ede9fe;">Statistical process control →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('defects')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#ddd6fe; font-weight:700;">Defect Checksheet</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Pareto Chart</div>
+                        <div style="font-size:12px; color:#ede9fe;">Log clinical process defects →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (role === 'Patient') {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Personal Health Portal · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#94a3b8; margin:4px 0 0;">Medical Records · Active Prescriptions · Diagnostic Reports · Invoices</p>
+                    </div>
+                    <span class="badge badge-info" style="font-size:12px; padding:6px 12px;">Patient Portal</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('portal')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Health Records</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">My Records</div>
+                        <div style="font-size:12px; color:#cbd5e1;">Review diagnosis, tests, prescriptions →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('appointments')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Appointments</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Book Visit</div>
+                        <div style="font-size:12px; color:#cbd5e1;">Schedule doctor consultation →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('billing')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Billing &amp; Receipts</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Invoices</div>
+                        <div style="font-size:12px; color:#cbd5e1;">View statement and payment history →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <div class="role-workspace-banner" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                <div class="role-workspace-header">
+                    <div>
+                        <h2 style="font-size:1.25rem; font-weight:700; color:#ffffff; margin:0;">Enterprise Operations Command · ${escapeHtml(user.full_name || user.username)}</h2>
+                        <p style="font-size:0.85rem; color:#94a3b8; margin:4px 0 0;">Hospital Census · Clinical Governance · Security &amp; Audit Oversight</p>
+                    </div>
+                    <span class="badge badge-info" style="font-size:12px; padding:6px 12px;">${role}</span>
+                </div>
+                <div class="role-workspace-grid">
+                    <div class="workspace-action-card" onclick="switchTab('patients')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Patient Records</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">UHID Directory</div>
+                        <div style="font-size:12px; color:#cbd5e1;">Master patient index →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('users')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">User Accounts</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">RBAC Access</div>
+                        <div style="font-size:12px; color:#cbd5e1;">Manage 21 staff roles →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('audit')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Audit Trail</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Security Logs</div>
+                        <div style="font-size:12px; color:#cbd5e1;">Review immutable logs →</div>
+                    </div>
+                    <div class="workspace-action-card" onclick="switchTab('backup')">
+                        <div style="font-size:11px; text-transform:uppercase; color:#94a3b8; font-weight:700;">Database Backup</div>
+                        <div style="font-size:1.4rem; font-weight:800; color:#ffffff; margin:4px 0;">Snapshots</div>
+                        <div style="font-size:12px; color:#cbd5e1;">Online backup &amp; restore →</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function toggleSidebarGroup(groupKey) {
+    const header = document.querySelector(`.sidebar-section-header[data-group="${groupKey}"]`);
+    const group = document.querySelector(`.sidebar-group[data-module="${groupKey}"]`);
+    if (!header || !group) return;
+    const isCollapsed = group.classList.toggle('collapsed');
+    header.classList.toggle('collapsed', isCollapsed);
+    try {
+        const saved = JSON.parse(localStorage.getItem('hms-sidebar-groups') || '{}');
+        saved[groupKey] = isCollapsed;
+        localStorage.setItem('hms-sidebar-groups', JSON.stringify(saved));
+    } catch(e) {}
+}
+
+function filterSidebarModules(query) {
+    const q = (query || '').toLowerCase().trim();
+    document.querySelectorAll('.sidebar-group').forEach(group => {
+        let hasMatch = false;
+        group.querySelectorAll('.nav-item').forEach(item => {
+            const label = (item.querySelector('.nav-label')?.textContent || '').toLowerCase();
+            const mod = item.getAttribute('data-module');
+            const isAllowed = !mod || (currentPermissions && currentPermissions[mod]?.includes('view'));
+            if (!isAllowed) {
+                item.style.display = 'none';
+                return;
+            }
+            if (!q || label.includes(q)) {
+                item.style.display = 'flex';
+                hasMatch = true;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        const grpKey = group.getAttribute('data-module');
+        const hdr = document.querySelector(`.sidebar-section-header[data-group="${grpKey}"]`);
+        if (hdr) {
+            hdr.style.display = hasMatch ? 'flex' : 'none';
+            if (q && hasMatch) {
+                group.classList.remove('collapsed');
+                hdr.classList.remove('collapsed');
+            }
+        }
+    });
+}
+
+function openCmdPalette() {
+    const overlay = document.getElementById('cmdPaletteOverlay');
+    if (!overlay) return;
+    overlay.classList.add('active');
+    const inp = document.getElementById('cmdSearchInput');
+    if (inp) {
+        inp.value = '';
+        inp.focus();
+        searchCmdPalette('');
+    }
+}
+
+function closeCmdPalette() {
+    const overlay = document.getElementById('cmdPaletteOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+function searchCmdPalette(query) {
+    const q = (query || '').toLowerCase().trim();
+    const list = document.getElementById('cmdResultsList');
+    if (!list) return;
+    const allNavItems = Array.from(document.querySelectorAll('.nav-item.nav-tab'));
+    const filtered = allNavItems.filter(item => {
+        if (item.style.display === 'none') return false;
+        const label = (item.querySelector('.nav-label')?.textContent || '').toLowerCase();
+        return !q || label.includes(q);
+    });
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--color-text-muted);font-size:13px;">No matching modules found</div>';
+        return;
+    }
+    list.innerHTML = filtered.map(item => {
+        const tab = item.getAttribute('data-tab');
+        const label = item.querySelector('.nav-label')?.textContent || tab;
+        const grp = item.closest('.sidebar-group')?.getAttribute('data-module') || 'Navigation';
+        return `
+            <div class="cmd-item" onclick="switchTab('${tab}'); closeCmdPalette();">
+                <div>
+                    <span style="font-weight:600;">${label}</span>
+                    <span style="font-size:11px; color:var(--color-text-muted); margin-left:8px;">${grp.replace('_', ' ')}</span>
+                </div>
+                <kbd class="kbd-shortcut">↵</kbd>
+            </div>
+        `;
+    }).join('');
+}
+
+function initTheme() {
+    const saved = localStorage.getItem('hms-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+}
+
+function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('hms-theme', next);
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('appSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (window.innerWidth <= 820) {
+        sidebar.classList.toggle('mobile-open');
+        if (overlay) overlay.classList.toggle('active');
+    } else {
+        sidebar.classList.toggle('collapsed');
+    }
+}
+
+function closeMobileSidebar() {
+    const sidebar = document.getElementById('appSidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (overlay) overlay.classList.remove('active');
+}
+
+// Global Keyboard shortcuts: Ctrl+K / Cmd+K and Escape
+window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        const overlay = document.getElementById('cmdPaletteOverlay');
+        if (overlay && overlay.classList.contains('active')) {
+            closeCmdPalette();
+        } else {
+            openCmdPalette();
+        }
+    }
+    if (e.key === 'Escape') {
+        closeCmdPalette();
+    }
+});
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    const initialHash = window.location.hash.replace('#/', '').replace('#', '');
+    if (initialHash) {
+        switchTab(initialHash, false);
+    }
+});
+
+window.addEventListener('hashchange', () => {
+    const h = window.location.hash.replace('#/', '').replace('#', '');
+    if (h && h !== currentTab) {
+        switchTab(h, false);
+    }
+});

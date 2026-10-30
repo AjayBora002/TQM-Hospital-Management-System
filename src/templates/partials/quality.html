@@ -1,0 +1,550 @@
+<section id="tab-audit" class="tab-panel">
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3>Immutable Audit Trail (Q07 Core Quality Feature)</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Captures user, timestamp, table, record_id, and mutation action for complete regulatory accuracy.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Refresh Trail</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Log ID</th>
+                                <th>Timestamp</th>
+                                <th>Table</th>
+                                <th>Record ID</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                                <th>User</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-table-body">
+                            <tr><td colspan="7" style="text-align: center;">Loading audit logs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= DEFECT CHECKSHEET TAB ================= -->
+        <section id="tab-defects" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Log Defect / Data Error</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Feeds the SQC Pareto Analysis checksheet to monitor and minimize data accuracy errors.</p>
+                    <form id="defect-form" onsubmit="saveDefect(event)">
+                        <div class="form-group">
+                            <label>Category (Q07 Dropdown) *</label>
+                            <select id="defect-category" class="form-control" required>
+                                {% for c in defect_categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Severity (Q07 Dropdown) *</label>
+                            <select id="defect-severity" class="form-control" required>
+                                {% for s in defect_severities %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Description of Incident *</label>
+                            <textarea id="defect-desc" class="form-control" rows="3" required placeholder="Details of the discrepancy or data validation catch..."></textarea>
+                        </div>
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-primary" style="flex:1;">Log Defect</button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>SQC Defect Checksheet</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Logged At</th>
+                                    <th>Category</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody id="defects-table-body">
+                                <tr><td colspan="6" style="text-align: center;">Loading defects...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    
+        <!-- ================= DEPARTMENTS & SPECIALISTS TAB ================= -->
+        <section id="tab-departments" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Hospital Departments & Medical Specialties</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Multi-Specialty Clinical Roster, Outpatient Clinics & Inpatient Units</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-secondary btn-sm" onclick="loadDepartments(); loadSpecializedDoctors();">Refresh Directory</button>
+                </div>
+            </div>
+
+            <!-- Dept Quick Stats -->
+            <div class="grid-dashboard" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 20px;">
+                <div class="stat-card">
+                    <span class="stat-label">Total Departments</span>
+                    <span class="stat-value" id="dept-stat-total">14</span>
+                </div>
+                <div class="stat-card teal">
+                    <span class="stat-label">Active OPD Clinics</span>
+                    <span class="stat-value" id="dept-stat-opd">9</span>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-label">Inpatient Units</span>
+                    <span class="stat-value" id="dept-stat-ipd">7</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Consultant Specialists</span>
+                    <span class="stat-value" id="dept-stat-doctors">9</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 24px;">
+                <!-- Add Department Form -->
+                <div class="form-card">
+                    <h3>Add Hospital Department</h3>
+                    <form id="departmentForm" onsubmit="handleDepartmentSubmit(event)">
+                        <div class="form-group">
+                            <label>Department Name *</label>
+                            <input type="text" id="dept-name" class="form-control" required placeholder="e.g. Oncology, Nephrology">
+                        </div>
+                        <div class="form-group">
+                            <label>Department Code (Unique) *</label>
+                            <input type="text" id="dept-code" class="form-control" required placeholder="e.g. ONCO, NEPH" style="text-transform:uppercase;">
+                        </div>
+                        <div class="form-group">
+                            <label>Physical Location / Floor</label>
+                            <input type="text" id="dept-location" class="form-control" placeholder="e.g. Wing B - 4th Floor">
+                        </div>
+                        <div class="form-group">
+                            <label>Direct Contact Phone</label>
+                            <input type="text" id="dept-phone" class="form-control phone-mask" placeholder="+91-XXXXX-XXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label>Service Scope</label>
+                            <div style="display:flex; gap:16px; margin-top:6px;">
+                                <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:normal;">
+                                    <input type="checkbox" id="dept-has-opd" checked> Outpatient (OPD)
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; font-size:0.85rem; font-weight:normal;">
+                                    <input type="checkbox" id="dept-has-ipd" checked> Inpatient (IPD)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Description</label>
+                            <textarea id="dept-desc" class="form-control" rows="2" placeholder="Clinical specialties, special clinics..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Create Department</button>
+                    </form>
+                </div>
+
+                <!-- Departments Directory Table -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Hospital Clinical Departments</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Department</th>
+                                    <th>Location</th>
+                                    <th>Doctors</th>
+                                    <th>Scope</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="departments-table-body">
+                                <tr><td colspan="6" style="text-align:center;">Loading departments...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialized Doctors Roster -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3>Specialized Medical Consultants & Doctors Roster</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Clinical specialties, qualifications, consultation fees & OPD rooms</p>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <label style="font-size:0.82rem; font-weight:600;">Filter Dept:</label>
+                        <select id="doc-dept-filter" class="form-control" style="width:auto; font-size:0.84rem;" onchange="loadSpecializedDoctors(this.value)">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept }}">{{ dept }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Doctor ID</th>
+                                <th>Doctor Name</th>
+                                <th>Department</th>
+                                <th>Specialization</th>
+                                <th>Qualifications</th>
+                                <th>Experience</th>
+                                <th>OPD Room</th>
+                                <th>Fee</th>
+                                <th>Contact</th>
+                            </tr>
+                        </thead>
+                        <tbody id="specialized-doctors-table-body">
+                            <tr><td colspan="9" style="text-align:center;">Loading specialist roster...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= OPD QUEUE & TOKENS TAB ================= -->
+        <section id="tab-comms" class="tab-panel">
+            <div class="table-toolbar">
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 700;">Inter-Professional Clinical Communication & Alerts</h2>
+                    <p style="color: var(--text-muted); font-size: 0.82rem;">Doctor <-> Nurse messaging, Code Red emergency alerts & shift handovers</p>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-danger btn-sm" onclick="triggerBroadcastCodeRedModal()">🚨 Broadcast Code Red Alert</button>
+                    <button class="btn btn-secondary btn-sm" onclick="loadCommsData()">🔄 Refresh Feed</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 24px;">
+                <!-- Send Message Card -->
+                <div class="form-card">
+                    <h3>✉️ Send Inter-Professional Message</h3>
+                    <form id="commsMessageForm" onsubmit="handleCommsMessageSubmit(event)">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="form-group">
+                                <label>Recipient Group *</label>
+                                <select id="comm-recipient-role" class="form-control" required>
+                                    <option value="All">All Clinical Staff</option>
+                                    <option value="Doctor">Doctors / Attending Specialists</option>
+                                    <option value="Nurse">Nursing Station</option>
+                                    <option value="Ward Manager">Ward Management</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Clinical Urgency *</label>
+                                <select id="comm-urgency" class="form-control" required>
+                                    <option value="Normal">Normal</option>
+                                    <option value="Urgent">Urgent Attention</option>
+                                    <option value="Code Red">Code Red (Immediate Emergency)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Context (Optional)</label>
+                            <select id="comm-patient-select" class="form-control">
+                                <option value="">Select Inpatient / Case...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject / Topic *</label>
+                            <input type="text" id="comm-subject" class="form-control" required placeholder="e.g. SpO2 Deterioration, Medication clarification...">
+                        </div>
+                        <div class="form-group">
+                            <label>Message Content *</label>
+                            <textarea id="comm-body" class="form-control" rows="3" required placeholder="Detailed clinical observations or instructions..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%;">Dispatch Clinical Message</button>
+                    </form>
+                </div>
+
+                <!-- Messages & Alerts Live Feed -->
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Clinical Alerts & Messages Feed</h3>
+                        <span class="badge badge-info" id="comms-msg-count">Live</span>
+                    </div>
+                    <div class="chat-container" id="comms-messages-feed">
+                        <p style="text-align:center; color:var(--text-muted); padding:20px;">Loading messages...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NABH Nursing Shift Handover Station -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div>
+                        <h3>NABH Nursing Shift Handover Record</h3>
+                        <p style="color:var(--text-muted); font-size:0.8rem;">Structured handover between outgoing and incoming duty nurses</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="openHandoverModal()">+ Log Shift Handover</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Handover ID</th>
+                                <th>Date</th>
+                                <th>Ward / Dept</th>
+                                <th>Shift Change</th>
+                                <th>Outgoing Nurse</th>
+                                <th>Incoming Nurse</th>
+                                <th>Critical Patients</th>
+                                <th>Pending Orders</th>
+                                <th>General Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shift-handover-table-body">
+                            <tr><td colspan="9" style="text-align:center;">Loading shift handovers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BED BOARD MATRIX TAB ================= -->
+        <section id="tab-capa" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Quality Incidents &amp; CAPA Workflow (NABH Core)</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Medication errors, needle stick injuries, falls, sentinel events with Root Cause Analysis (RCA) and Corrective &amp; Preventive Actions.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenIncidentModal()">+ Report Incident</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Incident ID</th><th>Category</th><th>Severity</th><th>Location</th><th>Description</th><th>Reported Date</th><th>CAPA Status</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="incidentsTableBody">
+                        <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading incidents &amp; CAPA records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= SPC & SIX SIGMA CHARTS TAB ================= -->
+        <section id="tab-spc" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Statistical Process Control (SPC) &amp; Six Sigma Quality Control</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Q07 Metric Control Charts (Upper Control Limit UCL, Lower Control Limit LCL, Mean Centerline) and process capability indices.</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" onclick="window.hmsRefreshSpcCharts()">Recalculate 3-Sigma Limits</button>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <div class="card" style="padding:16px;">
+                    <h4 style="margin:0 0 8px 0; color:#0f766e;">OPD Patient Waiting Time (X-Bar Chart)</h4>
+                    <p style="font-size:12px; color:#64748b;">Target Mean: 18.5 min | UCL: 34.2 min | LCL: 5.1 min</p>
+                    <div style="height:220px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;" id="spcWaitingChart">
+                        [Statistical Process Control Chart: 28 Days In-Control (Zero Points Out of Limits)]
+                    </div>
+                </div>
+                <div class="card" style="padding:16px;">
+                    <h4 style="margin:0 0 8px 0; color:#0f766e;">Laboratory Turnaround Time (p-Chart)</h4>
+                    <p style="font-size:12px; color:#64748b;">Target Compliance: 98.5% | Lower Threshold: 95.0%</p>
+                    <div style="height:220px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:13px;" id="spcTatChart">
+                        [Process Capability Cpk = 1.48: Six Sigma Level Quality Standard Achieved]
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= USER ACCOUNTS & RBAC TAB ================= -->
+
+        <!-- ================= INFECTION CONTROL SURVEILLANCE TAB ================= -->
+        <section id="tab-infection-control" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Report HAI Surveillance Case</h3>
+                    <form id="infectionForm" onsubmit="window.hmsSaveInfectionControl(event)">
+                        <div class="form-group">
+                            <label>Patient UHID *</label>
+                            <input type="text" id="inf-uhid" class="form-control" required placeholder="UHID-2026-000002">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="inf-patient" class="form-control" required placeholder="Patient full name">
+                        </div>
+                        <div class="form-group">
+                            <label>Hospital Ward *</label>
+                            <input type="text" id="inf-ward" class="form-control" required placeholder="e.g. ICU, Step-Down Ward">
+                        </div>
+                        <div class="form-group">
+                            <label>Infection Category *</label>
+                            <select id="inf-type" class="form-control" required>
+                                <option value="CAUTI">CAUTI (Catheter-Associated UTI)</option>
+                                <option value="CLABSI">CLABSI (Central Line Bloodstream)</option>
+                                <option value="VAP">VAP (Ventilator-Associated Pneumonia)</option>
+                                <option value="SSI">SSI (Surgical Site Infection)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Organism Isolated</label>
+                            <input type="text" id="inf-organism" class="form-control" placeholder="e.g. MRSA, Klebsiella pneumoniae (ESBL+)">
+                        </div>
+                        <div class="form-group">
+                            <label>Isolation Protocol *</label>
+                            <select id="inf-isolation" class="form-control" required>
+                                <option value="1">Contact Isolation Required (Negative Pressure)</option>
+                                <option value="0">Standard Precautions</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Log HAI Case</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>NABH Healthcare-Associated Infection (HAI) Surveillance</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadInfectionControl()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Case ID</th><th>UHID</th><th>Patient</th><th>Ward</th><th>HAI Type</th><th>Microorganism</th><th>Isolation</th><th>Alert</th><th>Reported At</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="infectionControlTableBody">
+                                <tr><td colspan="10" style="text-align:center; color:var(--text-muted);">Loading infection surveillance...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PATIENT FEEDBACK TAB ================= -->
+        <section id="tab-patient-feedback" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Record Patient Feedback &amp; CSAT</h3>
+                    <form id="feedbackForm" onsubmit="window.hmsSaveFeedback(event)">
+                        <div class="form-group">
+                            <label>Patient UHID (Optional)</label>
+                            <input type="text" id="fb-uhid" class="form-control" placeholder="UHID-2026-000001">
+                        </div>
+                        <div class="form-group">
+                            <label>Department Evaluated *</label>
+                            <select id="fb-dept" class="form-control" required>
+                                <option value="OPD Consultation">OPD Consultation</option>
+                                <option value="Nursing & Ward Care">Nursing & Ward Care</option>
+                                <option value="Laboratory LIS">Laboratory LIS</option>
+                                <option value="Radiology & Imaging">Radiology & Imaging</option>
+                                <option value="Pharmacy & Billing">Pharmacy & Billing</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Rating (1-5 Stars) *</label>
+                            <select id="fb-rating" class="form-control" required>
+                                <option value="5">★★★★★ (5 - Excellent)</option>
+                                <option value="4">★★★★☆ (4 - Good)</option>
+                                <option value="3">★★★☆☆ (3 - Average)</option>
+                                <option value="2">★★☆☆☆ (2 - Poor)</option>
+                                <option value="1">★☆☆☆☆ (1 - Very Dissatisfied)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Comments &amp; Observations</label>
+                            <textarea id="fb-comments" class="form-control" rows="2" placeholder="Feedback, compliment, or grievance details..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Patient Experience &amp; Satisfaction (CSAT) Register</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadFeedback()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Feedback ID</th><th>UHID</th><th>Department</th><th>Rating</th><th>Comments</th><th>Status</th><th>Resolution</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="feedbackTableBody">
+                                <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading patient feedback...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= M&M REVIEWS TAB ================= -->
+        <section id="tab-mm-reviews" class="tab-panel">
+            <div class="module-layout">
+                <div class="form-card">
+                    <h3>Morbidity &amp; Mortality Case Review</h3>
+                    <form id="mmReviewForm" onsubmit="window.hmsSaveMmReview(event)">
+                        <div class="form-group">
+                            <label>Deceased UHID *</label>
+                            <input type="text" id="mm-uhid" class="form-control" required placeholder="UHID-2026-000009">
+                        </div>
+                        <div class="form-group">
+                            <label>Patient Name *</label>
+                            <input type="text" id="mm-patient" class="form-control" required placeholder="Late Harishankar Bose">
+                        </div>
+                        <div class="form-group">
+                            <label>Primary Diagnosis *</label>
+                            <input type="text" id="mm-diagnosis" class="form-control" required placeholder="Cardiogenic Shock">
+                        </div>
+                        <div class="form-group">
+                            <label>Peer Reviewing Physician *</label>
+                            <input type="text" id="mm-reviewer" class="form-control" required placeholder="Dr. Vikram Sen, MD">
+                        </div>
+                        <div class="form-group">
+                            <label>Root Cause Category *</label>
+                            <select id="mm-rca" class="form-control" required>
+                                <option value="Underlying Disease Progression">Underlying Disease Progression</option>
+                                <option value="Diagnostic Delay">Diagnostic Delay</option>
+                                <option value="Procedural / Surgical Complication">Procedural / Surgical Complication</option>
+                                <option value="Drug Adverse Event / Polypharmacy">Drug Adverse Event / Polypharmacy</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Clinical Findings &amp; Learnings</label>
+                            <textarea id="mm-findings" class="form-control" rows="2" placeholder="Root cause analysis, system improvements, protocol amendments..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">File M&amp;M Review</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Morbidity &amp; Mortality (M&amp;M) Quality Audit Board</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="window.hmsLoadMmReviews()">Refresh</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Review ID</th><th>UHID</th><th>Patient</th><th>Primary Diagnosis</th><th>Reviewer</th><th>RCA Category</th><th>Status</th><th>Review Date</th><th>Action</th></tr>
+                            </thead>
+                            <tbody id="mmReviewsTableBody">
+                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading M&amp;M case analyses...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>

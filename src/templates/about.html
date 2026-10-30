@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About &amp; Architecture - Hospital Management System</title>
+    <link rel="stylesheet" href="/static/css/tokens.css">
+    <link rel="stylesheet" href="/static/css/layout.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { background: #f8fafc; color: #0f172a; padding: 2rem 1rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .about-container { max-width: 900px; margin: 0 auto; background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 2.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06); }
+        .badge-academic { background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 9999px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; }
+        .info-card h4 { margin: 0 0 8px 0; color: #0f172a; font-size: 1rem; }
+        .info-card p { margin: 0; font-size: 0.88rem; color: #475569; line-height: 1.5; }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #0284c7; color: #ffffff; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.88rem; margin-top: 2rem; }
+    </style>
+</head>
+<body>
+    <div class="about-container">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1.5rem; margin-bottom: 1.5rem;">
+            <div>
+                <span class="badge-academic">BBAT104 Course Project · Quality Goal Q07</span>
+                <h1 style="font-size: 1.75rem; font-weight: 800; margin: 8px 0 4px 0; color: #0f172a;">Hospital Management System (HMS)</h1>
+                <p style="color: #64748b; font-size: 0.95rem; margin: 0;">Total Quality Management (TQM) &amp; Enterprise Clinical Software Architecture</p>
+            </div>
+            <a href="/" class="btn-back">← Back to Dashboard</a>
+        </div>
+
+        <div class="grid-2">
+            <div class="info-card">
+                <h4>👨‍🎓 Student &amp; Academic Credentials</h4>
+                <p><strong>Lead Engineer / Student:</strong> Ajay Bora</p>
+                <p><strong>Department:</strong> Computer Science &amp; Engineering (CSE)</p>
+                <p><strong>Section / Group:</strong> Section B</p>
+                <p><strong>Course:</strong> BBAT104 Total Quality Management</p>
+            </div>
+            <div class="info-card">
+                <h4>🎯 TQM Quality Goal: Q07 (Data Accuracy)</h4>
+                <p><strong>Benchmark Focus:</strong> Eliminating transcription errors, duplicated records, and unauthorized clinical mutations.</p>
+                <p><strong>Enforcement Methods:</strong> Input Masking (+91 phone), Dropdown Sets, Real-time Poka-Yoke validations, Confirmation Modals, and SQLite Write-Ahead Logging.</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 1.2rem; color: #0f172a; margin-bottom: 1rem;">🛡️ Enterprise Security &amp; 21-Role RBAC Architecture</h3>
+            <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                The platform implements strict server-side Role-Based Access Control (RBAC) across 21 clinical, diagnostic, administrative, and patient personas.
+                Every REST API endpoint is guarded with server-side <code>@require_permission</code> decorators, ensuring zero client-only security assumptions. All security events and unauthorized mutation attempts trigger immutable audit logging.
+            </p>
+        </div>
+
+        <div style="margin-top: 2rem;">
+            <h3 style="font-size: 1.2rem; color: #0f172a; margin-bottom: 1rem;">📊 Statistical Process Control (SPC) &amp; Six Sigma</h3>
+            <p style="color: #475569; font-size: 0.9rem; line-height: 1.6;">
+                Integrates automated p-charts and c-charts tracking clinical prescription accuracy, medication administration turnaround times (TAT), and diagnostic report release metrics with calculated Upper Control Limits (UCL) and Lower Control Limits (LCL).
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; font-size: 0.82rem; color: #94a3b8;">
+            Apex Central Hospital Management System · Powered by Flask REST API &amp; SQLite Single Source of Truth
+        </div>
+    </div>
+</body>
+</html>

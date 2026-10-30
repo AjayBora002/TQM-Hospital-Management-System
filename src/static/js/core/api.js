@@ -4,7 +4,7 @@
  */
 
 export async function apiRequest(endpoint, options = {}) {
-  const url = endpoint.startsWith("/api") || endpoint.startsWith("/") ? endpoint : `/api/${endpoint}`;
+  const url = endpoint.startsWith("/api/") ? endpoint : (endpoint.startsWith("/") ? `/api${endpoint}` : `/api/${endpoint}`);
   
   const headers = {
     "Content-Type": "application/json",

@@ -178,6 +178,41 @@ class TestRBACMatrix(unittest.TestCase):
                 ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
                 ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
                 ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "MRD Officer": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "Mortuary Attendant": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "CSSD Technician": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "Infection Control Nurse": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "Physiotherapist": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "Security Officer": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/prescriptions", {"patient_id": 1, "doctor_id": 1, "medicine_id": 1, "dosage": "x"}),
+            ],
+            "Telemedicine Doctor": [
+                ("POST", "/api/bills", {"patient_id": 1, "room_charges": 100}),
+                ("POST", "/api/auth/users", {"username": "hackuser", "password": "password123", "role": "Doctor", "full_name": "Hacker"}),
+                ("POST", "/api/system/backup", {}),
             ]
         }
 
@@ -204,6 +239,13 @@ class TestRBACMatrix(unittest.TestCase):
             "Insurance/TPA Desk": ("GET", "/api/finance/insurance-claims", None),
             "Ambulance Dispatcher": ("GET", "/api/support/ambulance-trips", None),
             "Dietitian": ("GET", "/api/support/diet-orders", None),
+            "MRD Officer": ("GET", "/api/mrd", None),
+            "Mortuary Attendant": ("GET", "/api/mortuary", None),
+            "CSSD Technician": ("GET", "/api/cssd", None),
+            "Infection Control Nurse": ("GET", "/api/infection-control", None),
+            "Physiotherapist": ("GET", "/api/physiotherapy", None),
+            "Security Officer": ("GET", "/api/security-log", None),
+            "Telemedicine Doctor": ("GET", "/api/telemedicine", None),
         }
 
         for role in ALL_ROLES:

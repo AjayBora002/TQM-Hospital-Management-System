@@ -1,0 +1,114 @@
+        <section id="tab-dashboard" class="tab-panel active">
+            <!-- Dynamic Role-Tailored Workspace Banner -->
+            <div id="roleWorkspaceContainer"></div>
+            <div class="grid-dashboard">
+                <div class="stat-card">
+                    <span class="stat-label">Total Patients</span>
+                    <span class="stat-value" id="stat-patients">0</span>
+                </div>
+                <div class="stat-card teal">
+                    <span class="stat-label">Active Doctors</span>
+                    <span class="stat-value" id="stat-doctors">0</span>
+                </div>
+                <div class="stat-card amber">
+                    <span class="stat-label">Scheduled Appts</span>
+                    <span class="stat-value" id="stat-appointments">0</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Available Rooms</span>
+                    <span class="stat-value" id="stat-rooms">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Low Stock Meds</span>
+                    <span class="stat-value" id="stat-low-stock" style="color: var(--danger);">0</span>
+                </div>
+                <div class="stat-card green">
+                    <span class="stat-label">Revenue Collected</span>
+                    <span class="stat-value" id="stat-revenue">₹0</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                <div class="table-card" id="dashboardAuditCard">
+                    <div class="table-header">
+                        <h3>Recent Audit Log (Q07 Data Accuracy Verification)</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Refresh Trail</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Timestamp</th>
+                                    <th>Table</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-audit-body">
+                                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading audit trail...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="form-card" id="q07FeaturesCard" style="display:none;"><h3>Q07 Quality Features Active</h3>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>1. Input Masking</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Phone numbers strictly formatted as +91-XXXXX-XXXXX.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>2. Dropdown Lists</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Enforced sets for Blood Groups, Shifts, Departments.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>3. Auto-Complete</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Real-time search suggestions in appointment bookings.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>4. Confirmation Modals</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Prevents accidental deletes and unauthorized updates.</p>
+                            </div>
+                        </li>
+                        <li style="display: flex; gap: 10px; font-size: 0.88rem;">
+                            <span style="color: var(--success); font-weight: bold;">✓</span>
+                            <div>
+                                <strong>5. Immutable Audit Trail</strong>
+                                <p style="color: var(--text-muted); font-size: 0.78rem;">Every single INSERT, UPDATE, DELETE logged with timestamps.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Database Automated Backup Management Card -->
+            <div style="margin-top: 20px; background: #ffffff; border-radius: 10px; padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <h3 style="font-size: 1.05rem; color: var(--text-dark);">💾 System Administration & Automated Database Backup</h3>
+                        <p style="font-size: 0.82rem; color: var(--text-muted);">Atomic online SQLite database snapshots with audit logging and retention history.</p>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="triggerManualBackup()" style="display: flex; align-items: center; gap: 6px;">
+                        💾 Create Backup Snapshot Now
+                    </button>
+                </div>
+                <div id="backup-status-area" style="font-size: 0.84rem; color: var(--text-muted); background: #f8fafc; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border-color);">
+                    <span id="backup-last-status">Recent Snapshot: System ready. Click button to create a new verified backup.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PATIENTS TAB ================= -->

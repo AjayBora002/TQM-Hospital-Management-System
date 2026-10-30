@@ -67,6 +67,11 @@ init_db()
 register_api(app)
 
 
+@app.route("/about")
+def about_page():
+    return render_template("about.html", title=APP_TITLE)
+
+
 @app.route("/login")
 def login_page():
     # If already logged in, go straight to the app

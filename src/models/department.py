@@ -1,23 +1,26 @@
 """
 department.py -- Data-access and domain operations for Hospital Departments.
 Manages OPD and IPD departments, medical specialties, and staff assignments.
+Data-driven departments: Clinical, Diagnostic, Support, Administrative.
 """
 from datetime import datetime
 from database.db_manager import get_connection, log_audit
 from utils.exception_handler import ValidationError
 
 
-def list_departments():
-    """Returns all active hospital departments with doctor count and inpatient status."""
+def list_departments(active_only: bool = False):
+    """Returns hospital departments with doctor count and ward count."""
     conn = get_connection()
     try:
-        rows = conn.execute("""
-            SELECT d.department_id, d.name, d.code, d.description, d.location, d.phone,
-                   d.has_opd, d.has_ipd,
+        where_clause = "WHERE d.active = 1" if active_only else ""
+        rows = conn.execute(f"""
+            SELECT d.department_id, d.name, d.code, d.description, d.head_of_dept, d.location, d.phone,
+                   COALESCE(d.type, 'Clinical') as type, d.has_opd, d.has_ipd, COALESCE(d.active, 1) as active,
                    (SELECT COUNT(*) FROM doctors doc WHERE doc.department = d.name) AS doctor_count,
                    (SELECT COUNT(*) FROM wards w WHERE w.department_id = d.department_id) AS ward_count
             FROM departments d
-            ORDER BY d.department_id
+            {where_clause}
+            ORDER BY d.type, d.name
         """).fetchall()
         return [dict(r) for r in rows]
     finally:
@@ -37,8 +40,8 @@ def get_by_id(department_id: int):
         conn.close()
 
 
-def add(name: str, code: str, description: str = "", location: str = "", phone: str = "",
-        has_opd: int = 1, has_ipd: int = 1, performed_by: str = "admin"):
+def add(name: str, code: str, description: str = "", head_of_dept: str = "", location: str = "", phone: str = "",
+        dept_type: str = "Clinical", has_opd: int = 1, has_ipd: int = 1, active: int = 1, performed_by: str = "admin"):
     """Adds a new hospital department with unique code and name validation."""
     if not name or not name.strip():
         raise ValidationError("Department name is required", field="name")
@@ -47,6 +50,7 @@ def add(name: str, code: str, description: str = "", location: str = "", phone: 
 
     name = name.strip()
     code = code.strip().upper()
+    dept_type = dept_type.strip() or "Clinical"
 
     conn = get_connection()
     try:
@@ -57,14 +61,43 @@ def add(name: str, code: str, description: str = "", location: str = "", phone: 
         now_str = datetime.now().isoformat(timespec="seconds")
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO departments (name, code, description, location, phone, has_opd, has_ipd, created_at) "
-            "VALUES (?,?,?,?,?,?,?,?)",
-            (name, code, description.strip(), location.strip(), phone.strip(), has_opd, has_ipd, now_str)
+            "INSERT INTO departments (name, code, description, head_of_dept, location, phone, type, has_opd, has_ipd, active, created_at) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (name, code, description.strip(), head_of_dept.strip(), location.strip(), phone.strip(), dept_type, has_opd, has_ipd, active, now_str)
         )
         new_id = cursor.lastrowid
-        log_audit(conn, "departments", new_id, "INSERT", f"Added department '{name}' ({code})", performed_by)
+        log_audit(conn, "departments", new_id, "INSERT", f"Added department '{name}' ({code}) - Type: {dept_type}", performed_by)
         conn.commit()
         return new_id
+    finally:
+        conn.close()
+
+
+def update(department_id: int, name: str, code: str, description: str = "", head_of_dept: str = "", location: str = "",
+           phone: str = "", dept_type: str = "Clinical", has_opd: int = 1, has_ipd: int = 1, active: int = 1, performed_by: str = "admin"):
+    """Updates an existing hospital department record with validation."""
+    if not name or not name.strip():
+        raise ValidationError("Department name is required", field="name")
+    if not code or not code.strip():
+        raise ValidationError("Department code is required", field="code")
+
+    name = name.strip()
+    code = code.strip().upper()
+    dept_type = dept_type.strip() or "Clinical"
+
+    conn = get_connection()
+    try:
+        dup = conn.execute("SELECT 1 FROM departments WHERE (code = ? OR name = ?) AND department_id != ?", (code, name, department_id)).fetchone()
+        if dup:
+            raise ValidationError(f"Another department with code '{code}' or name '{name}' already exists", field="code")
+
+        conn.execute(
+            "UPDATE departments SET name = ?, code = ?, description = ?, head_of_dept = ?, location = ?, phone = ?, type = ?, has_opd = ?, has_ipd = ?, active = ? WHERE department_id = ?",
+            (name, code, description.strip(), head_of_dept.strip(), location.strip(), phone.strip(), dept_type, has_opd, has_ipd, active, department_id)
+        )
+        log_audit(conn, "departments", department_id, "UPDATE", f"Updated department '{name}' ({code})", performed_by)
+        conn.commit()
+        return True
     finally:
         conn.close()
 
@@ -90,4 +123,3 @@ def get_department_summary():
         }
     finally:
         conn.close()
-

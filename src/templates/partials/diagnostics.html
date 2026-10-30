@@ -1,0 +1,80 @@
+        <section id="tab-radiology" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Radiology &amp; Medical Imaging Department</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Digital imaging workflow: Order &rarr; Modality Scan &rarr; Radiologist Review &rarr; Report Release.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenRadiologyOrderModal()">+ New Imaging Order</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Accession No</th><th>Patient</th><th>Modality</th><th>Body Region</th><th>Ordered By</th><th>Radiologist</th><th>Status</th><th>Report Findings</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="radiologyTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading imaging orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= LABORATORY LIS TAB ================= -->
+        <section id="tab-lab" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Laboratory Information System (LIS)</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Phlebotomy barcode collection, hematology/biochemistry analyzers, critical value alerts, and TAT tracking.</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.hmsOpenLabOrderModal()">+ New Lab Investigation</button>
+            </div>
+            <div class="table-responsive" style="background:#fff; border-radius:8px; border:1px solid #e2e8f0;">
+                <table>
+                    <thead>
+                        <tr><th>Order ID</th><th>Patient</th><th>Test Name</th><th>Department</th><th>Sample Status</th><th>Result</th><th>Reference Range</th><th>Pathologist Verification</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="labTableBody">
+                        <tr><td colspan="9" style="text-align:center; color:var(--text-muted);">Loading lab orders...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ================= BLOOD BANK TAB ================= -->
+        <section id="tab-bloodbank" class="tab-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div>
+                    <h2 style="margin:0; color:#0f172a;">Blood Bank Management &amp; Transfusion Safety</h2>
+                    <p style="color:#64748b; font-size:13px; margin:2px 0 0 0;">Donor registry, serology clearance, component inventory (PRBC, FFP, Platelets), and cross-match reserve.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-secondary" onclick="window.hmsOpenDonorModal()">+ Register Donor</button>
+                    <button class="btn btn-primary" onclick="window.hmsOpenBloodRequestModal()">+ Request Cross-Match</button>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+                <div class="card">
+                    <h4>Blood Component Inventory by Group</h4>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Blood Group</th><th>Component</th><th>Units Available</th><th>Expiry Range</th></tr></thead>
+                            <tbody id="bloodInventoryTableBody">
+                                <tr><td colspan="4" style="text-align:center;">Loading inventory...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>Clinical Cross-Match &amp; Unit Issue Requests</h4>
+                    <div class="table-responsive">
+                        <table>
+                            <thead><tr><th>Req ID</th><th>Patient</th><th>Group</th><th>Units</th><th>Urgency</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody id="bloodRequestsTableBody">
+                                <tr><td colspan="7" style="text-align:center;">Loading requests...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= BED TRANSFERS TAB ================= -->

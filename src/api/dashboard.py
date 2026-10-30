@@ -10,6 +10,7 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 
 @dashboard_bp.route("/dashboard/stats", methods=["GET"])
+@require_permission("dashboard", "view")
 def dashboard_stats():
     conn = get_connection()
     try:

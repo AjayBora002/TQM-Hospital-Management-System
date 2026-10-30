@@ -41,6 +41,7 @@ from .finance_ext_api import finance_ext_bp
 from .people_api import people_bp
 from .governance_api import governance_bp
 from .patient_portal_api import patient_portal_bp
+from .hospital_services_api import hospital_services_bp
 
 
 def register_api(app):
@@ -88,6 +89,7 @@ def register_api(app):
     app.register_blueprint(people_bp, url_prefix="/api")
     app.register_blueprint(governance_bp, url_prefix="/api")
     app.register_blueprint(patient_portal_bp, url_prefix="/api")
+    app.register_blueprint(hospital_services_bp, url_prefix="/api")
 
     # Global Poka-Yoke error handler: serialize domain validation errors cleanly to HTTP 400
     from utils.exception_handler import ValidationError
