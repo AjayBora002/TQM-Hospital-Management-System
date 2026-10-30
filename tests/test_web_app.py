@@ -30,7 +30,15 @@ class TestWebApp(unittest.TestCase):
         cls.client = app.test_client()
 
     def test_index_page(self):
-        """Verify the main web app index page renders with all assets."""
+        """Verify the main web app index page renders with all assets after login."""
+        # Authenticate as admin first, then follow redirect to /
+        with self.client.session_transaction() as sess:
+            sess["user_id"] = 1
+            sess["username"] = "admin"
+            sess["role"] = "Admin"
+            sess["full_name"] = "Dr. Ajay Bora (System Admin)"
+            import time
+            sess["last_activity"] = time.time()
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Hospital Management System", response.data)

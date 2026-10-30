@@ -113,3 +113,4 @@ def update_surgical_checklist(ot_id):
         return jsonify({"message": "Surgical safety checklist updated successfully"}), 200
     finally:
         conn.close()
+

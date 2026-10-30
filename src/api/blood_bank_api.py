@@ -193,3 +193,4 @@ def crossmatch_and_issue_blood(request_id):
         return jsonify({"message": f"Blood unit {action} completed successfully"}), 200
     finally:
         conn.close()
+

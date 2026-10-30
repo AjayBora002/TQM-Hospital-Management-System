@@ -98,3 +98,4 @@ def issue_consumables_to_ward():
         return jsonify({"message": f"Issued {qty} unit(s) to ward successfully", "remaining_stock": new_qty, "txn_id": txn_id}), 200
     finally:
         conn.close()
+

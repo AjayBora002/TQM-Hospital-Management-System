@@ -147,3 +147,4 @@ def settle_claim(claim_id):
         return jsonify({"message": "Claim status updated successfully"}), 200
     finally:
         conn.close()
+

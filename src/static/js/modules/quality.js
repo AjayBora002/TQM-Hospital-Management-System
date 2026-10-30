@@ -101,3 +101,4 @@ export async function loadSixSigmaMetrics() {
     console.error("Six Sigma load error", err);
   }
 }
+

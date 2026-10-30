@@ -8,3 +8,5 @@ backups/*.db
 page-*.jpg
 
 scratch/
+
+.secret_key

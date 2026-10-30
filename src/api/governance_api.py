@@ -102,3 +102,4 @@ def initiate_capa_action(incident_id):
         return jsonify({"message": "CAPA cycle initiated successfully", "capa_id": capa_id}), 201
     finally:
         conn.close()
+

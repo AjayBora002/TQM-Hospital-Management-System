@@ -95,3 +95,4 @@ export async function loadPatientPortalDashboard() {
     showToast(`Failed to load patient portal: ${err.message}`, "danger");
   }
 }
+

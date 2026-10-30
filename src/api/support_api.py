@@ -291,3 +291,4 @@ def create_facility_ticket():
         return jsonify({"message": "Facility ticket logged successfully", "ticket_id": ticket_id}), 201
     finally:
         conn.close()
+

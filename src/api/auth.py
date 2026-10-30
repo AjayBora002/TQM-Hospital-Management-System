@@ -84,6 +84,7 @@ def login():
     permissions = get_user_permissions(user["role"])
 
     return jsonify({
+        "success": True,
         "message": "Login successful",
         "user": user,
         "permissions": permissions,

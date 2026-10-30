@@ -70,3 +70,4 @@ export const api = {
   put: (url, body, headers) => apiRequest(url, { method: "PUT", body, headers }),
   delete: (url, headers) => apiRequest(url, { method: "DELETE", headers })
 };
+

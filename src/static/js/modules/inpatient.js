@@ -100,3 +100,4 @@ export async function loadAdmissions() {
     showToast(`Failed to load admissions: ${err.message}`, "danger");
   }
 }
+

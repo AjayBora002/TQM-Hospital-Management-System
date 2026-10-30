@@ -67,3 +67,4 @@ export async function loadInsuranceClaims() {
     showToast(`Failed to load insurance claims: ${err.message}`, "danger");
   }
 }
+

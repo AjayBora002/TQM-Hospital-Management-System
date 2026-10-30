@@ -97,3 +97,4 @@ def update_emergency_disposition(emergency_id):
         return jsonify({"message": "Emergency disposition updated"}), 200
     finally:
         conn.close()
+

@@ -381,154 +381,37 @@
             </form>
 
             <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: #94a3b8;">
-                <span>Security: AES-256 + 15m idle session timeout</span>
+                <span>Session timeout: 15 min idle · HTTPONLY cookie</span>
                 <span>TQM Q07 Compliant</span>
             </div>
         </div>
 
-        <!-- Demo Accounts Quick-Select Panel (when enabled) -->
+        <!-- Demo Accounts Quick-Select Panel — shown only when HMS_DEMO=1 -->
+        {% if demo_enabled %}
         <div class="login-demo-panel" id="demoAccountsPanel">
             <div>
                 <span class="demo-badge">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
-                    Evaluation Mode
+                    Evaluation / Demo Mode
                 </span>
-                <h3 class="demo-title">21 Stakeholder Personas</h3>
-                <p class="demo-subtext">Click any role card below to autofill credentials and test real-time server-side RBAC.</p>
+                <h3 class="demo-title">{{ demo_personas|length }} Stakeholder Personas</h3>
+                <p class="demo-subtext">Click any role card to autofill credentials and test real-time server-side RBAC.</p>
             </div>
 
             <div class="demo-category">
-                <div class="demo-cat-title">Clinical Care</div>
+                <div class="demo-cat-title">All Personas</div>
                 <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('doctor', 'doc123')">
-                        <span class="demo-role-name">Doctor</span>
-                        <span class="demo-role-user">doctor / doc123</span>
+                    {% for p in demo_personas %}
+                    <button type="button" class="demo-btn"
+                            onclick="fillCredentials('{{ p.username }}', '{{ p.password }}')">
+                        <span class="demo-role-name">{{ p.role }}</span>
+                        <span class="demo-role-user">{{ p.username }} / {{ p.password }}</span>
                     </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('nurse', 'nurse123')">
-                        <span class="demo-role-name">Nurse</span>
-                        <span class="demo-role-user">nurse / nurse123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('ot_mgr', 'ot123')">
-                        <span class="demo-role-name">OT Manager</span>
-                        <span class="demo-role-user">ot_mgr / ot123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('ward_mgr', 'ward123')">
-                        <span class="demo-role-name">Ward Manager</span>
-                        <span class="demo-role-user">ward_mgr / ward123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Front Office &amp; Portal</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('receptionist', 'rec123')">
-                        <span class="demo-role-name">Receptionist</span>
-                        <span class="demo-role-user">receptionist / rec123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('patient', 'pat123')">
-                        <span class="demo-role-name">Patient</span>
-                        <span class="demo-role-user">patient / pat123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Diagnostics &amp; Blood Bank</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('labtech', 'lab123')">
-                        <span class="demo-role-name">Lab Tech</span>
-                        <span class="demo-role-user">labtech / lab123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('radiologist', 'rad123')">
-                        <span class="demo-role-name">Radiologist</span>
-                        <span class="demo-role-user">radiologist / rad123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('bloodbank_tech', 'bb123')">
-                        <span class="demo-role-name">Blood Bank</span>
-                        <span class="demo-role-user">bloodbank_tech / bb123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Pharmacy &amp; Supply</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('pharmacist', 'pharm123')">
-                        <span class="demo-role-name">Pharmacist</span>
-                        <span class="demo-role-user">pharmacist / pharm123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('store_mgr', 'store123')">
-                        <span class="demo-role-name">Store Manager</span>
-                        <span class="demo-role-user">store_mgr / store123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Finance &amp; Insurance</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('cashier', 'cash123')">
-                        <span class="demo-role-name">Cashier</span>
-                        <span class="demo-role-user">cashier / cash123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('insurance_desk', 'ins123')">
-                        <span class="demo-role-name">Insurance/TPA</span>
-                        <span class="demo-role-user">insurance_desk / ins123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Support Services</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('housekeeper', 'hk123')">
-                        <span class="demo-role-name">Housekeeping</span>
-                        <span class="demo-role-user">housekeeper / hk123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('biomed_eng', 'bio123')">
-                        <span class="demo-role-name">Biomedical</span>
-                        <span class="demo-role-user">biomed_eng / bio123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('ambulance_disp', 'amb123')">
-                        <span class="demo-role-name">Ambulance</span>
-                        <span class="demo-role-user">ambulance_disp / amb123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('dietitian', 'diet123')">
-                        <span class="demo-role-name">Dietitian</span>
-                        <span class="demo-role-user">dietitian / diet123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Governance &amp; People</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('hr_mgr', 'hr123')">
-                        <span class="demo-role-name">HR Manager</span>
-                        <span class="demo-role-user">hr_mgr / hr123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('quality_mgr', 'qual123')">
-                        <span class="demo-role-name">Quality Mgr</span>
-                        <span class="demo-role-user">quality_mgr / qual123</span>
-                    </button>
-                </div>
-            </div>
-
-            <div class="demo-category">
-                <div class="demo-cat-title">Leadership &amp; Admin</div>
-                <div class="demo-grid">
-                    <button type="button" class="demo-btn" onclick="fillCredentials('admin', 'admin123')">
-                        <span class="demo-role-name">Administrator</span>
-                        <span class="demo-role-user">admin / admin123</span>
-                    </button>
-                    <button type="button" class="demo-btn" onclick="fillCredentials('manager', 'mgr123')">
-                        <span class="demo-role-name">Hospital Mgr</span>
-                        <span class="demo-role-user">manager / mgr123</span>
-                    </button>
+                    {% endfor %}
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <!-- Password Reset Modal -->
@@ -603,10 +486,10 @@
                 const data = await res.json();
 
                 if (res.ok && data.success) {
-                    // Check if redirect query param exists
+                    // Reliable redirect — replace so back-button skips login
                     const params = new URLSearchParams(window.location.search);
                     const nextUrl = params.get('next') || '/';
-                    window.location.href = nextUrl;
+                    window.location.replace(nextUrl);
                 } else {
                     showAlert(data.error || 'Authentication failed. Please verify credentials.');
                     submitBtn.disabled = false;
@@ -630,3 +513,4 @@
     </script>
 </body>
 </html>
+

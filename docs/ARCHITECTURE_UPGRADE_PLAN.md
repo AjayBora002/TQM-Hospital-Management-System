@@ -171,3 +171,4 @@ src/
    - Automated RBAC unit tests (verifying 403 on unauthorized routes and 200 on authorized routes for every role).
    - All 172 existing tests continue to pass.
    - Update `README.md`, `docs/USER_MANUAL.md`, and generate `docs/RBAC_MATRIX.md`.
+

@@ -138,3 +138,4 @@ export async function loadOpdQueue(doctorId = null) {
     showToast(`Failed to load OPD queue: ${err.message}`, "danger");
   }
 }
+

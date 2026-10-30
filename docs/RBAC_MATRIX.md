@@ -82,3 +82,4 @@ The RBAC implementation is validated by automated test suites in `tests/test_rba
 - `test_complete_21_role_matrix_coverage`: Iterates through all 21 stakeholder personas, asserting that each role receives HTTP 403 on at least 3 unauthorized endpoints while successfully accessing authorized endpoints (HTTP 200).
 - `test_admin_clinical_restriction`: Ensures administrators cannot post new consultations or modify clinical encounters.
 - `test_audit_logging_on_forbidden_access`: Asserts that security rejections write an audit entry with `[FORBIDDEN_ACCESS]` details.
+

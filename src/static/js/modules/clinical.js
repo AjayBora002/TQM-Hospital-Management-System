@@ -150,3 +150,4 @@ export async function loadOtSchedules() {
     showToast(`Failed to load OT schedules: ${err.message}`, "danger");
   }
 }
+

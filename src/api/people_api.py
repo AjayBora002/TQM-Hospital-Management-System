@@ -126,3 +126,4 @@ def approve_or_reject_leave(leave_id):
         return jsonify({"message": f"Leave {status.lower()} successfully"}), 200
     finally:
         conn.close()
+

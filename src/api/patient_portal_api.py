@@ -140,3 +140,4 @@ def get_my_lab_reports():
         return jsonify([dict(r) for r in rows]), 200
     finally:
         conn.close()
+

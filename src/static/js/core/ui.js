@@ -148,3 +148,4 @@ export function printDocument(title, htmlContent) {
   `);
   printWindow.document.close();
 }
+

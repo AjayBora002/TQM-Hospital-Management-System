@@ -120,3 +120,4 @@ export async function loadBiomedicalEquipment() {
     showToast(`Failed to load biomedical assets: ${err.message}`, "danger");
   }
 }
+

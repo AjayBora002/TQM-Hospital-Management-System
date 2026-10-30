@@ -115,3 +115,4 @@ export async function loadBloodBank() {
     showToast(`Failed to load blood bank inventory: ${err.message}`, "danger");
   }
 }
+
